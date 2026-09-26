@@ -5,7 +5,7 @@
 Guida per chi consulta l'orario delle lezioni: docenti, famiglie, monitor di classe e schermo all'ingresso.
 Non serve nessuna abilitazione speciale: basta l'account Google della scuola.
 
-Indirizzo: **https://alessandrotrino-creator.github.io/iclaudecanti/app/**
+Indirizzo: **https://comprensivoalmese.github.io/iclaudecanti/app/**
 Accesso: account **@comprensivoalmese.it**
 
 ## In breve
