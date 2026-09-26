@@ -12,7 +12,7 @@
   const $ = sel => document.querySelector(sel);
   const $$ = sel => Array.from(document.querySelectorAll(sel));
   const CHIAVE_MONITOR = 'orariodada.monitor';
-  const CHIAVE_NOMI = 'orariodada.nomi';     // nomi veri automatici, oppure 'codici' (vedi caricaNomiDaSoli)
+  const CHIAVE_NOMI = 'orariodada.nomi';     // '' = nomi veri automatici, 'negato:<email>:<data>' (vedi caricaNomiDaSoli)
   const CHIAVE_BREVE = 'orariodada.breve';   // di chi si è scelto di vedere la giornata in "In breve"
   const CHIAVE_INGRESSO = 'orariodada.ingresso'; // schermo all'ingresso: secondi della rotazione ('' = no)
   const USO_INGRESSO = '__ingresso';         // valore della voce "Schermo all'ingresso" nel menu
@@ -172,31 +172,40 @@
 
   /*
     Nomi veri caricati in automatico (come premere «👁 Nomi»), solo per chi ha il permesso sul file dei nomi.
-    Preferenza salvata sul dispositivo (chiave orariodada.nomi):
-    - ''                : automatico (normale)
-    - 'codici'          : l'utente ha scelto «🙈 Codici», quindi non li carichiamo da soli
-    - 'negato:<email>'  : Google ha detto che questo account non può aprire il file: non riproviamo più
+    Ogni volta che si apre l'app i nomi si caricano da soli. Eccezioni:
+    - «🙈 Codici» premuto in questa apertura (soloCodici, solo in memoria: riaprendo l'app i nomi tornano);
+    - chiave orariodada.nomi = 'negato:<email>:<data>': Google ha detto che questo account non può aprire il file
+      dei nomi; si riprova dopo GIORNI_RIPROVA giorni (nel frattempo il file potrebbe essere stato condiviso).
     I nomi restano sempre e solo in memoria.
   */
   let attesaTocco = false;   // i nomi aspettano il primo tocco (il browser ha bloccato la finestra di Google)
+  let soloCodici = false;    // l'utente ha scelto «🙈 Codici» in questa apertura dell'app
+  const GIORNI_RIPROVA = 7;
+  function nomiNegati() {
+    const v = String(leggi(CHIAVE_NOMI) || ''), p = v.split(':');
+    if (p[0] !== 'negato' || p[1] !== utente.email.toLowerCase()) return false;
+    const quando = Date.parse(p[2] || '');   // le versioni vecchie non avevano la data: si riprova subito
+    return !isNaN(quando) && Date.now() - quando < GIORNI_RIPROVA * 864e5;
+  }
   async function caricaNomiDaSoli() {
     if (nomi || !utente || aulaMonitor || secondiIngresso) return;
     if (typeof NomiDocenti === 'undefined' || !CONFIG.fileNomiDocenti || !CONFIG.googleClientId) return;
-    const scelta = leggi(CHIAVE_NOMI);
     // Senza nomi veri serve comunque il permesso di Google per le sostituzioni pubblicate su Drive
-    if (scelta === 'codici' || scelta === 'negato:' + utente.email.toLowerCase()) { permessoDrive(); return; }
+    if (soloCodici || nomiNegati()) { permessoDrive(); return; }
     try {
       nomi = await NomiDocenti.carica(utente.email);
     } catch (e) {
       const msg = String(e && e.message || '');
       // Solo se Google dice che QUESTO ACCOUNT non può aprire il file (messaggi di nomi.js) smettiamo di riprovare
       if (/il tuo account non ha il permesso|file non trovato/i.test(msg)) {
-        scrivi(CHIAVE_NOMI, 'negato:' + utente.email.toLowerCase());
+        scrivi(CHIAVE_NOMI, 'negato:' + utente.email.toLowerCase() + ':' + new Date().toISOString().slice(0, 10));
         permessoDrive();   // il permesso di Google c'è già (il file dei nomi no): leggiamo le sostituzioni
       } else if (/bloccato la finestra|popup/i.test(msg) && !attesaTocco) {
         // Il browser apre la finestra di Google solo dopo un tocco: riproviamo al primo tocco sullo schermo
         attesaTocco = true;
-        document.addEventListener('pointerdown', () => { attesaTocco = false; caricaNomiDaSoli(); }, { once: true, capture: true });
+        // «click» e non «pointerdown»: sui telefoni il browser permette la finestra di Google solo quando il dito si stacca
+        const riprova = () => { document.removeEventListener('click', riprova, true); document.removeEventListener('keydown', riprova, true); attesaTocco = false; caricaNomiDaSoli(); };
+        document.addEventListener('click', riprova, true); document.addEventListener('keydown', riprova, true);
       }
       return;
     }
@@ -225,7 +234,8 @@
       ricaricaDati(false);   // intanto si aggiorna il resto (orario da GitHub, ultima copia delle sostituzioni)
       if (/bloccato la finestra|popup/i.test(String(e && e.message || '')) && !attesaToccoDrive) {
         attesaToccoDrive = true;
-        document.addEventListener('pointerdown', () => { attesaToccoDrive = false; permessoDrive(); }, { once: true, capture: true });
+        const riprova = () => { document.removeEventListener('click', riprova, true); document.removeEventListener('keydown', riprova, true); attesaToccoDrive = false; permessoDrive(); };
+        document.addEventListener('click', riprova, true); document.addEventListener('keydown', riprova, true);
       }
     }
   }
@@ -658,12 +668,12 @@
     });
     $('#btnRicarica').addEventListener('click', async () => { chiudiMenu(); await ricaricaDati(true); });
     // "Nomi" (barra o menu): li legge dal file riservato su Drive (serve il permesso sul file); "Codici" li toglie
-    // La scelta resta sul dispositivo: «Codici» ferma il caricamento automatico, «Nomi» lo riattiva
+    // «Codici» vale solo finché l'app resta aperta: alla prossima apertura i nomi tornano da soli
     const cambiaNomi = async () => {
       chiudiMenu();
-      if (nomi) { nomi = null; scrivi(CHIAVE_NOMI, 'codici'); }
+      if (nomi) { nomi = null; soloCodici = true; }
       else {
-        try { nomi = await NomiDocenti.carica(utente.email); scrivi(CHIAVE_NOMI, ''); }
+        try { nomi = await NomiDocenti.carica(utente.email); soloCodici = false; scrivi(CHIAVE_NOMI, ''); }
         catch (e) { $('#avviso').hidden = false; $('#avviso').textContent = 'Non riesco a mostrare i nomi: ' + e.message + '.'; return; }
       }
       applicaNomi();

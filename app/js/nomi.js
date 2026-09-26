@@ -39,11 +39,16 @@ const NomiDocenti = (() => {
     return r && r.scadenza > Date.now() + 60000 && permessi.every(p => r.permessi.has(p)) ? r.gettone : null;
   }
 
-  // Chiede a Google un gettone con questi permessi (la prima volta compare la richiesta di consenso)
-  async function gettone(permessi, email) {
+  // Chiede a Google un gettone con questi permessi (la prima volta compare la richiesta di consenso).
+  // Se la libreria di Google è già caricata la finestra si apre SUBITO, senza attese: i browser (soprattutto Safari
+  // su iPhone/iPad) la permettono solo se si apre nello stesso istante del tocco dell'utente.
+  function gettone(permessi, email) {
     const pronto = gettoneDisponibile(permessi);
-    if (pronto) return pronto;
-    await caricaLibreria();
+    if (pronto) return Promise.resolve(pronto);
+    if (window.google && google.accounts && google.accounts.oauth2) return chiediGettone(permessi, email);
+    return caricaLibreria().then(() => chiediGettone(permessi, email));
+  }
+  function chiediGettone(permessi, email) {
     return new Promise((ok, ko) => {
       const client = google.accounts.oauth2.initTokenClient({
         client_id: CONFIG.googleClientId,
