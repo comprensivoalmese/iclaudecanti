@@ -1,4 +1,4 @@
-# CLAUDE.md – iclaudecanti
+# CLAUDE.md – orario (IC Almese)
 
 ## Il progetto
 Sito web con l'**orario scolastico di una scuola DADA** (Didattiche per Ambienti Di Apprendimento):
@@ -6,7 +6,7 @@ nelle scuole DADA le aule sono assegnate alle materie/ai docenti e sono **gli st
 Il sito deve quindi mostrare chiaramente, per ogni ora: classe, materia, docente e **aula**.
 
 Viene pubblicato con **GitHub Pages** direttamente da `main`, cartella radice:
-https://comprensivoalmese.github.io/iclaudecanti/ (pagina iniziale con i link alle due app).
+https://comprensivoalmese.github.io/orario/ (pagina iniziale con i link alle due app).
 Non rompere mai questi requisiti: percorsi relativi, niente build, `.nojekyll` presente,
 `localStorage` sempre dentro `try/catch` (su github.io è condiviso tra tutti i repo dello stesso utente,
 quindi usa chiavi con prefisso, es. `orariofacile.` e `orariodada.`).
@@ -73,7 +73,8 @@ riservati**, permessi d'uso solo scritti e decisi dalla scuola (`LICENZA.md` in 
 non si concedono mai a terzi. Se si aggiunge codice di altri, controllare che la sua licenza lo permetta e citarlo.
 
 ## Il gruppo
-- Gruppo **Wolf** (il repository si chiama ancora `iclaudecanti`), studenti **principianti** in programmazione e git.
+- Gruppo **Wolf**; repository `comprensivoalmese/orario` (organizzazione GitHub della scuola; prima era
+  `alessandrotrino-creator/iclaudecanti`), studenti **principianti** in programmazione e git.
 - Tutti lavorano su tutto, direttamente su `main`.
 - **Parla sempre in italiano**: risposte, commenti nel codice, messaggi di commit, documentazione.
 - Spiega passo passo e con parole semplici cosa stai facendo e perché; niente gergo senza spiegarlo.

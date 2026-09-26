@@ -3,7 +3,7 @@
 Scheda **«Sostituzioni»** (la n. 9) di **Orario Facile**, per organizzare la **sostituzione dei docenti assenti**
 usando il foglio del conteggio ore (chi è a **debito** e chi è a **credito** di ore).
 
-Indirizzo diretto: **https://comprensivoalmese.github.io/iclaudecanti/orario-facile/#sostituzioni**
+Indirizzo diretto: **https://comprensivoalmese.github.io/orario/orario-facile/#sostituzioni**
 (il vecchio indirizzo `.../sostituzioni/` porta lì).
 
 ## Privacy: il foglio non viene pubblicato
