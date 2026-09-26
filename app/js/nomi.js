@@ -130,8 +130,9 @@ const NomiDocenti = (() => {
   */
   const PERMESSO_FOGLI = 'https://www.googleapis.com/auth/spreadsheets.readonly';
   async function daDatabase(t) {
+    // si legge anche la riga dei titoli: le colonne si trovano per nome (Codice, Cognome, Nome), non per posizione
     const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(CONFIG.fileDatabaseOrario) +
-      '/values/' + encodeURIComponent('Docenti!A2:C121');
+      '/values/' + encodeURIComponent('Docenti!A1:L121');
     const r = await fetch(url, { headers: { Authorization: 'Bearer ' + t } });
     if (!r.ok) {
       const testo = await r.text();
@@ -139,11 +140,18 @@ const NomiDocenti = (() => {
         throw new Error('nel progetto Google Cloud va attivata la "Google Sheets API"');
       throw new Error(spiega(r.status, testo));
     }
-    const righe = (await r.json()).values || [];
+    const tutte = (await r.json()).values || [];
+    const titoli = (tutte[0] || []).map(x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase());
+    const cCod = titoli.indexOf('codice'), cCog = titoli.indexOf('cognome'), cNom = titoli.indexOf('nome');
+    // Fogli creati prima del 27/09/2026: un'unica colonna «Nome (vero)» con cognome e nome insieme
+    const cUnico = cCog < 0 ? titoli.findIndex(x => /^nome\s*\(?\s*vero/.test(x)) : -1;
+    if (cCod < 0 || (cCog < 0 && cUnico < 0)) throw new Error('nella scheda Docenti del database mancano le colonne «Codice» e «Cognome» (riga 1)');
+    const righe = tutte.slice(1);
     const mappa = new Map();
     righe.forEach(riga => {
-      const codice = String(riga[0] || '').trim().toUpperCase(), cognome = String(riga[1] || '').trim();
-      const nome = String(riga[2] || '').trim();
+      const codice = String(riga[cCod] || '').trim().toUpperCase();
+      const cognome = String(riga[cCog >= 0 ? cCog : cUnico] || '').trim();
+      const nome = cNom >= 0 && cCog >= 0 ? String(riga[cNom] || '').trim() : '';
       if (codice && (cognome || nome)) mappa.set(codice, { cognome: bello(cognome), nome: bello(nome) });
     });
     if (!mappa.size) throw new Error('nella scheda Docenti del database non ci sono ancora i nomi');
