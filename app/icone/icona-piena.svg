@@ -1,13 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" shape-rendering="crispEdges">
   <!-- Versione "piena" dell'icona: sfondo fino ai bordi e robot più piccolo, perché Android e iPhone
-       ritagliano da soli la forma (cerchio, goccia, quadrato arrotondato) -->
+       ritagliano da soli la forma (cerchio, goccia, quadrato arrotondato).
+       Robot e scritta Luis@i stanno nel cerchio centrale, che non viene mai tagliato -->
   <defs>
     <linearGradient id="sfondo" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#2f6fe0"/><stop offset="1" stop-color="#153c8f"/>
     </linearGradient>
   </defs>
   <rect width="512" height="512" fill="url(#sfondo)"/>
-  <g transform="translate(112 121) scale(18)">
+  <g transform="translate(144 96) scale(14)">
     <!-- antenne: bastoncini bianchi e palline gialle -->
     <rect x="3" y="2" width="1" height="1" fill="#ffffff"/>
     <rect x="12" y="2" width="1" height="1" fill="#ffffff"/>
@@ -35,4 +36,8 @@
     <rect x="3" y="15" width="3" height="1" fill="#ffcf3f"/>
     <rect x="10" y="15" width="3" height="1" fill="#ffcf3f"/>
   </g>
+
+  <!-- il nome dell'app sotto il robot: la chiocciola è gialla come le antenne -->
+  <text x="256" y="392" text-anchor="middle" font-family="'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+        font-size="76" font-weight="800" fill="#ffffff" letter-spacing="-1">Luis<tspan fill="#ffcf3f">@</tspan>i</text>
 </svg>
