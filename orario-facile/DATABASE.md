@@ -5,9 +5,12 @@ L'orario sta in **un solo file**: un Foglio Google sul Drive della scuola.
 e chi prepara l'orario a mano può lavorarci direttamente: la griglia ha i colori che segnalano gli errori.
 
 - Codice: [`database.js`](database.js). ID del Foglio in [`../app/js/config.js`](../app/js/config.js), voce `fileDatabaseOrario`.
-- Il Foglio contiene i **nomi veri** dei docenti: sta **solo** sul Drive della scuola, condiviso con chi prepara l'orario
-  (serve il permesso «Editor» per salvare). Nel repository e in Orario Facile i docenti restano solo codici (DOC01…):
-  i nomi letti dal Foglio restano solo in memoria.
+- Il Foglio contiene i **nomi veri** dei docenti (scheda Docenti, Cognome e Nome) ed è anche la fonte da cui l'app
+  li mostra a docenti e studenti: sta **solo** sul Drive della scuola, condiviso **in lettura con tutto l'Istituto** e
+  in modifica («Editor») solo con chi prepara l'orario. Nel repository (pubblico) e nei dati di Orario Facile i docenti
+  restano solo codici (DOC01…): i nomi letti dal Foglio restano solo in memoria.
+- Il Foglio creato prima del 27/09/2026 aveva in Docenti B «Nome (vero)» e C «Aule»: Orario Facile lo legge ancora,
+  ma va sostituito con quello nuovo (vedi sotto «Passare al formato nuovo»).
 - Il Foglio vuoto (con formule, colori e controlli) si crea con [`../strumenti/crea-database.ps1`](../strumenti/crea-database.ps1)
   partendo da un backup di Orario Facile. Si fa **una volta sola**: poi basta «Salva sul Foglio».
 
@@ -31,7 +34,7 @@ rinominare le schede (si possono aggiungere righe nelle zone gialle).
 | **Aule** | 2–81 | A aula · B tipo · C più classi insieme (SI/NO) | – |
 | **Classi** | riga 1 intestazione, 2–41 classi | A classe · B anno · C..N ore attive «‹giorno› mattino» / «‹giorno› pomeriggio» (l'intestazione dice quale giorno) | P ore settimanali |
 | **Quadro** | riga 1 sigle, 2–41 classi | A classe · B..AN ore settimanali di ogni materia (la riga 1 dice quale) | AP totale |
-| **Docenti** | 2–121 | A codice (DOC01…) · B nome vero · C aule (separate da virgola, la prima è la principale) · D giorno libero · E max ore al giorno · F max ore consecutive · G indisponibilità | I–K ore nelle cattedre, ore nell'orario, esito |
+| **Docenti** | 2–121 | A codice (DOC01…) · B cognome · C nome · D aule (separate da virgola, la prima è la principale) · E giorno libero · F max ore al giorno · G max ore consecutive · H indisponibilità | J–L ore nelle cattedre, ore nell'orario, esito |
 | **Cattedre** | 2–401 | A codice docente · C classe · D sigla della materia · E ore | B nome · G–I controlli |
 | **Orario** | righe 1-2 giorni e ore, 3–122 docenti | A codice docente · C..BJ una colonna per ogni ora della settimana (giorno per giorno: mattino poi pomeriggio) | B nome · BL–BN ore messe, ore nelle cattedre, esito |
 | **Vista classi** | – | – | l'orario di ogni classe, ricavato dalla griglia |
@@ -60,6 +63,14 @@ chiedere conferma. Un'aula lasciata vuota in Orario Facile diventa l'aula princi
 1. In Orario Facile, scheda **Orario** → «Importa orario compilato» → scegliere il file Excel (una riga per docente e una
    colonna per ogni ora): il programma abbina i nomi ai codici e ricava le materie dalle cattedre.
 2. Controllare l'orario, poi **Esporta** → «📤 Salva sul Foglio».
+
+## Passare al formato nuovo (una volta sola, 27/09/2026)
+
+1. Orario Facile → Esporta → «📥 Carica dal Foglio» (legge il Foglio vecchio: così non si perde nessuna modifica).
+2. «👁 Nomi» (legge i nomi dal vecchio file dei nomi, ancora indicato in config.js).
+3. Nel Foglio: File → Importa → il nuovo `Orario database.xlsx` → «Sostituisci foglio di lavoro».
+4. Orario Facile → «📤 Salva sul Foglio» (avvisa che il Foglio è cambiato: «Salva comunque»). Cognome e Nome si riempiono.
+5. In config.js si svuota `fileNomiDocenti`: da quel momento l'app legge i nomi dal Foglio database.
 
 ## Salvataggi da più computer
 

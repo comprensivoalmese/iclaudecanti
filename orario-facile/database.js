@@ -5,7 +5,9 @@
 
   Cosa legge e scrive: SOLO le colonne «dati» (gialle nel Foglio). Le colonne calcolate (grigie: formule, controlli,
   Vista classi) le lascia stare, così continuano a funzionare anche dopo un salvataggio.
-  I nomi veri dei docenti (scheda Docenti, colonna B) restano solo in memoria: mai in S, nel backup o in localStorage.
+  I nomi veri dei docenti (scheda Docenti: Cognome in colonna B, Nome in colonna C) restano solo in memoria:
+  mai in S, nel backup o in localStorage. Da lì li legge anche app/js/nomi.js per mostrarli nell'app.
+  Legge anche i Fogli creati prima del 27/09/2026 (Docenti: B «Nome (vero)» e C «Aule»), per passare al formato nuovo.
 
   Usa di Orario Facile (index.html): S, POOL, uid, normalizza, save, render, vai, avvisa, chiedi, NOMI, GIORNI_ALL;
   di app/js/nomi.js: NomiDocenti.gettone (il permesso di Google di chi ha fatto l'accesso).
@@ -27,7 +29,7 @@ const DatabaseOrario = (() => {
   const siNo = v => ['si', 'sì', 'true', 'vero', '1', 'x', 'yes'].includes(semplice(v));
   const SI = v => (v ? 'SI' : 'NO');
 
-  // nomi veri letti dal Foglio (codice -> nome), solo in memoria
+  // nomi veri letti dal Foglio (codice -> { cognome, nome }), solo in memoria
   let nomiFoglio = new Map();
 
   /* ---------------- chiamate a Google ---------------- */
@@ -55,7 +57,7 @@ const DatabaseOrario = (() => {
   const ZONE = {
     impostazioni: 'Impostazioni!A2:B30', vincoli: `Vincoli!A2:C${NVINC + 1}`, discipline: `Discipline!A2:H${NDIS + 1}`,
     aule: `Aule!A2:C${NAULE + 1}`, classi: `Classi!A1:N${NCL + 1}`, quadro: `Quadro!A1:AN${NCL + 1}`,
-    docenti: `Docenti!A2:G${ND + 1}`, cattedre: `Cattedre!A2:E${NK + 1}`, orario: `Orario!A1:BJ${ND + 2}`
+    docentiTitoli: 'Docenti!A1:H1', docenti: `Docenti!A2:H${ND + 1}`, cattedre: `Cattedre!A2:E${NK + 1}`, orario: `Orario!A1:BJ${ND + 2}`
   };
   async function leggiZone() {
     const q = Object.values(ZONE).map(z => 'ranges=' + encodeURIComponent(z)).join('&');
@@ -157,17 +159,23 @@ const DatabaseOrario = (() => {
     });
     // Docenti (per codice); il nome vero resta solo in memoria
     const perDoc = new Map(); nomiFoglio = new Map();
+    // posizione delle colonne: formato nuovo (B Cognome, C Nome, D Aule…) oppure vecchio (B «Nome (vero)», C Aule…)
+    const vecchio = !semplice((z.docentiTitoli[0] || [])[1]).startsWith('cognome') && semplice((z.docentiTitoli[0] || [])[2]).startsWith('aule');
+    const COL = vecchio ? { aule: 2, libero: 3, maxG: 4, maxC: 5, indisp: 6 } : { aule: 3, libero: 4, maxG: 5, maxC: 6, indisp: 7 };
     z.docenti.forEach((r, i) => {
       const codice = testo(r[0]); if (!codice) return;
       if (perDoc.has(codice)) { problemi.push(`Docenti, riga ${i + 2}: codice ${codice} ripetuto`); return; }
-      const t = { id: uid('t'), nome: codice, cattedre: [], aule: [], indisp: {}, giornoLibero: '', maxGiorno: numero(r[4], 0), maxConsec: numero(r[5], 0) };
-      if (testo(r[1])) nomiFoglio.set(codice, testo(r[1]));
-      testo(r[2]).split(/[,;]/).map(testo).filter(Boolean).forEach(n => {
+      const t = { id: uid('t'), nome: codice, cattedre: [], aule: [], indisp: {}, giornoLibero: '', maxGiorno: numero(r[COL.maxG], 0), maxConsec: numero(r[COL.maxC], 0) };
+      // nome vero (solo in memoria): Cognome in B e Nome in C; nel formato vecchio tutto in B
+      if (vecchio) { if (testo(r[1])) nomiFoglio.set(codice, { cognome: testo(r[1]), nome: '' }); }
+      else if (testo(r[1]) || testo(r[2])) nomiFoglio.set(codice, { cognome: testo(r[1]), nome: testo(r[2]) });
+      testo(r[COL.aule]).split(/[,;]/).map(testo).filter(Boolean).forEach(n => {
         const a = perAula.get(semplice(n)); if (a) t.aule.push(a.id); else problemi.push(`Docente ${codice}: l'aula ${n} non è nella scheda Aule`);
       });
-      const gl = GIORNI_ALL.find(g => semplice(g) === semplice(r[3])); if (gl) t.giornoLibero = gl; else if (testo(r[3])) problemi.push(`Docente ${codice}: giorno libero «${testo(r[3])}» non riconosciuto`);
+      const libero = r[COL.libero];
+      const gl = GIORNI_ALL.find(g => semplice(g) === semplice(libero)); if (gl) t.giornoLibero = gl; else if (testo(libero)) problemi.push(`Docente ${codice}: giorno libero «${testo(libero)}» non riconosciuto`);
       // Indisponibilità: "Lunedì 1,2; Venerdì 6,p1" (p1 = 1ª ora del pomeriggio)
-      testo(r[6]).split(';').map(testo).filter(Boolean).forEach(parte => {
+      testo(r[COL.indisp]).split(';').map(testo).filter(Boolean).forEach(parte => {
         const m = parte.match(/^(\S+)\s+(.+)$/); const g = m && GIORNI_ALL.find(x => semplice(x) === semplice(m[1]));
         if (!g) { problemi.push(`Docente ${codice}: indisponibilità «${parte}» non capita`); return; }
         t.indisp[g] = m[2].split(',').map(testo).filter(Boolean).map(o => /^p/i.test(o) ? nuovo.oreM + numero(o.slice(1), 1) - 1 : numero(o, 1) - 1).filter(s => s >= 0 && s < T);
@@ -223,10 +231,14 @@ const DatabaseOrario = (() => {
     while (out.length < righe) out.push(new Array(colonne).fill(''));
     return out;
   };
+  // { cognome, nome } del docente: dai nomi mostrati in Orario Facile («👁 Nomi»), altrimenti quelli letti dal Foglio
   function nomeVeroDi(codice) {
     const n = typeof NOMI !== 'undefined' && NOMI && NOMI.get(codice);
-    return (n && n.completo) || nomiFoglio.get(codice) || '';
+    if (n && (n.cognome || n.nome)) return { cognome: n.cognome || '', nome: n.nome || '' };
+    return nomiFoglio.get(codice) || { cognome: '', nome: '' };
   }
+  const TITOLI_DOCENTI = ['Codice', 'Cognome', 'Nome', 'Aule (la prima è la principale)', 'Giorno libero', 'Max ore al giorno',
+    'Max ore consecutive', 'Indisponibilità (es. Lunedì 1,2; Venerdì 6)'];
   const SPIEGAZIONI = {
     maxConsec: 'ore consecutive massime della stessa materia per classe', maxConsecDoc: 'ore consecutive massime per docente',
     maxOreGiorno: 'ore massime al giorno per docente', maxOreDiscGiorno: 'ore massime della stessa materia al giorno',
@@ -251,8 +263,9 @@ const DatabaseOrario = (() => {
     metti(ZONE.quadro, piena([['Classe'].concat(sigle.map(x => x.sigla))].concat(st.classi.map(x => [x.nome].concat(sigle.map(dd => (st.quadro[x.id] || {})[dd.id] || '')))), NCL + 1, 40));
     const indisp = t => Object.keys(t.indisp || {}).filter(g => (t.indisp[g] || []).length)
       .map(g => g + ' ' + t.indisp[g].slice().sort((x, y) => x - y).map(s => s < st.oreM ? s + 1 : 'p' + (s - st.oreM + 1)).join(',')).join('; ');
-    metti(ZONE.docenti, piena(st.docenti.map(t => [t.nome, nomeVeroDi(t.nome), t.aule.map(x => (a(x) || {}).nome).filter(Boolean).join(', '),
-      t.giornoLibero || '', t.maxGiorno || '', t.maxConsec || '', indisp(t)]), ND, 7));
+    metti(ZONE.docentiTitoli, [TITOLI_DOCENTI]);
+    metti(ZONE.docenti, piena(st.docenti.map(t => { const n = nomeVeroDi(t.nome); return [t.nome, n.cognome, n.nome,
+      t.aule.map(x => (a(x) || {}).nome).filter(Boolean).join(', '), t.giornoLibero || '', t.maxGiorno || '', t.maxConsec || '', indisp(t)]; }), ND, 8));
     if (st.docenti.length > ND) avvisi.push(`Nel Foglio entrano ${ND} docenti: gli altri non sono stati salvati`);
     const catt = []; st.docenti.forEach(t => t.cattedre.forEach(k => { if (c(k.cl) && d(k.di)) catt.push([t.nome, c(k.cl).nome, d(k.di).sigla, k.ore]); }));
     if (catt.length > NK) avvisi.push(`Nel Foglio entrano ${NK} cattedre: le altre non sono state salvate`);

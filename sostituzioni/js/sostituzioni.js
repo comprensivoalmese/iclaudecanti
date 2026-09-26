@@ -401,7 +401,7 @@ const Sostituzioni = (() => {
   // Li prendiamo dal file riservato dei nomi (app/js/nomi.js): restano SOLO IN MEMORIA, mai salvati.
   let nomiVeri = null;   // Map "DOC07" -> { cognome, nome }
   async function preparaNomiVeri() {
-    if (nomiVeri || typeof NomiDocenti === 'undefined' || !CONFIG.fileNomiDocenti) return;
+    if (nomiVeri || typeof NomiDocenti === 'undefined' || !NomiDocenti.configurato()) return;
     try { nomiVeri = await NomiDocenti.carica(emailUtente(), RegistroDrive.permessi()); }
     catch (errore) { console.error(errore); nomiVeri = new Map(); }   // non riprovare a ogni sostituzione
   }

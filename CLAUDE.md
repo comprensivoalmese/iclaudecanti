@@ -43,10 +43,12 @@ Le parti del progetto:
   (`CSV_SCUOLA_CLASSI`, `CSV_SCUOLA_DOCENTI` e `datiScuola()`), caricati alla prima apertura e con il pulsante
   "Dati scuola 2026/27". **Privacy**: il repo è pubblico, quindi i docenti compaiono solo con un codice
   (DOC01, DOC02…, assegnati in ordine casuale: niente iniziali, niente ordine alfabetico). La corrispondenza codice → nome
-  sta in un Foglio Google ad accesso limitato (copia locale in `privato/`); non pubblicare mai nomi completi,
-  iniziali, PDF o fogli con i nomi dei docenti.
-  Per vedere i nomi: `app/js/nomi.js` (`NomiDocenti.carica(email)`) legge da Drive il file indicato in
-  `CONFIG.fileNomiDocenti` con il permesso dell'utente e restituisce una Map codice → {cognome, nome}; i nomi stanno
+  sta nella scheda Docenti del Foglio database (colonne Cognome e Nome), sul Drive della scuola, visibile a tutti gli
+  account dell'Istituto (docenti **e studenti**: scelta della scuola, 27/09/2026) ma mai su GitHub; non pubblicare mai
+  nel repo nomi completi, iniziali, PDF o fogli con i nomi dei docenti.
+  Per vedere i nomi: `app/js/nomi.js` (`NomiDocenti.carica(email)`) legge con il permesso dell'utente la scheda Docenti
+  di `CONFIG.fileDatabaseOrario` (oppure il vecchio file `CONFIG.fileNomiDocenti`, se è ancora indicato) e restituisce
+  una Map codice → {cognome, nome}; i nomi stanno
   solo in memoria (in Orario Facile: pulsante «👁 Nomi», `NOMI`, `nomeDoc()`; nell'app: pulsante «👁 Nomi» nella barra (da 960 px in su) e voce nel menu utente,
   `applicaNomi()` in app.js, che cambia solo `D.docente[].nome` e tiene il codice in `.codice`), mai in localStorage, backup o CSV.
 - **Ruoli**: *modificatori* (possono usare Orario Facile) e *fruitori* (solo l'app). `app/js/ruoli.js` +

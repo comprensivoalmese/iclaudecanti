@@ -128,24 +128,27 @@ try {
 
   # ---------- Docenti ----------
   $w = $FG['Docenti']
-  Testa $w 'A1:G1' @('Codice', 'Nome (vero)', 'Aule (la prima è la principale)', 'Giorno libero', 'Max ore al giorno', 'Max ore consecutive', 'Indisponibilità (es. Lunedì 1,2; Venerdì 6)')
-  Testa $w 'I1:K1' @('Ore nelle cattedre', 'Ore nell''orario', 'Esito')
-  $a = M $DB.docenti.Count 7; $i = 0
+  # A codice · B cognome · C nome (i nomi veri: li scrive Orario Facile, qui restano vuoti) · D aule · E giorno libero
+  # · F max ore al giorno · G max ore consecutive · H indisponibilità;  calcolate J-L
+  Testa $w 'A1:H1' @('Codice', 'Cognome', 'Nome', 'Aule (la prima è la principale)', 'Giorno libero', 'Max ore al giorno', 'Max ore consecutive', 'Indisponibilità (es. Lunedì 1,2; Venerdì 6)')
+  Testa $w 'J1:L1' @('Ore nelle cattedre', 'Ore nell''orario', 'Esito')
+  $a = M $DB.docenti.Count 8; $i = 0
   foreach ($t in $DB.docenti) {
     $a[$i,0] = $t.nome
-    $a[$i,2] = (@($t.aule | ForEach-Object { if ($aul[$_]) { $aul[$_].nome } }) -join ', ')
-    $a[$i,3] = $t.giornoLibero; if ($t.maxGiorno) { $a[$i,4] = $t.maxGiorno }; if ($t.maxConsec) { $a[$i,5] = $t.maxConsec }
+    $a[$i,3] = (@($t.aule | ForEach-Object { if ($aul[$_]) { $aul[$_].nome } }) -join ', ')
+    $a[$i,4] = $t.giornoLibero; if ($t.maxGiorno) { $a[$i,5] = $t.maxGiorno }; if ($t.maxConsec) { $a[$i,6] = $t.maxConsec }
     $ind = @(); if ($t.indisp) { foreach ($p in $t.indisp.PSObject.Properties) { if (@($p.Value).Count) { $ind += $p.Name + ' ' + ((@($p.Value) | Sort-Object | ForEach-Object { if ($_ -lt $oreM) { $_ + 1 } else { 'p' + ($_ - $oreM + 1) } }) -join ',') } } }
-    $a[$i,6] = $ind -join '; '
+    $a[$i,7] = $ind -join '; '
     $i++
   }
-  $w.Range("A2:G$fD").Interior.Color = $GIALLO; $w.Range("A2:G$($DB.docenti.Count + 1)").Value2 = $a
-  $w.Range("I2:I$fD").Formula = "=IF(A2="""","""",SUMIF(Cattedre!`$A`$2:`$A`$$fK,A2,Cattedre!`$E`$2:`$E`$$fK))"
-  $w.Range("J2:J$fD").Formula = "=IF(A2="""","""",IFERROR(INDEX(Orario!`$BL`$3:`$BL`$$fO,MATCH(A2,Orario!`$A`$3:`$A`$$fO,0)),""non in Orario""))"
-  $w.Range("K2:K$fD").Formula = '=IF(A2="","",IF(I2=J2,"OK",IF(ISNUMBER(J2),IF(J2<I2,"MANCANO "&(I2-J2),"TROPPE "&(J2-I2)),J2)))'
-  $w.Range("I2:K$fD").Interior.Color = $GRIGIO
-  $w.Columns.Item(1).ColumnWidth = 9; $w.Columns.Item(2).ColumnWidth = 24; $w.Columns.Item(3).ColumnWidth = 28; $w.Range('D:F').ColumnWidth = 11; $w.Columns.Item(7).ColumnWidth = 34
-  $w.Columns.Item(8).ColumnWidth = 2; $w.Range('I:J').ColumnWidth = 11; $w.Columns.Item(11).ColumnWidth = 14
+  $w.Range("A2:H$fD").Interior.Color = $GIALLO; $w.Range("A2:H$($DB.docenti.Count + 1)").Value2 = $a
+  $w.Range("J2:J$fD").Formula = "=IF(A2="""","""",SUMIF(Cattedre!`$A`$2:`$A`$$fK,A2,Cattedre!`$E`$2:`$E`$$fK))"
+  $w.Range("K2:K$fD").Formula = "=IF(A2="""","""",IFERROR(INDEX(Orario!`$BL`$3:`$BL`$$fO,MATCH(A2,Orario!`$A`$3:`$A`$$fO,0)),""non in Orario""))"
+  $w.Range("L2:L$fD").Formula = '=IF(A2="","",IF(J2=K2,"OK",IF(ISNUMBER(K2),IF(K2<J2,"MANCANO "&(J2-K2),"TROPPE "&(K2-J2)),K2)))'
+  $w.Range("J2:L$fD").Interior.Color = $GRIGIO
+  $w.Columns.Item(1).ColumnWidth = 9; $w.Columns.Item(2).ColumnWidth = 18; $w.Columns.Item(3).ColumnWidth = 16; $w.Columns.Item(4).ColumnWidth = 28
+  $w.Range('E:G').ColumnWidth = 11; $w.Columns.Item(8).ColumnWidth = 34
+  $w.Columns.Item(9).ColumnWidth = 2; $w.Range('J:K').ColumnWidth = 11; $w.Columns.Item(12).ColumnWidth = 14
 
   # ---------- Cattedre ----------
   $w = $FG['Cattedre']
@@ -157,7 +160,7 @@ try {
   $w.Range("C2:D$fK").NumberFormat = '@'
   $w.Range("A2:A$fK").Interior.Color = $GIALLO; $w.Range("C2:E$fK").Interior.Color = $GIALLO
   $w.Range("A2:A$($righe.Count + 1)").Value2 = $a; $w.Range("C2:E$($righe.Count + 1)").Value2 = $b
-  $w.Range("B2:B$fK").Formula = "=IF(A2="""","""",IFERROR(VLOOKUP(A2,Docenti!`$A`$2:`$B`$$fD,2,FALSE)&"""",""?""))"
+  $w.Range("B2:B$fK").Formula = "=IF(A2="""","""",IFERROR(TRIM(VLOOKUP(A2,Docenti!`$A`$2:`$C`$$fD,2,FALSE)&"" ""&VLOOKUP(A2,Docenti!`$A`$2:`$C`$$fD,3,FALSE)),""?""))"
   $riga = "INDEX(Orario!`$C`$3:`$BJ`$$fO,MATCH(A2,Orario!`$A`$3:`$A`$$fO,0),0)"
   $w.Range("G2:G$fK").Formula = "=IF(OR(A2="""",C2=""""),"""",IFERROR(COUNTIF($riga,C2)+COUNTIF($riga,C2&"" *"")+COUNTIF($riga,""+""&C2)+COUNTIF($riga,""+""&C2&"" *""),0))"
   $w.Range("H2:H$fK").Formula = "=IF(OR(A2="""",C2=""""),"""",SUMIFS(`$E`$2:`$E`$$fK,`$A`$2:`$A`$$fK,A2,`$C`$2:`$C`$$fK,C2))"
@@ -179,7 +182,7 @@ try {
   $w.Range("A3:A$fO").NumberFormat = '@'; $w.Range("C3:BJ$fO").NumberFormat = '@'
   $w.Range("A3:A$fO").Interior.Color = $GIALLO; $w.Range("C3:BJ$fO").Interior.Color = $GIALLO
   $w.Range("A3:A$($DB.docenti.Count + 2)").Value2 = $a; $w.Range("C3:BJ$($DB.docenti.Count + 2)").Value2 = $b
-  $w.Range("B3:B$fO").Formula = "=IF(A3="""","""",IFERROR(VLOOKUP(A3,Docenti!`$A`$2:`$B`$$fD,2,FALSE)&"""",""?""))"; $w.Range("B3:B$fO").Interior.Color = $GRIGIO
+  $w.Range("B3:B$fO").Formula = "=IF(A3="""","""",IFERROR(TRIM(VLOOKUP(A3,Docenti!`$A`$2:`$C`$$fD,2,FALSE)&"" ""&VLOOKUP(A3,Docenti!`$A`$2:`$C`$$fD,3,FALSE)),""?""))"; $w.Range("B3:B$fO").Interior.Color = $GRIGIO
   $w.Range("BL3:BL$fO").Formula = '=IF(A3="","",COUNTA(C3:BJ3))'
   $w.Range("BM3:BM$fO").Formula = "=IF(A3="""","""",SUMIF(Cattedre!`$A`$2:`$A`$$fK,A3,Cattedre!`$E`$2:`$E`$$fK))"
   $w.Range("BN3:BN$fO").Formula = '=IF(A3="","",IF(BL3=BM3,"OK",IF(BL3<BM3,"MANCANO "&(BM3-BL3),"TROPPE "&(BL3-BM3))))'
@@ -194,7 +197,7 @@ try {
   Regola $w "C3:BJ$fO" "=AND(C3<>"""",LEFT(C3,1)<>""+"",COUNTIF(C`$3:C`$$fO,$cls)+COUNTIF(C`$3:C`$$fO,$cls&"" *"")>1)" 13551615 393372 $true
   Regola $w "C3:BJ$fO" "=AND(C3<>"""",`$A3<>"""",LEFT(C3,1)<>""+"",COUNTIFS(INDIRECT(""Cattedre!A2:A$fK""),`$A3,INDIRECT(""Cattedre!C2:C$fK""),$cls)=0)" 10284031 $null $false
   Regola $w "C3:BJ$fO" "=LEFT(C3,1)=""+""" 16247773 $null $false
-  Esito $w "BN3:BN$fO"; Esito $FG['Docenti'] "K2:K$fD"; Esito $FG['Cattedre'] "I2:I$fK"
+  Esito $w "BN3:BN$fO"; Esito $FG['Docenti'] "L2:L$fD"; Esito $FG['Cattedre'] "I2:I$fK"
   Blocca $w 'C3'
 
   # ---------- Vista classi (calcolata dalla griglia) ----------
@@ -244,7 +247,7 @@ try {
   Esito $w "F2:F$fCl"
   $w.Columns.Item(1).ColumnWidth = 9; $w.Range('B:E').ColumnWidth = 12; $w.Columns.Item(6).ColumnWidth = 30; $w.Columns.Item(7).ColumnWidth = 2; $w.Columns.Item(8).ColumnWidth = 2
   $w.Range('A43').Value2 = 'Riepilogo'; $w.Range('A43').Font.Bold = $true
-  $rie = @(@('Classi da sistemare', "=COUNTIFS(F2:F$fCl,""<>OK"",F2:F$fCl,""?*"")"), @('Docenti da sistemare', "=COUNTIFS(Docenti!K2:K$fD,""<>OK"",Docenti!K2:K$fD,""?*"")"), @('Cattedre da sistemare', "=COUNTIFS(Cattedre!I2:I$fK,""<>OK"",Cattedre!I2:I$fK,""?*"")"))
+  $rie = @(@('Classi da sistemare', "=COUNTIFS(F2:F$fCl,""<>OK"",F2:F$fCl,""?*"")"), @('Docenti da sistemare', "=COUNTIFS(Docenti!L2:L$fD,""<>OK"",Docenti!L2:L$fD,""?*"")"), @('Cattedre da sistemare', "=COUNTIFS(Cattedre!I2:I$fK,""<>OK"",Cattedre!I2:I$fK,""?*"")"))
   for ($i = 0; $i -lt $rie.Count; $i++) { $w.Cells.Item(44 + $i, 1).Value2 = $rie[$i][0]; $w.Cells.Item(44 + $i, 4).Formula = $rie[$i][1] }
   Blocca $w 'B2'
   foreach ($n in 'Docenti', 'Cattedre', 'Classi', 'Quadro', 'Discipline', 'Aule') { Blocca $FG[$n] 'B2' }
@@ -272,7 +275,7 @@ try {
     'SCHEDE',
     '  Impostazioni, Vincoli: dati generali e regole del generatore.      Discipline, Aule: elenchi.',
     '  Classi: ore attive per giorno (mattino/pomeriggio).                  Quadro: ore settimanali di ogni materia in ogni classe.',
-    '  Docenti: codice (DOC01…), nome vero, aule (la prima è la principale), giorno libero, limiti, indisponibilità.',
+    '  Docenti: codice (DOC01…), cognome e nome veri, aule (la prima è la principale), giorno libero, limiti, indisponibilità.',
     '  Cattedre: una riga per docente + classe + materia + ore.             Orario: la griglia.',
     '  Vista classi, Controlli: si calcolano da soli.',
     '',

@@ -189,7 +189,7 @@
   }
   async function caricaNomiDaSoli() {
     if (nomi || !utente || aulaMonitor || secondiIngresso) return;
-    if (typeof NomiDocenti === 'undefined' || !CONFIG.fileNomiDocenti || !CONFIG.googleClientId) return;
+    if (typeof NomiDocenti === 'undefined' || !NomiDocenti.configurato() || !CONFIG.googleClientId) return;
     // Senza nomi veri serve comunque il permesso di Google per le sostituzioni pubblicate su Drive
     if (soloCodici || nomiNegati()) { permessoDrive(); return; }
     try {

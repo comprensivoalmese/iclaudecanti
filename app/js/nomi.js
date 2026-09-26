@@ -2,10 +2,11 @@
   nomi.js – i nomi veri dei docenti, letti da un file riservato su Google Drive.
 
   Il repository è pubblico, quindi nell'orario i docenti sono solo codici (DOC01, DOC02…).
-  La corrispondenza codice → nome è in un file su Drive condiviso solo con il personale autorizzato
-  (ID in config.js, campo "fileNomiDocenti"). Chi ha il permesso di aprirlo può vedere i nomi:
-  la pagina chiede a Google di leggere Drive a nome dell'utente e scarica il file.
-  Se l'account non ha accesso al file, Google rifiuta e restano i codici.
+  La corrispondenza codice → nome è nella scheda Docenti del Foglio database dell'orario (config.js,
+  "fileDatabaseOrario": colonne Codice, Cognome, Nome), condiviso in lettura con tutto l'Istituto (docenti e studenti).
+  Finché in config.js c'è ancora "fileNomiDocenti" (il vecchio file separato Codice;Cognome;Nome) si legge quello.
+  Chi ha il permesso di aprire il file vede i nomi: la pagina chiede a Google di leggerlo a nome dell'utente.
+  Se l'account non ha accesso, Google rifiuta e restano i codici.
 
   I nomi restano SOLO IN MEMORIA: mai in localStorage, mai nei backup o nei file pubblicati.
   Il file può essere un CSV (Codice;Cognome;Nome) o un Foglio Google con le stesse colonne.
@@ -123,13 +124,43 @@ const NomiDocenti = (() => {
     return mappa;
   }
 
+  /*
+    I nomi dal Foglio database dell'orario (CONFIG.fileDatabaseOrario, vedi orario-facile/DATABASE.md):
+    scheda Docenti, colonna A codice, B cognome, C nome. Si leggono solo quelle colonne, quindi è veloce.
+  */
+  const PERMESSO_FOGLI = 'https://www.googleapis.com/auth/spreadsheets.readonly';
+  async function daDatabase(t) {
+    const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(CONFIG.fileDatabaseOrario) +
+      '/values/' + encodeURIComponent('Docenti!A2:C121');
+    const r = await fetch(url, { headers: { Authorization: 'Bearer ' + t } });
+    if (!r.ok) {
+      const testo = await r.text();
+      if (r.status === 403 && /has not been used|is disabled|accessNotConfigured|SERVICE_DISABLED/i.test(testo))
+        throw new Error('nel progetto Google Cloud va attivata la "Google Sheets API"');
+      throw new Error(spiega(r.status, testo));
+    }
+    const righe = (await r.json()).values || [];
+    const mappa = new Map();
+    righe.forEach(riga => {
+      const codice = String(riga[0] || '').trim().toUpperCase(), cognome = String(riga[1] || '').trim();
+      const nome = String(riga[2] || '').trim();
+      if (codice && (cognome || nome)) mappa.set(codice, { cognome: bello(cognome), nome: bello(nome) });
+    });
+    if (!mappa.size) throw new Error('nella scheda Docenti del database non ci sono ancora i nomi');
+    return mappa;
+  }
+
+  // Da dove si leggono i nomi: il vecchio file dei nomi (se c'è ancora in config.js) oppure il Foglio database
+  const configurato = () => typeof CONFIG !== 'undefined' && !!(CONFIG.fileNomiDocenti || CONFIG.fileDatabaseOrario);
+
   // Restituisce la mappa dei nomi, oppure lancia un errore con una spiegazione in italiano.
   // permessiInPiù: chiesti insieme a quello per Drive, per non aprire due volte la finestra di Google
   async function carica(email, permessiInPiu) {
-    if (typeof CONFIG === 'undefined' || !CONFIG.fileNomiDocenti) throw new Error('in config.js manca l\'ID del file dei nomi');
+    if (!configurato()) throw new Error('in config.js manca da dove leggere i nomi (fileDatabaseOrario)');
     if (!CONFIG.googleClientId) throw new Error('in config.js manca l\'ID client di Google');
-    return interpreta(await scarica(await gettone([PERMESSO].concat(permessiInPiu || []), email)));
+    if (CONFIG.fileNomiDocenti) return interpreta(await scarica(await gettone([PERMESSO].concat(permessiInPiu || []), email)));
+    return daDatabase(await gettone([PERMESSO, PERMESSO_FOGLI].concat(permessiInPiu || []), email));
   }
 
-  return { carica, interpreta, bello, gettone, gettoneDisponibile, PERMESSO_DRIVE: PERMESSO };
+  return { carica, configurato, interpreta, bello, gettone, gettoneDisponibile, PERMESSO_DRIVE: PERMESSO };
 })();

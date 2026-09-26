@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.2',
+  versioneApp: '2026-09-27.3',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -25,13 +25,15 @@ window.CONFIG = {
   // Se si svuota ('') l'app torna in "modalità dimostrativa": chiede solo l'email, SENZA verificarla.
   googleClientId: '709643540266-2kcc07obqusacsm3qlu8trkc2gb4cjh1.apps.googleusercontent.com',
 
-  // File riservato su Google Drive con la corrispondenza codice → nome dei docenti (Codice;Cognome;Nome).
+  // VECCHIO file riservato con la corrispondenza codice → nome dei docenti (Codice;Cognome;Nome), in dismissione:
+  // i nomi ora stanno nella scheda Docenti del Foglio database (fileDatabaseOrario, colonne Cognome e Nome).
+  // Finché qui c'è l'ID si legge ancora questo file; svuotandolo ('') l'app legge i nomi dal database.
   // Nel repository i docenti sono solo codici (DOC01, DOC02…): i nomi li vede solo chi ha accesso al file.
   // È un Foglio Google: l'ID è la parte del link tra /d/ e /edit. Non è segreto: senza il permesso su Drive
   // il file non si apre.
   fileNomiDocenti: '1NcknVOHvTXHB2ue94FjFs-iY-vT54tq3tHc7CArTEmI',
 
-  // Foglio Google del conteggio ore ("ORE 26-27 conteggio ore"): la scheda Sostituzioni lo legge da solo e,
+  // Foglio Google del conteggio ore ("Conteggio ore"): la scheda Sostituzioni lo legge da solo e,
   // quando si assegna una sostituzione, scrive +1 nella settimana del docente che sostituisce.
   // Deve essere un vero Foglio Google (non un Excel caricato) e chi assegna deve poterlo modificare.
   fileConteggioOre: '111UrbyrZHhI7EphNQUiFlhUe0_kjS8ctu2fNTXBHeuw',
@@ -43,8 +45,9 @@ window.CONFIG = {
   fileSostituzioni: '1bd_d8oNdxSo8hIC26ONxN_RYUpV8dMzD2Ax78z76BJA',
 
   // Foglio Google «database» dell'orario (vedi orario-facile/DATABASE.md): Orario Facile lo carica e ci salva
-  // con i tasti «Carica dal Foglio» / «Salva sul Foglio» (scheda Esporta). Contiene i nomi veri dei docenti:
-  // deve stare sul Drive della scuola, condiviso solo con chi prepara l'orario. Vuoto = tasti non attivi.
+  // con i tasti «Carica dal Foglio» / «Salva sul Foglio» (scheda Esporta). Contiene i nomi veri dei docenti
+  // (scheda Docenti), che l'app mostra a docenti e studenti: sul Drive della scuola, in lettura a tutto l'Istituto,
+  // in modifica solo a chi prepara l'orario. Vuoto = tasti non attivi.
   fileDatabaseOrario: '1gawzwbqDBwqONiZdnvbEprzYAiUOPc8IxP1fu-CrO30',
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).
