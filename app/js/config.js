@@ -4,7 +4,7 @@
 window.CONFIG = {
   // Indirizzo pubblico dell'app, usato per condividerla con i colleghi.
   // Se cambia, va rigenerato anche il QR code in icone/qr-app.svg (vedi LEGGIMI.md).
-  indirizzoApp: 'https://alessandrotrino-creator.github.io/iclaudecanti/app/',
+  indirizzoApp: 'https://comprensivoalmese.github.io/iclaudecanti/app/',
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
