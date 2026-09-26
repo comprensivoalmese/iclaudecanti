@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.12',
+  versioneApp: '2026-09-27.13',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -47,7 +47,8 @@ window.CONFIG = {
   // con i tasti «Carica dal Foglio» / «Salva sul Foglio» (scheda Esporta). Contiene i nomi veri dei docenti
   // (scheda Docenti), che l'app mostra a docenti e studenti: sul Drive della scuola, in lettura a tutto l'Istituto,
   // in modifica solo a chi prepara l'orario. Vuoto = tasti non attivi.
-  fileDatabaseOrario: '1gawzwbqDBwqONiZdnvbEprzYAiUOPc8IxP1fu-CrO30',
+  // (dal 27/09/2026 è il Foglio reimportato «pulito»; quello di prima era '1gawzwbqDBwqONiZdnvbEprzYAiUOPc8IxP1fu-CrO30')
+  fileDatabaseOrario: '1_lN3MZR31QR6xYXj8qdJ8HtdlYaqCmO8WCHriFTJrZo',
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).
   // Con la pubblicazione su Drive (vedi sotto) serve solo come riserva, se Drive non risponde.
