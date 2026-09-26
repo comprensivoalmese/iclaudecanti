@@ -4,8 +4,9 @@
   SCHERMATA INIZIALE (scelta in base a chi apre l'app):
   1. Monitor di classe  -> l'orario di oggi della sua AULA (in DADA le aule sono fisse,
                            sono gli studenti a spostarsi), a caratteri grandi.
-  2. Docente riconosciuto dall'email -> il SUO orario di oggi, con "adesso / dopo".
-  3. Tutti gli altri    -> l'orario di oggi: ore in riga, classi in colonna.
+  2. Tutti gli altri (anche i docenti riconosciuti dall'email) -> l'orario di oggi di tutta la scuola:
+                           ore in riga, classi in colonna, con i nomi dei docenti. Il proprio orario
+                           si apre con «Il mio orario».
   Nel weekend o a lezioni finite si mostra il giorno di scuola successivo.
 */
 (() => {
@@ -79,8 +80,9 @@
     if (secondiIngresso) { avviaRotazione(); return; }
     Ingresso.ferma();
     document.body.classList.remove('ingresso-in-pausa');
+    // Tutti (anche i docenti riconosciuti dall'email) partono dall'orario di tutta la scuola, con i nomi dei docenti:
+    // il proprio orario si apre con «Il mio orario». Solo i monitor di classe partono dalla loro aula.
     if (aulaMonitor) { stato.colonne = 'aula'; stato.filtri.aula = aulaMonitor; }
-    else if (mioDocente) { stato.colonne = 'docente'; stato.filtri.docente = mioDocente.id; }
     else stato.colonne = 'classe';
     aggiorna();
     mostraOraCorrente();
