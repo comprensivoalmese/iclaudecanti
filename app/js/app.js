@@ -309,6 +309,9 @@
 
     // Assenze e sostituzioni della settimana registrate su questo dispositivo (Sostituzioni o Sostituzioni smart)
     stato.sostituzioni = Supplenze.settimana(D);
+    // Riquadro dall'alto con le sostituzioni che riguardano chi ha fatto l'accesso (js/avviso-per-te.js)
+    if (typeof AvvisoPerTe !== 'undefined') AvvisoPerTe.aggiorna({ D, sost: stato.sostituzioni, mio: mioDocente,
+      spento: !!aulaMonitor || !!secondiIngresso, apriMioOrario: () => $('#btnMioOrario').click() });
     if (stato.sostituzioni.segnate.size && !settimanaSenzaFiltro) {
       avvisi.push('🔄 Questa settimana ci sono sostituzioni: le lezioni con la cornice arancione hanno un sostituto, ' +
         'quelle con la cornice rossa tratteggiata aspettano ancora il sostituto.');

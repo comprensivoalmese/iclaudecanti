@@ -9,6 +9,15 @@ che decide caso per caso se concederlo e a quali condizioni. Dettagli in [LICENZ
 
 ## Ultimi aggiornamenti
 
+**26/09/2026 – Avviso «per te» che scende dall'alto**
+
+- quando un docente apre l'app (o mentre ce l'ha aperta), un riquadro arancione scende dall'alto con le **sue**
+  sostituzioni da oggi in poi: «Sostituisci in 2B · Domani, 3ª ora · aula …» e «La tua lezione in 1A è coperta da …»;
+- «Vedi il mio orario» apre la sua giornata, «Ho visto» lo chiude e non ricompare per quelle lezioni;
+- se ha permesso le notifiche e l'app è in secondo piano arriva anche la notifica del telefono;
+- usa le sostituzioni pubblicate con «Pubblica sostituzioni»; non compare sui monitor e sullo schermo all'ingresso
+  (codice in `app/js/avviso-per-te.js` e `app/css/avviso-per-te.css`).
+
 **26/09/2026 – Il Foglio database dell'orario**
 
 - l'orario sta in **un solo file**, un Foglio Google sul Drive della scuola: Orario Facile lo carica e ci salva

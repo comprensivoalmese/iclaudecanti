@@ -1,0 +1,25 @@
+/* avviso-per-te.css – il riquadro che scende dall'alto con le sostituzioni del docente (vedi js/avviso-per-te.js) */
+.avviso-per-te {
+  position: fixed; z-index: 60; left: 50%; top: 0;
+  box-sizing: border-box; width: min(560px, calc(100% - 24px));
+  transform: translate(-50%, -120%); transition: transform .3s ease;
+  margin-top: max(10px, env(safe-area-inset-top));
+  background: var(--superficie); color: var(--testo);
+  border: 2px solid var(--sost-bordo); border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(20, 30, 50, .25);
+  padding: 14px 16px 12px;
+}
+.avviso-per-te.aperto { transform: translate(-50%, 0); }
+.avviso-per-te h2 { margin: 0 0 6px; font-size: 1.05rem; color: var(--sost-bordo); }
+.avviso-per-te ul { margin: 0; padding: 0 0 0 18px; max-height: 40vh; overflow: auto; }
+.avviso-per-te li { margin: 4px 0; line-height: 1.35; }
+.avviso-per-te li.per-te-sostituito { color: var(--testo-tenue); }
+.per-te-mini { color: var(--testo-tenue); font-size: .9em; }
+.avviso-per-te .per-te-tasti { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
+.avviso-per-te button {
+  font: inherit; border-radius: 999px; padding: 6px 14px; cursor: pointer;
+  border: 1px solid var(--bordo); background: var(--superficie); color: var(--testo);
+}
+.avviso-per-te button.primario { background: var(--sost-bordo); border-color: var(--sost-bordo); color: #fff; }
+.avviso-per-te button:focus-visible { outline: 2px solid var(--primario); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .avviso-per-te { transition: none; } }
