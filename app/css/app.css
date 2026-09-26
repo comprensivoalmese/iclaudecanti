@@ -415,8 +415,8 @@ body.modalita-ingresso:not(.ingresso-in-pausa) .tabella-orario thead th.angolo {
 body.modalita-monitor .modifiche, body.modalita-ingresso .modifiche { font-size: 1.1em; }
 /* Sostituzioni della settimana (js/supplenze.js): cornice spessa ed etichetta ben visibili.
    Arancione = il docente assente è sostituito; rosso = manca ancora il sostituto */
-.lezione-supplenza { outline: 3px solid var(--sost-bordo); outline-offset: -1px; }
-.lezione-scoperta { outline: 3px dashed var(--errore); outline-offset: -1px; }
+.lezione-supplenza { outline: 1px solid var(--sost-bordo); outline-offset: -1px; }
+.lezione-scoperta { outline: 1px dashed var(--errore); outline-offset: -1px; }
 .etichetta-sost {
   justify-self: start; font-size: .68rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
   padding: 0 6px; border-radius: 4px; background: var(--sost-bordo); color: #fff;
