@@ -11,7 +11,7 @@ Accesso: account **@comprensivoalmese.it**
 ## In breve
 
 1. Apri l'indirizzo dell'app e accedi con **"Accedi con Google"** (account della scuola).
-2. Vedi subito l'**orario di oggi**: se sei un docente riconosciuto, vedi già il tuo; sui monitor di classe si vede l'aula.
+2. Vedi subito l'**orario di oggi**: di tutta la scuola, con i nomi dei docenti (il tuo orario è a un tocco con «Il mio orario»); sui monitor di classe si vede l'aula.
 3. Tocca **In breve** in alto per la vista a schede (comoda sul telefono): Adesso, Dopo, il resto della giornata.
 4. Usa i filtri (Classe, Docente, Aula) e il cambio colonna per vedere l'orario di qualcun altro o la settimana intera.
 5. Dal menu in alto a destra, **📲 Installa l'app** per averla come un'app vera sulla schermata Home.
@@ -33,7 +33,7 @@ L'app riconosce da sola chi sta guardando:
 |---|---|
 | Monitor di classe | l'orario di oggi della **sua aula**, a caratteri grandi, con "Adesso / Dopo" |
 | Schermo all'ingresso | l'orario di oggi con le viste **Classi → Docenti → Aule** che cambiano da sole |
-| Docente (riconosciuto dall'email) | il **suo orario di oggi**, con "Adesso / Dopo" |
+| Docente (riconosciuto dall'email) | l'orario di oggi di tutta la scuola, come tutti; il **suo orario** con «Il mio orario» |
 | Tutti gli altri | l'**orario di oggi**: ore in riga, classi in colonna |
 
 L'ora in corso è sempre evidenziata in **giallo**. Nel weekend, o a lezioni finite, compare già il giorno di scuola

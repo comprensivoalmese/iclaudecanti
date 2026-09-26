@@ -16,7 +16,7 @@ All'apertura l'app sceglie da sola cosa mostrare:
 |---|---|
 | **Monitor di classe** | l'orario di oggi della **sua aula**, a caratteri grandi, con "Adesso / Dopo" |
 | **Schermo all'ingresso** | l'orario di oggi con le viste **Classi → Docenti → Aule** che cambiano da sole ogni tot secondi |
-| **Docente** (riconosciuto dall'email) | il **suo orario di oggi**, con "Adesso / Dopo" |
+| **Docente** (riconosciuto dall'email) | l'orario di oggi di tutta la scuola, come tutti; il **suo orario** con «Il mio orario» |
 | **Tutti gli altri** | l'**orario di oggi**: ore in riga (1ª 8–9 … 8ª 15–16), **classi in colonna** |
 
 - L'ora in corso è evidenziata in giallo.
