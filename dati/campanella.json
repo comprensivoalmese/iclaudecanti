@@ -1,5 +1,5 @@
 {
-  "nota": "Orari della campanella letti dall'app Orario DADA (tasto con la campanella). Ogni riga di 'suoni' è un suono: 'ora' nel formato HH:MM, 'nome' è il testo mostrato nell'app. Per aggiungere un intervallo basta aggiungere due righe, per esempio { \"ora\": \"10:50\", \"nome\": \"Inizio intervallo\" } e { \"ora\": \"11:00\", \"nome\": \"Fine intervallo\" }. Gli orari devono essere in ordine.",
+  "nota": "Orari della campanella letti dall'app Luis@i (tasto con la campanella). Ogni riga di 'suoni' è un suono: 'ora' nel formato HH:MM, 'nome' è il testo mostrato nell'app. Per aggiungere un intervallo basta aggiungere due righe, per esempio { \"ora\": \"10:50\", \"nome\": \"Inizio intervallo\" } e { \"ora\": \"11:00\", \"nome\": \"Fine intervallo\" }. Gli orari devono essere in ordine.",
   "aggiornato": "2026-09-25",
   "giorni": ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì"],
   "suoni": [

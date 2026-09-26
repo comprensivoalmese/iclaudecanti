@@ -37,7 +37,7 @@
           (${ipad ? 'in alto a destra, accanto alla barra dell\'indirizzo' : 'in basso al centro'}).</li>
         <li><strong>Scorri verso il basso</strong> l'elenco delle azioni e scegli <strong>Aggiungi alla schermata Home</strong>,
           poi tocca <strong>Aggiungi</strong>.</li>
-        <li>Apri l'app dall'icona <strong>Orario</strong> sulla schermata Home ed entra con l'account della scuola
+        <li>Apri l'app dall'icona <strong>Luis@i</strong> sulla schermata Home ed entra con l'account della scuola
           (la prima volta va fatto anche se eri già entrato in Safari).</li>
       </ol>
       <p><strong>Non trovi «Aggiungi alla schermata Home»?</strong></p>
@@ -61,7 +61,7 @@
     return `<ol>
       <li>Cerca l'icona <strong>Installa</strong> a destra nella barra degli indirizzi,</li>
       <li>oppure apri il menu del browser (<strong>⋮</strong> o <strong>…</strong>) e scegli
-        <strong>Installa Orario DADA</strong> (in Edge: <strong>App → Installa questo sito come app</strong>).</li>
+        <strong>Installa Luis@i</strong> (in Edge: <strong>App → Installa questo sito come app</strong>).</li>
     </ol>`;
   }
 

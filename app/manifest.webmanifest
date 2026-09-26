@@ -1,7 +1,7 @@
 {
-  "name": "Orario DADA",
-  "short_name": "Orario",
-  "description": "Orario delle lezioni: classi, docenti e aule.",
+  "name": "Luis@i",
+  "short_name": "Luis@i",
+  "description": "Luis@i: l'orario delle lezioni con classi, docenti e aule.",
   "lang": "it",
   "start_url": "./",
   "scope": "./",

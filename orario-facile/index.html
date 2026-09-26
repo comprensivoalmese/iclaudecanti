@@ -387,7 +387,7 @@ td input[type=number]{width:64px}
          (dati/orario.json, fileOrarioPubblicato vuoto in config.js). Per riattivarla togliere "hidden" qui sotto. -->
     <div class="pubblica-barra no-print" hidden>
       <button class="btn pubblica" id="btnPubblicaOrario">📤 Pubblica orario</button>
-      <span class="hint" id="statoPubblicaOrario">Salva l'orario su Google Drive: l'app Orario DADA lo mostra a tutti entro pochi minuti. Viene salvato anche il backup del giorno nella cartella «backup orario».</span>
+      <span class="hint" id="statoPubblicaOrario">Salva l'orario su Google Drive: l'app Luis@i lo mostra a tutti entro pochi minuti. Viene salvato anche il backup del giorno nella cartella «backup orario».</span>
     </div>
     <div class="card no-print">
       <div class="toolbar">
@@ -444,8 +444,8 @@ td input[type=number]{width:64px}
       <p>Il lavoro viene salvato automaticamente in questo browser. Per spostarlo su un altro computer, o per conservarne una copia, usa il file di backup.</p>
     </div>
     <div class="card">
-      <h3>Pubblica nell'app Orario DADA</h3>
-      <p class="hint">Su questo dispositivo l'app <a href="../app/" target="orariodada">Orario DADA</a> mostra già questo orario e si aggiorna mentre lo modifichi.
+      <h3>Pubblica nell'app Luis@i</h3>
+      <p class="hint">Su questo dispositivo l'app <a href="../app/" target="orariodada">Luis@i</a> mostra già questo orario e si aggiorna mentre lo modifichi.
         Per farlo vedere a <b>tutti</b> (telefoni, tablet, monitor di classe):</p>
       <ol class="hint">
         <li>premi «Scarica orario.json»;</li>
@@ -514,10 +514,10 @@ td input[type=number]{width:64px}
       <p>Segna i docenti assenti di un giorno: per ogni ora scoperta vengono proposti i docenti liberi,
         a partire da chi ha più ore a debito nel foglio del conteggio ore.</p>
     </div>
-    <!-- Pubblicazione su Google Drive: l'app Orario DADA mostra a tutti queste sostituzioni (vedi pubblica.js) -->
+    <!-- Pubblicazione su Google Drive: l'app Luis@i mostra a tutti queste sostituzioni (vedi pubblica.js) -->
     <div class="pubblica-barra no-print">
       <button class="btn pubblica" id="btnPubblicaSostituzioni">📤 Pubblica sostituzioni</button>
-      <span class="hint" id="statoPubblicaSostituzioni">Salva assenze e sostituzioni su Google Drive: l'app Orario DADA le mostra nella tabella dell'orario su tutti i dispositivi.</span>
+      <span class="hint" id="statoPubblicaSostituzioni">Salva assenze e sostituzioni su Google Drive: l'app Luis@i le mostra nella tabella dell'orario su tutti i dispositivi.</span>
     </div>
     <div id="sostituzioniApp"><p class="hint">Caricamento…</p></div>
   </section>
@@ -531,7 +531,7 @@ td input[type=number]{width:64px}
 
 <div class="overlay" id="overlay" hidden><div class="modal" id="modal"></div></div>
 
-<!-- Scheda Sostituzioni: lettura dell'orario (dall'app Orario DADA) e file della cartella sostituzioni/ -->
+<!-- Scheda Sostituzioni: lettura dell'orario (dall'app Luis@i) e file della cartella sostituzioni/ -->
 <script src="../app/js/dati.js"></script>
 <script src="../sostituzioni/js/foglio.js"></script>
 <script src="../sostituzioni/js/drive.js"></script>
@@ -1575,7 +1575,7 @@ function render(){
 
 /* ---------------- 9. sostituzioni ---------------- */
 // La scheda vive nei file di sostituzioni/: qui le passiamo l'orario attuale di Orario Facile,
-// trasformato con Dati.normalizza (lo stesso usato dall'app Orario DADA)
+// trasformato con Dati.normalizza (lo stesso usato dall'app Luis@i)
 function renderSostituzioni(){
   const box = $('#sostituzioniApp');
   if(typeof Sostituzioni === 'undefined' || typeof Dati === 'undefined'){
@@ -3595,7 +3595,7 @@ $('#btnExportJson').addEventListener('click', async () => {
   if(!(await scarica(nomeFile('.json'), txt, 'application/json')))
     mostraTesto('Backup', txt, nomeFile('.json'), 'application/json');
 });
-// file per l'app Orario DADA: è il backup completo con in più la data di pubblicazione
+// file per l'app Luis@i: è il backup completo con in più la data di pubblicazione
 $('#btnPubblicaApp').addEventListener('click', async () => {
   const txt = JSON.stringify(Object.assign({}, S, { pubblicato: new Date().toISOString().slice(0,10) }), null, 1);
   if(!(await scarica('orario.json', txt, 'application/json')))

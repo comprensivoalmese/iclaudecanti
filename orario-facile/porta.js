@@ -2,7 +2,7 @@
   porta.js – la "porta d'ingresso" di Orario Facile.
 
   Orario Facile serve a MODIFICARE l'orario (e a organizzare le sostituzioni), quindi entra solo
-  chi è abilitato: si accede con l'account Google della scuola (lo stesso dell'app Orario DADA,
+  chi è abilitato: si accede con l'account Google della scuola (lo stesso dell'app Luis@i,
   se si è già entrati lì non lo richiede) e poi si controlla il ruolo con Ruoli.puoModificare.
   Chi può solo consultare l'orario viene mandato all'app, con il codice da comunicare
   a chi gestisce l'app se deve essere abilitato.
@@ -31,7 +31,7 @@
           <button type="submit" class="btn">Entra</button>
         </form>
         <p id="erroreAccesso" class="porta-errore" role="alert"></p>
-        <p class="porta-nota">Vuoi solo consultare l'orario? <a href="../app/">Apri l'app Orario DADA</a>.</p>
+        <p class="porta-nota">Vuoi solo consultare l'orario? <a href="../app/">Apri l'app Luis@i</a>.</p>
       </div>
 
       <div id="portaNegata" hidden>

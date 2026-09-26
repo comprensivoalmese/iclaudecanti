@@ -1,5 +1,5 @@
 /*
-  smart.js – pagina «Sostituzioni smart» dell'app Orario DADA.
+  smart.js – pagina «Sostituzioni smart» dell'app Luis@i.
 
   È la scheda Sostituzioni di Orario Facile in versione semplice e rapida, con lo stile a schede di «In breve»:
   - Assenze del giorno (docente, ore, permesso), anche per più giorni della stessa settimana;

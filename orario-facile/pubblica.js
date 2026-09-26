@@ -1,7 +1,7 @@
 /*
   pubblica.js – i tasti «📤 Pubblica orario» (scheda Orario) e «📤 Pubblica sostituzioni» (scheda Sostituzioni).
 
-  Salvano su Google Drive, nella cartella CONFIG.cartellaPubblicazione, i file che l'app Orario DADA legge
+  Salvano su Google Drive, nella cartella CONFIG.cartellaPubblicazione, i file che l'app Luis@i legge
   (il lavoro su Drive lo fa app/js/pubblica-drive.js):
   - Pubblica orario: orario-pubblicato.json (lo stesso contenuto di «Scarica orario.json») e il backup completo
     del giorno "backup orario GG-MM-AAAA.json" nella cartella «backup orario» (lo stesso giorno si sostituisce);
@@ -58,7 +58,7 @@
     let lezioni = 0;
     try { lezioni = Dati.normalizza(S).lezioni.length; } catch (e) { lezioni = 0; }
     if (!lezioni) return avvisa('L\'orario è vuoto: prima generalo o importalo, poi pubblicalo.');
-    chiedi(`Pubblicare questo orario (${lezioni} lezioni)? Entro pochi minuti l'app Orario DADA lo mostrerà su tutti i dispositivi. ` +
+    chiedi(`Pubblicare questo orario (${lezioni} lezioni)? Entro pochi minuti l'app Luis@i lo mostrerà su tutti i dispositivi. ` +
       'Verrà salvato anche il backup di oggi nella cartella «backup orario».', () =>
       lavora(tastoOrario, $id('statoPubblicaOrario'), async () => {
         // stesso contenuto di «Scarica orario.json»: il backup completo con la data di pubblicazione
@@ -82,7 +82,7 @@
     const registro = Archivio.leggi('registro', []).filter(recenti)
       .map(s => ({ data: s.data, ora: s.ora, classe: s.classe, assente: s.assente, sostituto: s.sostituto }));
     chiedi(`Pubblicare ${assenze.length} assenze e ${registro.length} sostituzioni? ` +
-      'L\'app Orario DADA le mostrerà nella tabella dell\'orario su tutti i dispositivi.', () =>
+      'L\'app Luis@i le mostrerà nella tabella dell\'orario su tutti i dispositivi.', () =>
       lavora(tastoSost, $id('statoPubblicaSostituzioni'), async () => {
         const testo = JSON.stringify({ pubblicato: new Date().toISOString(), assenze, registro });
         const f = await PubblicaDrive.pubblicaSostituzioni(testo, email());

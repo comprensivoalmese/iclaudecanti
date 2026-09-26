@@ -1,4 +1,7 @@
-# Orario DADA – app di visualizzazione
+# Luis@i – app di visualizzazione
+
+L'app si chiamava **Orario DADA**: il nome nuovo è **Luis@i**. Le chiavi interne (`orariodada.` in `localStorage`, nome
+delle attività programmate sulle LIM) restano quelle vecchie, così nessuno perde le impostazioni.
 
 App per consultare l'orario da **smartphone, tablet (iPhone/iPad e Android)** e **monitor interattivi di classe** (Android di bordo oppure PC OPS con Windows 10/11).
 È una *web app installabile* (PWA): si apre dal browser, si può aggiungere alla schermata Home come un'app vera e funziona anche senza connessione, con l'ultimo orario scaricato.
@@ -112,7 +115,8 @@ La mascotte dell'app è un **robottino a pixel** bianco, un po' animaletto: due 
 occhi a stanghetta, braccine, piedi gialli e un orologio giallo sulla pancia (è l'app dell'orario).
 Lo stile a quadrettoni si ispira alla mascotte di Claude Code, ma forma e colori sono nostri:
 
-- è l'**icona** dell'app (schermata Home, schede del browser, schermata di accesso);
+- è l'**icona** dell'app (schermata Home, schede del browser, schermata di accesso), con sotto il nome **Luis@i**
+  (la chiocciola è gialla come le antenne; testo in `<text>` dentro gli SVG, quindi i PNG vanno rigenerati se cambia);
 - mentre l'app si apre, lo stesso robot **dondola** al centro dello schermo blu, sbatte le palpebre, le palline delle antenne
   pulsano e la lancetta dell'orologio gira, con la scritta "Preparo l'orario…". Resta almeno un secondo e poi sfuma
   lasciando il posto all'app. Chi ha chiesto al dispositivo di ridurre le animazioni lo vede fermo.
@@ -154,8 +158,8 @@ L'ID client di Google è già inserito in `js/config.js`, quindi l'accesso con G
 Se il campo `googleClientId` viene svuotato, l'app torna in **modalità dimostrativa**: chiede solo l'email e **non la verifica**.
 Per rifare la configurazione da zero (per esempio con un nuovo progetto Google), l'amministratore Google Workspace della scuola segue questi passaggi:
 
-1. Aprire https://console.cloud.google.com/ con un account della scuola e creare un progetto (es. "Orario DADA").
-2. *API e servizi → Schermata consenso OAuth*: tipo **Interno** (così possono entrare solo gli utenti della scuola), nome app "Orario DADA".
+1. Aprire https://console.cloud.google.com/ con un account della scuola e creare un progetto (es. "Luis@i").
+2. *API e servizi → Schermata consenso OAuth*: tipo **Interno** (così possono entrare solo gli utenti della scuola), nome app "Luis@i".
 3. *API e servizi → Credenziali → Crea credenziali → ID client OAuth*:
    - Tipo: **Applicazione web**
    - Origini JavaScript autorizzate: `https://comprensivoalmese.github.io` (e, per le prove, `http://localhost:8765`)
@@ -169,7 +173,7 @@ Ci sono due tipi di utenti, tutti con l'account della scuola:
 
 | Ruolo | Cosa può fare |
 |---|---|
-| **Fruitore** (tutti) | consultare l'orario nell'app Orario DADA |
+| **Fruitore** (tutti) | consultare l'orario nell'app Luis@i |
 | **Modificatore** | in più, usare **Orario Facile** (preparare l'orario, sostituzioni); nel menu dell'app vede "Modifica in Orario Facile" e "📋 Sostituzioni docenti" (apre direttamente la scheda Sostituzioni) |
 
 - Chi apre Orario Facile deve accedere con l'account della scuola (se è già entrato nell'app non lo richiede).
@@ -319,7 +323,7 @@ Come funziona:
 
 Le due app stanno sullo stesso sito, quindi **sullo stesso dispositivo condividono i dati**:
 
-- **Anteprima in tempo reale**: sul computer dove si prepara l'orario con Orario Facile, l'app Orario DADA mostra direttamente quell'orario (la "bozza") e **si aggiorna da sola** mentre lo si modifica in un'altra scheda. In Orario Facile il pulsante **📱 Vedi nell'app** apre l'app; nell'app il menu → **Modifica in Orario Facile** fa il percorso inverso.
+- **Anteprima in tempo reale**: sul computer dove si prepara l'orario con Orario Facile, l'app Luis@i mostra direttamente quell'orario (la "bozza") e **si aggiorna da sola** mentre lo si modifica in un'altra scheda. In Orario Facile il pulsante **📱 Vedi nell'app** apre l'app; nell'app il menu → **Modifica in Orario Facile** fa il percorso inverso.
 - Dal menu dell'app, **"Orario da mostrare"** permette di passare dalla bozza all'orario pubblicato e viceversa.
 - **Pubblicare per tutti** (telefoni dei docenti, monitor di classe): Orario Facile → scheda **Orario** → **📤 Pubblica orario**.
   L'orario va su Google Drive (vedi «Orario pubblicato su Google Drive» qui sotto) e tutti i dispositivi lo vedono entro pochi minuti.

@@ -123,7 +123,7 @@ Come il foglio "Prospetto" della scuola:
 
 La scheda usa **l'orario aperto in Orario Facile**, quindi se lo modifichi le proposte si aggiornano appena torni
 sulla scheda. L'orario viene trasformato con `Dati.normalizza()` di `app/js/dati.js`, lo stesso usato dall'app
-Orario DADA.
+Luis@i.
 
 ## File
 

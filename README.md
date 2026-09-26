@@ -24,7 +24,7 @@ che decide caso per caso se concederlo e a quali condizioni. Dettagli in [LICENZ
 - nuovo file [LICENZA.md](LICENZA.md) (e `LICENSE`, letto da GitHub): **tutti i diritti riservati** all'Istituto
   Comprensivo di Almese; chi vuole usare il codice deve chiedere il permesso alla scuola, che decide se concederlo,
   a quali condizioni e con quale eventuale compenso (per poche ore il 26/09 era stata usata la licenza CC BY 4.0);
-- l'avviso compare anche in fondo alla pagina iniziale, all'app Orario DADA e a Orario Facile.
+- l'avviso compare anche in fondo alla pagina iniziale, all'app Luis@i e a Orario Facile.
 
 **26/09/2026 – Sostituzioni ben visibili nella tabella e assenze per tutta la settimana** (Chiara)
 
@@ -95,7 +95,7 @@ che decide caso per caso se concederlo e a quali condizioni. Dettagli in [LICENZ
 
 Non tutti possono modificare l'orario: ora ci sono due ruoli.
 
-- **Fruitori** (tutti gli account della scuola): consultano l'orario nell'app Orario DADA;
+- **Fruitori** (tutti gli account della scuola): consultano l'orario nell'app Luis@i;
 - **Modificatori**: possono usare Orario Facile (orario e sostituzioni). Chi apre Orario Facile deve accedere con
   l'account della scuola; se non è abilitato vede "Solo consultazione" e il suo codice da mandare a chi gestisce l'app;
 - l'elenco è in `app/js/config.js` (`editori`), con **codici** al posto delle email (il repo è pubblico);
@@ -103,7 +103,7 @@ Non tutti possono modificare l'orario: ora ci sono due ruoli.
 
 **25/09/2026 – Schermo all'ingresso con le viste a rotazione** (Chiara)
 
-Nuova modalità dell'app Orario DADA per il televisore o il proiettore all'ingresso:
+Nuova modalità dell'app Luis@i per il televisore o il proiettore all'ingresso:
 [.../app/?ingresso](https://comprensivoalmese.github.io/orario/app/?ingresso) (o dal menu: "Uso di questo dispositivo").
 
 - l'orario di oggi cambia vista da solo: **Classi → Docenti → Aule**;
@@ -180,7 +180,7 @@ Regole e convenzioni complete in [CLAUDE.md](CLAUDE.md).
 ## Struttura
 
 - `index.html` – pagina iniziale
-- `app/` – **Orario DADA**, per vedere l'orario da telefono, tablet e monitor di classe ([istruzioni](app/LEGGIMI.md))
+- `app/` – **Luis@i**, per vedere l'orario da telefono, tablet e monitor di classe ([istruzioni](app/LEGGIMI.md))
 - `orario-facile/` – l'app Orario Facile, per creare l'orario
 - `sostituzioni/` – codice della scheda **Sostituzioni** di Orario Facile ([istruzioni](sostituzioni/LEGGIMI.md))
 - `potenziamento/` – [linee guida per le ore di potenziamento di italiano L2](potenziamento/linee-guida-L2.md), da seguire per l'orario dei docenti di potenziamento

@@ -24,7 +24,7 @@ Sostituzioni: scheda 9 di Orario Facile
 
 ## Ruoli: fruitori e modificatori
 
-Tutti quelli della scuola possono **consultare** l'orario nell'app Orario DADA (i "fruitori"). Solo i
+Tutti quelli della scuola possono **consultare** l'orario nell'app Luis@i (i "fruitori"). Solo i
 **modificatori** possono aprire **Orario Facile** per costruire l'orario e fare le sostituzioni.
 
 1. Chi apre Orario Facile per la prima volta accede con l'account Google della scuola.
@@ -98,7 +98,7 @@ Ricordati di ripubblicare dopo ogni cambiamento.
 > Il vecchio metodo resta disponibile: **Scarica orario.json** e caricamento del file nella cartella `dati/` su GitHub.
 > Quel file ora serve solo di riserva, se Drive non risponde.
 
-> **Anteprima prima di pubblicare.** Sullo stesso computer, mentre lavori in Orario Facile, l'app Orario DADA (in
+> **Anteprima prima di pubblicare.** Sullo stesso computer, mentre lavori in Orario Facile, l'app Luis@i (in
 > un'altra scheda del browser) mostra già la tua bozza e si aggiorna da sola: pulsante **📱 Vedi nell'app**.
 
 Nella stessa scheda ci sono anche: **backup completo** (.json), le **tabelle CSV** (orario classi, orario docenti,

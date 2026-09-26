@@ -20,7 +20,7 @@
   async function condividi() {
     try {
       await navigator.share({
-        title: 'Orario DADA',
+        title: 'Luis@i',
         text: 'Orario delle lezioni: apri il link, accedi con l’account della scuola e installa l’app dal menu.',
         url: indirizzo
       });
@@ -45,7 +45,7 @@
   }
 
   $('#indirizzoApp').textContent = indirizzo;
-  $('#qrApp').alt = 'QR code che apre l’app Orario DADA all’indirizzo ' + indirizzo;
+  $('#qrApp').alt = 'QR code che apre l’app Luis@i all’indirizzo ' + indirizzo;
   $('#btnCondividiLink').hidden = !navigator.share;   // non tutti i browser lo permettono
   $('#btnCondividi').addEventListener('click', apri);
   $('#btnCondividiLink').addEventListener('click', condividi);

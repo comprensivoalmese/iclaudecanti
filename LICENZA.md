@@ -5,7 +5,7 @@ Realizzato dal **Gruppo Wolf** (vedi [Autori](#autori)).
 
 **Tutti i diritti riservati.**
 
-Il codice e la documentazione di questo progetto (Orario DADA, Orario Facile, Sostituzioni docenti e tutti gli altri
+Il codice e la documentazione di questo progetto (Luis@i – già Orario DADA –, Orario Facile, Sostituzioni docenti e tutti gli altri
 file del repository) sono protetti dal diritto d'autore (legge 633/1941). Il fatto che siano visibili su internet
 **non dà alcun diritto** di usarli.
 
@@ -32,7 +32,7 @@ indicati su [www.comprensivoalmese.it](https://www.comprensivoalmese.it), spiega
 L'Istituto valuta ogni richiesta e decide **se concedere il permesso, a quali condizioni e con quale eventuale
 compenso**, anche gratuitamente (per esempio per altre scuole). Il permesso vale solo se dato per iscritto e solo per
 quanto indicato. In ogni caso chi riceve il permesso deve citare la provenienza:
-*«Orario DADA – Istituto Comprensivo di Almese (www.comprensivoalmese.it), realizzato dal Gruppo Wolf»*.
+*«Luis@i – Istituto Comprensivo di Almese (www.comprensivoalmese.it), realizzato dal Gruppo Wolf»*.
 
 ## Autori
 

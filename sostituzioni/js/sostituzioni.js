@@ -27,7 +27,7 @@ const Sostituzioni = (() => {
 
   // ---------- Stato della scheda ----------
   let contenitore = null;                         // dove è disegnata la scheda
-  // Un'altra pagina che usa questo motore con un suo disegno (es. «Sostituzioni smart» nell'app Orario DADA):
+  // Un'altra pagina che usa questo motore con un suo disegno (es. «Sostituzioni smart» nell'app Luis@i):
   // { avvisa(testo), ridisegna() }. Vedi collega() in fondo al file.
   let ui = null;
   let leggiOrario = null;                         // funzione che restituisce l'orario aggiornato
@@ -1226,7 +1226,7 @@ const Sostituzioni = (() => {
 
   /*
     Punto d'ingresso per un'altra pagina che vuole usare lo stesso motore con un suo disegno
-    (es. «Sostituzioni smart» nell'app Orario DADA, app/js/smart.js):
+    (es. «Sostituzioni smart» nell'app Luis@i, app/js/smart.js):
     - funzioneOrario: una funzione che restituisce l'orario (formato di Dati.normalizza)
     - interfaccia: { avvisa(testo), ridisegna() }
     Stesse regole e stessi dati della scheda (memoria del browser con chiavi "sostituzioni."),

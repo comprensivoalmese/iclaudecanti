@@ -3,7 +3,7 @@
   (tasti «📤 Pubblica orario» e «📤 Pubblica sostituzioni» di Orario Facile, vedi orario-facile/pubblica.js).
 
   Nella cartella CONFIG.cartellaPubblicazione ci sono:
-  - orario-pubblicato.json        l'orario che l'app Orario DADA mostra a tutti
+  - orario-pubblicato.json        l'orario che l'app Luis@i mostra a tutti
   - sostituzioni-pubblicate.json  le assenze e le sostituzioni che l'app mostra nella tabella
   - la cartella «backup orario»   un backup completo per ogni giorno di pubblicazione
                                   ("backup orario 26-09-2026.json"; lo stesso giorno si sostituisce)
