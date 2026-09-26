@@ -31,7 +31,9 @@ Le parti del progetto:
   Nei file pubblicati solo codici DOC01…: mai nomi veri, mai il flag «permesso» delle assenze.
   Le sostituzioni si pubblicano con `app/js/pubblica-sostituzioni.js` (`unisciEPubblica`): rilegge il file e cambia solo
   quelle di questo dispositivo (ID ricordati in `sostituzioni.pubblicateDaQui`), mai sovrascrivere il file intero;
-  nell'app `avviaAutomatica()` pubblica da sola le modifiche fatte da «Sostituzioni smart».
+  nell'app `avviaAutomatica()` pubblica da sola le modifiche fatte da «Sostituzioni smart». Nel file pubblicato ci sono
+  `assenze`, `registro` e `cambi` (cambi d'aula, chiave locale `sostituzioni.cambiAula`, senza il motivo); l'app li unisce
+  ai dati locali in `Supplenze.settimana()` (`cambioAula()` per la tabella, `avviso-per-te.js` per il riquadro).
 - **Foglio database** (`orario-facile/database.js`, formato in `orario-facile/DATABASE.md`): l'archivio unico dell'orario è
   un Foglio Google (`CONFIG.fileDatabaseOrario`) che Orario Facile carica e su cui salva (scheda Esporta). Legge/scrive
   solo le colonne «dati» in posizioni fisse (le formule e i colori li crea una volta `strumenti/crea-database.ps1`);

@@ -9,6 +9,14 @@ che decide caso per caso se concederlo e a quali condizioni. Dettagli in [LICENZ
 
 ## Ultimi aggiornamenti
 
+**27/09/2026 – Cambi d'aula visibili a tutti**
+
+- i cambi d'aula (menu → «⇄ Cambi d'aula» o scheda Sostituzioni di Orario Facile) ora si **pubblicano da soli** come le
+  sostituzioni e li vedono tutti: nella tabella la lezione ha la cornice blu tratteggiata, l'etichetta «⇄ Aula cambiata»
+  e «aula vecchia → **nuova**»;
+- il docente della lezione (o chi lo sostituisce) li trova anche nel riquadro «per te» che scende dall'alto;
+- nel file pubblicato vanno solo giorno, ora, classe, aule e codice del docente (il motivo scritto a mano resta sul dispositivo).
+
 **26/09/2026 – Sostituzioni pubblicate da sole (anche da «Sostituzioni smart»)**
 
 - chi assegna o annulla una sostituzione dall'app (Sostituzioni smart) non deve più premere niente: dopo pochi secondi

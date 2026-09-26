@@ -425,6 +425,15 @@ body.modalita-monitor .modifiche, body.modalita-ingresso .modifiche { font-size:
 .dato-sost { font-size: .8rem; line-height: 1.25; font-weight: 600; }
 /* Il nome del docente assente, nella riga del docente, viene barrato */
 .lezione-supplenza:not(.lezione-copia) .dato-docente, .lezione-scoperta .dato-docente { text-decoration: line-through; }
+/* Cambio d'aula della settimana: cornice tratteggiata blu, etichetta, e l'aula vecchia barrata nella riga dell'aula */
+.lezione-cambio-aula { outline: 3px dashed var(--primario); outline-offset: -1px; }
+.lezione-supplenza.lezione-cambio-aula, .lezione-scoperta.lezione-cambio-aula { outline-style: double; }
+.etichetta-cambio {
+  justify-self: start; font-size: .68rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  padding: 0 6px; border-radius: 4px; background: var(--primario); color: var(--primario-testo);
+}
+.dato-cambio { font-size: .8rem; line-height: 1.25; font-weight: 600; }
+.lezione-cambio-aula .dato-aula { text-decoration: line-through; }
 /* Quando tutte le storie sono state viste il riquadro diventa discreto (restano i cerchi grigi) */
 .modifiche.tutte-viste { background: var(--superficie); border-color: var(--bordo); }
 .modifiche.tutte-viste h2 { font-size: 1rem; color: var(--testo-tenue); }

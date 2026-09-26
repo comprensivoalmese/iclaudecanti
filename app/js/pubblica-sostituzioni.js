@@ -34,7 +34,10 @@ const PubblicaSostituzioni = (() => {
     return {
       assenze: leggiLocale('sostituzioni.assenze', []).filter(recente).map(a => ({ id: a.id, data: a.data, docente: a.docente, ore: a.ore })),
       registro: leggiLocale('sostituzioni.registro', []).filter(recente)
-        .map(s => ({ id: s.id, data: s.data, ora: s.ora, classe: s.classe, assente: s.assente, sostituto: s.sostituto }))
+        .map(s => ({ id: s.id, data: s.data, ora: s.ora, classe: s.classe, assente: s.assente, sostituto: s.sostituto })),
+      // cambi d'aula (sostituzioni/js/cambi-aula.js): senza il motivo, che è testo libero
+      cambi: leggiLocale('sostituzioni.cambiAula', []).filter(recente)
+        .map(c => ({ id: c.id, data: c.data, ora: c.ora, classe: c.classe, da: c.da, a: c.a, docente: c.docente }))
     };
   }
   const firma = L => JSON.stringify(L);
@@ -42,6 +45,7 @@ const PubblicaSostituzioni = (() => {
   // Una stessa assenza/sostituzione senza ID (pubblicata con la versione vecchia) si riconosce da data, ora e classe
   const segnoA = a => 'A|' + a.data + '|' + a.docente;
   const segnoR = s => 'R|' + s.data + '|' + s.ora + '|' + s.classe;
+  const segnoC = c => 'C|' + c.data + '|' + c.ora + '|' + c.classe;
 
   /*
     Rilegge il file pubblicato, ci unisce i dati di questo dispositivo e lo riscrive.
@@ -55,25 +59,26 @@ const PubblicaSostituzioni = (() => {
     let testo;
     try { testo = await Dati.leggiDrive(CONFIG.fileSostituzioniPubblicate); }
     catch (e) { throw new Error('non riesco a leggere le sostituzioni già pubblicate (' + (e && e.message ? e.message : e) + '): riprova tra poco'); }
-    let remoto = { assenze: [], registro: [] };
+    let remoto = { assenze: [], registro: [], cambi: [] };
     try {
       const o = JSON.parse(testo || '{}');
-      remoto = { assenze: Array.isArray(o.assenze) ? o.assenze : [], registro: Array.isArray(o.registro) ? o.registro : [] };
+      remoto = { assenze: Array.isArray(o.assenze) ? o.assenze : [], registro: Array.isArray(o.registro) ? o.registro : [], cambi: Array.isArray(o.cambi) ? o.cambi : [] };
     } catch (e) { throw new Error('il file delle sostituzioni pubblicate non è leggibile: controllalo su Drive prima di pubblicare'); }
-    const idLocali = new Set(L.assenze.map(x => x.id).concat(L.registro.map(x => x.id)));
+    const idLocali = new Set(L.assenze.map(x => x.id).concat(L.registro.map(x => x.id), L.cambi.map(x => x.id)));
     const primaDaQui = new Set(leggiLocale(CHIAVE_DA_QUI, []));
-    const segniLocali = new Set(L.assenze.map(segnoA).concat(L.registro.map(segnoR)));
+    const segniLocali = new Set(L.assenze.map(segnoA).concat(L.registro.map(segnoR), L.cambi.map(segnoC)));
     // tengo quelle degli altri: non annullate qui, non rifatte qui, e non troppo vecchie
     const tieni = (x, segno) => recente(x) && !(x.id && (idLocali.has(x.id) || primaDaQui.has(x.id))) && !segniLocali.has(segno(x));
     const unito = {
       pubblicato: new Date().toISOString(),
       assenze: remoto.assenze.filter(x => tieni(x, segnoA)).concat(L.assenze),
-      registro: remoto.registro.filter(x => tieni(x, segnoR)).concat(L.registro)
+      registro: remoto.registro.filter(x => tieni(x, segnoR)).concat(L.registro),
+      cambi: remoto.cambi.filter(x => tieni(x, segnoC)).concat(L.cambi)
     };
     await PubblicaDrive.pubblicaSostituzioni(JSON.stringify(unito), email);
     scriviLocale(CHIAVE_DA_QUI, [...idLocali]);
     scriviLocale(CHIAVE_FIRMA, firma(L));
-    return { assenze: unito.assenze.length, registro: unito.registro.length };
+    return { assenze: unito.assenze.length, registro: unito.registro.length, cambi: unito.cambi.length };
   }
 
   /* ---------------- pubblicazione automatica (app) ---------------- */
@@ -104,7 +109,7 @@ const PubblicaSostituzioni = (() => {
     mostra('⏳ Pubblico le sostituzioni…', false);
     try {
       const r = await unisciEPubblica(automatica.email);
-      mostra(`✔ Sostituzioni pubblicate: le vedono tutti (${r.registro} ${r.registro === 1 ? 'sostituzione' : 'sostituzioni'}, ${r.assenze} ${r.assenze === 1 ? 'assenza' : 'assenze'}).`, false);
+      mostra(`✔ Pubblicato: lo vedono tutti (${r.registro} ${r.registro === 1 ? 'sostituzione' : 'sostituzioni'}, ${r.assenze} ${r.assenze === 1 ? 'assenza' : 'assenze'}, ${r.cambi} ${r.cambi === 1 ? 'cambio' : 'cambi'} d'aula).`, false);
     } catch (e) {
       automatica.pausaFino = Date.now() + 60000;   // se non è riuscita, riprovo da sola solo tra un minuto
       mostra('Sostituzioni non ancora pubblicate' + (dalTocco ? ': ' + (e && e.message ? e.message : e) : '') + '.', true);

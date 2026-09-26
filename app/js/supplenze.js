@@ -10,8 +10,9 @@
 
   Sostituzioni pubblicate: con il tasto «Pubblica sostituzioni» di Orario Facile le assenze e le sostituzioni
   vanno in un file su Google Drive (CONFIG.fileSostituzioniPubblicate), che scarica() legge per tutti i dispositivi.
-  Se su questo dispositivo ci sono assenze o sostituzioni registrate per la settimana (chi le sta inserendo)
-  si mostrano quelle, come prima; altrimenti quelle pubblicate.
+  Si mostrano quelle pubblicate UNITE a quelle registrate su questo dispositivo (vincono quelle di qui).
+  Allo stesso modo i cambi d'aula (chiave "sostituzioni.cambiAula", sostituzioni/js/cambi-aula.js): cambi = Map
+  "giorno|ora|classe" -> { da, a }, letti con cambioAula().
 */
 const Supplenze = (() => {
   const NOMI_GIORNI = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
@@ -21,7 +22,23 @@ const Supplenze = (() => {
 
   // Le sostituzioni pubblicate su Drive: { assenze: [], registro: [] } oppure null (non configurate o mai scaricate)
   let pubblicate = null;
-  const elenchi = o => ({ assenze: Array.isArray(o && o.assenze) ? o.assenze : [], registro: Array.isArray(o && o.registro) ? o.registro : [] });
+  const elenchi = o => ({ assenze: Array.isArray(o && o.assenze) ? o.assenze : [], registro: Array.isArray(o && o.registro) ? o.registro : [],
+    cambi: Array.isArray(o && o.cambi) ? o.cambi : [] });
+  // Come si riconosce la stessa voce anche senza ID (pubblicata con una versione vecchia)
+  const SEGNO = { assenze: a => a.data + '|' + a.docente, registro: s => s.data + '|' + s.ora + '|' + s.classe, cambi: c => c.data + '|' + c.ora + '|' + c.classe };
+  /*
+    Unisce le voci pubblicate (di tutti i dispositivi) con quelle di questo dispositivo: vincono quelle di qui, e
+    spariscono quelle che questo dispositivo aveva pubblicato e poi annullato (ID in "sostituzioni.pubblicateDaQui").
+  */
+  function unisci(pub, loc) {
+    const daQui = new Set(leggi('sostituzioni.pubblicateDaQui'));
+    const out = {};
+    Object.keys(SEGNO).forEach(k => {
+      const L = loc[k], id = new Set(L.map(x => x.id)), segni = new Set(L.map(SEGNO[k]));
+      out[k] = (pub ? pub[k] : []).filter(x => !(x.id && (id.has(x.id) || daQui.has(x.id))) && !segni.has(SEGNO[k](x))).concat(L);
+    });
+    return out;
+  }
 
   // Scarica le sostituzioni pubblicate; restituisce true se sono cambiate (non lancia mai errori)
   async function scarica() {
@@ -77,11 +94,9 @@ const Supplenze = (() => {
     const segnate = new Map();
     const extra = [];
 
-    // Quali dati usare: quelli di questo dispositivo, se ce ne sono per la settimana, altrimenti quelli pubblicati
-    const locali = { assenze: leggi('sostituzioni.assenze'), registro: leggi('sostituzioni.registro') };
-    const inSettimana = x => x && giornoDi.has(x.data);
-    const usaLocali = !pubblicate || locali.assenze.some(inSettimana) || locali.registro.some(inSettimana);
-    const fonte = usaLocali ? locali : pubblicate;
+    // Le voci pubblicate (di tutti) unite a quelle registrate su questo dispositivo
+    const locali = { assenze: leggi('sostituzioni.assenze'), registro: leggi('sostituzioni.registro'), cambi: leggi('sostituzioni.cambiAula') };
+    const fonte = unisci(pubblicate, locali);
 
     // 1. le lezioni dei docenti assenti (per ora senza sostituto: "da coprire")
     fonte.assenze.forEach(a => {
@@ -101,7 +116,19 @@ const Supplenze = (() => {
       extra.push(Object.assign({}, l, { docente: s.sostituto, sostituzione: true, assente: s.assente }));
     });
 
-    return { segnate, extra, date };
+    // 3. i cambi d'aula: Map "giorno|ora|classe" -> { da, a } (aule, per ID)
+    const cambi = new Map();
+    fonte.cambi.forEach(c => {
+      const giorno = giornoDi.get(c.data);
+      if (giorno && c.a) cambi.set([giorno, c.ora, c.classe].join('|'), { da: c.da || '', a: c.a });
+    });
+
+    return { segnate, extra, date, cambi };
+  }
+
+  // Il cambio d'aula di una lezione della tabella ({ da, a }) oppure null
+  function cambioAula(sost, l) {
+    return (sost && sost.cambi && sost.cambi.get([l.giorno, l.ora, l.classe].join('|'))) || null;
   }
 
   // Le informazioni di una lezione della tabella (o null se è una lezione normale)
@@ -111,5 +138,5 @@ const Supplenze = (() => {
     return sost.segnate.get(chiave(l.giorno, l.ora, l.classe, l.docente)) || null;
   }
 
-  return { settimana, di, scarica, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro'] };
+  return { settimana, di, cambioAula, scarica, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula'] };
 })();

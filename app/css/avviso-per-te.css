@@ -14,6 +14,7 @@
 .avviso-per-te ul { margin: 0; padding: 0 0 0 18px; max-height: 40vh; overflow: auto; }
 .avviso-per-te li { margin: 4px 0; line-height: 1.35; }
 .avviso-per-te li.per-te-sostituito { color: var(--testo-tenue); }
+.avviso-per-te li.per-te-aula::marker { content: '⇄ '; color: var(--primario); }
 .per-te-mini { color: var(--testo-tenue); font-size: .9em; }
 .avviso-per-te .per-te-tasti { display: flex; gap: 8px; justify-content: flex-end; margin-top: 10px; flex-wrap: wrap; }
 .avviso-per-te button {

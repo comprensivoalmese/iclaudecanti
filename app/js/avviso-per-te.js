@@ -2,7 +2,8 @@
   avviso-per-te.js – il riquadro che scende dall'alto con le sostituzioni che riguardano il docente che ha fatto l'accesso.
 
   - «Sostituisci»: le lezioni (da oggi in poi) in cui il docente copre un collega assente;
-  - «Sei sostituito»: le sue lezioni coperte da un collega (o ancora da coprire).
+  - «Sei sostituito»: le sue lezioni coperte da un collega (o ancora da coprire);
+  - «Cambio d'aula»: le sue lezioni (anche quelle in cui sostituisce) spostate in un'altra aula.
   I dati sono quelli delle sostituzioni della settimana (Supplenze.settimana, cioè le sostituzioni pubblicate
   con «Pubblica sostituzioni» o registrate su questo dispositivo).
   Il riquadro compare quando si apre l'app o quando arriva una sostituzione nuova (l'app ricontrolla ogni pochi minuti);
@@ -45,6 +46,17 @@ const AvvisoPerTe = (() => {
         testo: `La tua lezione in <b>${esc(nome('classe', l.classe))}</b> · ${esc(q.testo)} ` +
           (s.sostituto ? `è coperta da <b>${esc(nome('docente', s.sostituto))}</b>` : '<b>è ancora da coprire</b>') });
     });
+    // 3. cambi d'aula nelle mie lezioni (anche quelle in cui sostituisco un collega)
+    if (sost.cambi) D.lezioni.concat(sost.extra).forEach(l => {
+      if (l.docente !== mio.id) return;
+      const c = sost.cambi.get([l.giorno, l.ora, l.classe].join('|')); if (!c) return;
+      // una mia lezione sostituita da un altro: il cambio d'aula riguarda chi mi sostituisce
+      const s = !l.sostituzione && sost.segnate.get([l.giorno, l.ora, l.classe, l.docente].join('|')); if (s && s.sostituto) return;
+      const q = quando(l); if (!q.iso || q.iso < oggi) return;
+      out.push({ chiave: ['C', q.iso, l.ora, l.classe, c.a].join('|'), iso: q.iso, ora: l.ora, tipo: 'aula',
+        testo: `<b>Cambio d'aula</b> per <b>${esc(nome('classe', l.classe))}</b> · ${esc(q.testo)} · ` +
+          (c.da ? `da ${esc(nome('aula', c.da))} ` : '') + `a <b>${esc(nome('aula', c.a))}</b>` });
+    });
     return out.sort((a, b) => a.iso.localeCompare(b.iso) || a.ora - b.ora);
   }
 
@@ -80,10 +92,10 @@ const AvvisoPerTe = (() => {
     if (chiavi === mostrati) return;           // già aperto con le stesse righe
     const nuoveDavvero = nuovi.filter(x => !mostrati.includes(x.chiave));
     mostrati = chiavi;
-    const sostituisci = nuovi.filter(x => x.tipo === 'sostituisci').length;
+    const sostituisci = nuovi.filter(x => x.tipo === 'sostituisci').length, aule = nuovi.filter(x => x.tipo === 'aula').length;
     $('#titoloPerTe').textContent = sostituisci
       ? `🔄 ${sostituisci === 1 ? 'Hai una sostituzione' : `Hai ${sostituisci} sostituzioni`}`
-      : '🔄 Novità sulle tue lezioni';
+      : aule === nuovi.length ? `⇄ ${aule === 1 ? 'Cambio d\'aula' : 'Cambi d\'aula'} nelle tue lezioni` : '🔄 Novità sulle tue lezioni';
     $('#elencoPerTe').innerHTML = nuovi.map(x => `<li class="per-te-${x.tipo}">${x.testo}</li>`).join('');
     box.hidden = false;
     requestAnimationFrame(() => box.classList.add('aperto'));

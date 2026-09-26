@@ -79,9 +79,13 @@ const Viste = (() => {
         etichettaSost = '<span class="etichetta-sost">⚠ Docente assente</span>';
         rigaSost = `<span class="dato-sost">${esc(Dati.nome('docente', sost.assente))} · sostituto da trovare</span>`;
       }
-      return `<div class="lezione${cambiata ? ' lezione-modificata' : ''}${classeSost}" style="--tinta:${tinta(D, l.materia)}">` +
-        (cambiata ? '<span class="etichetta-modificata">Cambiata</span>' : '') + etichettaSost +
-        `<strong class="materia">${esc(l.materia || '—')}</strong>${righe}${rigaSost}</div>`;
+      // Cambio d'aula di questa settimana (sostituzioni/js/cambi-aula.js): etichetta e nuova aula ben visibili
+      const cambio = Supplenze.cambioAula(stato.sostituzioni, l);
+      const etichettaCambio = cambio ? '<span class="etichetta-cambio">⇄ Aula cambiata</span>' : '';
+      const rigaCambio = cambio ? `<span class="dato-cambio">aula ${cambio.da ? esc(Dati.nome('aula', cambio.da)) + ' → ' : ''}<b>${esc(Dati.nome('aula', cambio.a))}</b></span>` : '';
+      return `<div class="lezione${cambiata ? ' lezione-modificata' : ''}${classeSost}${cambio ? ' lezione-cambio-aula' : ''}" style="--tinta:${tinta(D, l.materia)}">` +
+        (cambiata ? '<span class="etichetta-modificata">Cambiata</span>' : '') + etichettaSost + etichettaCambio +
+        `<strong class="materia">${esc(l.materia || '—')}</strong>${righe}${rigaSost}${rigaCambio}</div>`;
     }).join('');
   }
 
