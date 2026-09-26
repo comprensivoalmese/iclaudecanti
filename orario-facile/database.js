@@ -57,7 +57,7 @@ const DatabaseOrario = (() => {
   const ZONE = {
     impostazioni: 'Impostazioni!A2:B30', vincoli: `Vincoli!A2:C${NVINC + 1}`, discipline: `Discipline!A2:H${NDIS + 1}`,
     aule: `Aule!A2:C${NAULE + 1}`, classi: `Classi!A1:N${NCL + 1}`, quadro: `Quadro!A1:AN${NCL + 1}`,
-    docentiTitoli: 'Docenti!A1:H1', docenti: `Docenti!A2:H${ND + 1}`, cattedre: `Cattedre!A2:E${NK + 1}`, orario: `Orario!A1:BJ${ND + 2}`
+    docentiTitoli: 'Docenti!A1:L1', docenti: `Docenti!A2:L${ND + 1}`,   // si legge fino a L: le colonne si cercano per titolo cattedre: `Cattedre!A2:E${NK + 1}`, orario: `Orario!A1:BJ${ND + 2}`
   };
   async function leggiZone() {
     const q = Object.values(ZONE).map(z => 'ranges=' + encodeURIComponent(z)).join('&');
@@ -84,6 +84,32 @@ const DatabaseOrario = (() => {
     return r;
   }
   const etichettaOra = (s, oreM) => s < oreM ? (s + 1) + 'ª' : (s - oreM + 1) + 'ª pom.';
+
+  /*
+    Colonne della scheda Docenti, trovate per titolo nella riga 1 (-1 = colonna che non c'è).
+    standard = true se sono esattamente nell'ordine del modello (A Codice, B Cognome, C Nome, D Aule, E Giorno libero,
+    F Max ore al giorno, G Max ore consecutive, H Indisponibilità); vecchio = true se è il modello di prima del
+    27/09/2026 (A Codice, B «Nome (vero)», C Aule, D Giorno libero, E Max ore al giorno, F Max ore consecutive, G Indisp.).
+  */
+  function colonneDocenti(riga1) {
+    const t = (riga1 || []).map(semplice);
+    const trova = f => t.findIndex(f);
+    const c = {
+      codice: trova(x => x === 'codice'), cognome: trova(x => x === 'cognome'), nome: trova(x => x === 'nome'),
+      nomeVero: trova(x => /^nome\s*\(?\s*vero/.test(x)), aule: trova(x => x.startsWith('aule')),
+      libero: trova(x => x.startsWith('giorno libero')), maxG: trova(x => x.startsWith('max ore al giorno')),
+      maxC: trova(x => x.startsWith('max ore consecutive')), indisp: trova(x => x.startsWith('indisponibilita'))
+    };
+    const ordine = (...k) => k.every((nome, i) => c[nome] === i);
+    c.standard = ordine('codice', 'cognome', 'nome', 'aule', 'libero', 'maxG', 'maxC', 'indisp');
+    c.vecchio = ordine('codice', 'nomeVero', 'aule', 'libero', 'maxG', 'maxC', 'indisp');
+    return c;
+  }
+  // { cognome, nome } di una riga della scheda Docenti (nel modello vecchio il nome intero sta in «Nome (vero)»)
+  function nomeDellaRiga(r, COL) {
+    if (COL.cognome >= 0) return { cognome: testo(r[COL.cognome]), nome: COL.nome >= 0 ? testo(r[COL.nome]) : '' };
+    return { cognome: COL.nomeVero >= 0 ? testo(r[COL.nomeVero]) : '', nome: '' };
+  }
 
   /* ---------------- Foglio -> dati di Orario Facile ---------------- */
   function daFoglio(z) {
@@ -159,16 +185,15 @@ const DatabaseOrario = (() => {
     });
     // Docenti (per codice); il nome vero resta solo in memoria
     const perDoc = new Map(); nomiFoglio = new Map();
-    // posizione delle colonne: formato nuovo (B Cognome, C Nome, D Aule…) oppure vecchio (B «Nome (vero)», C Aule…)
-    const vecchio = !semplice((z.docentiTitoli[0] || [])[1]).startsWith('cognome') && semplice((z.docentiTitoli[0] || [])[2]).startsWith('aule');
-    const COL = vecchio ? { aule: 2, libero: 3, maxG: 4, maxC: 5, indisp: 6 } : { aule: 3, libero: 4, maxG: 5, maxC: 6, indisp: 7 };
+    // le colonne si trovano per titolo (riga 1), così funziona anche se nel Foglio sono state inserite o spostate colonne
+    const COL = colonneDocenti(z.docentiTitoli[0]);
+    if (COL.codice < 0) problemi.push('Scheda Docenti: nella riga 1 manca la colonna «Codice»');
     z.docenti.forEach((r, i) => {
-      const codice = testo(r[0]); if (!codice) return;
+      const codice = testo(r[COL.codice]); if (!codice) return;
       if (perDoc.has(codice)) { problemi.push(`Docenti, riga ${i + 2}: codice ${codice} ripetuto`); return; }
       const t = { id: uid('t'), nome: codice, cattedre: [], aule: [], indisp: {}, giornoLibero: '', maxGiorno: numero(r[COL.maxG], 0), maxConsec: numero(r[COL.maxC], 0) };
-      // nome vero (solo in memoria): Cognome in B e Nome in C; nel formato vecchio tutto in B
-      if (vecchio) { if (testo(r[1])) nomiFoglio.set(codice, { cognome: testo(r[1]), nome: '' }); }
-      else if (testo(r[1]) || testo(r[2])) nomiFoglio.set(codice, { cognome: testo(r[1]), nome: testo(r[2]) });
+      // nome vero (solo in memoria)
+      const n = nomeDellaRiga(r, COL); if (n.cognome || n.nome) nomiFoglio.set(codice, n);
       testo(r[COL.aule]).split(/[,;]/).map(testo).filter(Boolean).forEach(n => {
         const a = perAula.get(semplice(n)); if (a) t.aule.push(a.id); else problemi.push(`Docente ${codice}: l'aula ${n} non è nella scheda Aule`);
       });
@@ -265,8 +290,8 @@ const DatabaseOrario = (() => {
     metti(ZONE.quadro, piena([['Classe'].concat(sigle.map(x => x.sigla))].concat(st.classi.map(x => [x.nome].concat(sigle.map(dd => (st.quadro[x.id] || {})[dd.id] || '')))), NCL + 1, 40));
     const indisp = t => Object.keys(t.indisp || {}).filter(g => (t.indisp[g] || []).length)
       .map(g => g + ' ' + t.indisp[g].slice().sort((x, y) => x - y).map(s => s < st.oreM ? s + 1 : 'p' + (s - st.oreM + 1)).join(',')).join('; ');
-    metti(ZONE.docentiTitoli, [TITOLI_DOCENTI]);
-    metti(ZONE.docenti, piena(st.docenti.map(t => { const n = nomeVeroDi(t.nome); return [t.nome, n.cognome, n.nome,
+    metti('Docenti!A1:H1', [TITOLI_DOCENTI]);
+    metti(`Docenti!A2:H${ND + 1}`, piena(st.docenti.map(t => { const n = nomeVeroDi(t.nome); return [t.nome, n.cognome, n.nome,
       t.aule.map(x => (a(x) || {}).nome).filter(Boolean).join(', '), t.giornoLibero || '', t.maxGiorno || '', t.maxConsec || '', indisp(t)]; }), ND, 8));
     if (st.docenti.length > ND) avvisi.push(`Nel Foglio entrano ${ND} docenti: gli altri non sono stati salvati`);
     const catt = []; st.docenti.forEach(t => t.cattedre.forEach(k => { if (c(k.cl) && d(k.di)) catt.push([t.nome, c(k.cl).nome, d(k.di).sigla, k.ore]); }));
@@ -297,11 +322,11 @@ const DatabaseOrario = (() => {
   // Prima di salvare si rileggono i nomi veri che ci sono ADESSO nel Foglio (solo in memoria): i nomi si scrivono
   // nel Foglio e lì restano, così un salvataggio non li svuota e non li cambia (anche senza «👁 Nomi»).
   function ricordaNomiDelFoglio(z) {
-    const vecchio = !semplice((z.docentiTitoli[0] || [])[1]).startsWith('cognome') && semplice((z.docentiTitoli[0] || [])[2]).startsWith('aule');
+    const COL = colonneDocenti(z.docentiTitoli[0]);
     nomiFoglio = new Map();
     z.docenti.forEach(r => {
-      const codice = testo(r[0]); if (!codice) return;
-      const n = vecchio ? { cognome: testo(r[1]), nome: '' } : { cognome: testo(r[1]), nome: testo(r[2]) };
+      const codice = testo(r[COL.codice >= 0 ? COL.codice : 0]); if (!codice) return;
+      const n = nomeDellaRiga(r, COL);
       if (n.cognome || n.nome) nomiFoglio.set(codice, n);
     });
   }
@@ -323,6 +348,12 @@ const DatabaseOrario = (() => {
     const prima = impronta(attuale);
     const nota = leggiImpronta();
     if (!forza && nota && nota !== prima) return { modificatoDaAltri: true };
+    // la scheda Docenti si riscrive nelle colonne A-H del modello: se ha colonne in posizioni diverse (inserite o
+    // spostate a mano) non si salva, per non mescolare i dati
+    const COL = colonneDocenti(attuale.docentiTitoli[0]);
+    if (!COL.standard && !COL.vecchio) throw new Error('la scheda Docenti del Foglio ha le colonne in un ordine diverso dal modello ' +
+      '(A Codice, B Cognome, C Nome, D Aule, E Giorno libero, F Max ore al giorno, G Max ore consecutive, H Indisponibilità): ' +
+      'sistemala così, oppure reimporta il modello «Orario database.xlsx», poi salva di nuovo');
     ricordaNomiDelFoglio(attuale);
     const { dati, avvisi } = aFoglio(S);
     await chiama('/values:batchUpdate', 'POST', { valueInputOption: 'RAW', data: dati });
