@@ -5,7 +5,7 @@
 Guida per chi consulta l'orario delle lezioni: docenti, famiglie, monitor di classe e schermo all'ingresso.
 Non serve nessuna abilitazione speciale: basta l'account Google della scuola.
 
-Indirizzo: **https://comprensivoalmese.github.io/orario/app/**
+Indirizzo: **https://comprensivoalmese.github.io/iclaudecanti/app/**
 Accesso: account **@comprensivoalmese.it**
 
 ## In breve
@@ -124,4 +124,4 @@ silenzioso disattivato: è un limite dei siti web, non un guasto.
 vedi il manuale dedicato ai modificatori.
 
 ---
-*Guida basata sulla documentazione del progetto «orario» (repository comprensivoalmese/orario) (`app/LEGGIMI.md`), aggiornata al 25/09/2026.*
+*Guida basata sulla documentazione del progetto iclaudecanti (`app/LEGGIMI.md`), aggiornata al 25/09/2026.*

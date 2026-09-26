@@ -15,7 +15,7 @@
 param(
   [string]$Aula = '',
   [string[]]$Orari = @('09:55', '11:50'),
-  [string]$Indirizzo = 'https://comprensivoalmese.github.io/orario/app/',
+  [string]$Indirizzo = 'https://comprensivoalmese.github.io/iclaudecanti/app/',
   [switch]$Rimuovi,
   [switch]$Prova
 )

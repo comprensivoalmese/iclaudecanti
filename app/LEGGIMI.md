@@ -3,7 +3,7 @@
 App per consultare l'orario da **smartphone, tablet (iPhone/iPad e Android)** e **monitor interattivi di classe** (Android di bordo oppure PC OPS con Windows 10/11).
 È una *web app installabile* (PWA): si apre dal browser, si può aggiungere alla schermata Home come un'app vera e funziona anche senza connessione, con l'ultimo orario scaricato.
 
-Indirizzo: **https://comprensivoalmese.github.io/orario/app/**
+Indirizzo: **https://comprensivoalmese.github.io/iclaudecanti/app/**
 
 ## Schermata iniziale
 
@@ -190,7 +190,7 @@ Ci sono due tipi di utenti, tutti con l'account della scuola:
 ## Monitor interattivi di classe
 
 1. Sul monitor aprire l'indirizzo dell'app con il nome dell'aula, per esempio
-   `https://comprensivoalmese.github.io/orario/app/?monitor=Aula%203`
+   `https://comprensivoalmese.github.io/iclaudecanti/app/?monitor=Aula%203`
    (oppure: menu in alto a destra → "Uso di questo dispositivo" → l'aula, sotto "Monitor dell'aula").
 2. Accedere una volta con "Ricordami" spuntato.
 3. Installare l'app:
@@ -284,7 +284,7 @@ Se si cambia l'inizio degli intervalli, va cambiato sia in `js/config.js` sia ne
 - la funzione di *programmazione / accensione pianificata* del pannello, se il modello ce l'ha, oppure la console di gestione
   (MDM) delle LIM della scuola;
 - in alternativa un'app di automazione (per esempio *MacroDroid* o *Automate*) con un'azione a orario, dal lunedì al venerdì
-  alle 9:55 e alle 11:50, che apre l'indirizzo `https://comprensivoalmese.github.io/orario/app/?monitor=NOMEAULA&intervallo`
+  alle 9:55 e alle 11:50, che apre l'indirizzo `https://comprensivoalmese.github.io/iclaudecanti/app/?monitor=NOMEAULA&intervallo`
   (con Chrome, o l'app installata).
 
 In ogni caso, se l'app resta sempre aperta sulla LIM (magari dietro ad altre finestre), la schermata compare comunque in
@@ -295,7 +295,7 @@ quella finestra: il browser però non può portarla davanti alle altre da solo.
 Per il televisore o il proiettore all'ingresso, dove nessuno tocca lo schermo: l'app mostra l'orario di oggi
 e **cambia vista da sola** ogni tot secondi, nell'ordine **Classi → Docenti → Aule**.
 
-1. Aprire l'indirizzo `https://comprensivoalmese.github.io/orario/app/?ingresso`
+1. Aprire l'indirizzo `https://comprensivoalmese.github.io/iclaudecanti/app/?ingresso`
    (ogni 20 secondi) oppure `.../app/?ingresso=30` per scegliere i secondi (da 5 a 600).
    In alternativa: menu in alto a destra → "Uso di questo dispositivo" → **📺 Schermo all'ingresso**.
 2. **Ogni quanti secondi** lo decide l'utente: nel menu, sotto "Cambia vista ogni quanti secondi?", si scrive il numero
