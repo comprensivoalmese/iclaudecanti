@@ -336,7 +336,7 @@
       CONFIG.versioneApp ? 'Versione app ' + Viste.esc(CONFIG.versioneApp) : '',
       // copyright e licenza (vedi LICENZA.md nella radice del sito)
       '© 2026 <a href="https://www.comprensivoalmese.it" target="_blank" rel="noopener">IC Almese</a> – Gruppo Wolf' +
-        ' · <a href="https://github.com/alessandrotrino-creator/iclaudecanti/blob/main/LICENZA.md" target="_blank" rel="noopener">Tutti i diritti riservati</a>'
+        ' · <a href="https://github.com/comprensivoalmese/iclaudecanti/blob/main/LICENZA.md" target="_blank" rel="noopener">Tutti i diritti riservati</a>'
     ].filter(Boolean).join(' · ');
     if (breveAperta) disegnaBreve();
     if (smartAperta) Smart.aggiorna();
