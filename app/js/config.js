@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.4',
+  versioneApp: '2026-09-27.5',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -25,11 +25,11 @@ window.CONFIG = {
   // Se si svuota ('') l'app torna in "modalità dimostrativa": chiede solo l'email, SENZA verificarla.
   googleClientId: '709643540266-2kcc07obqusacsm3qlu8trkc2gb4cjh1.apps.googleusercontent.com',
 
-  // VECCHIO file separato con i nomi dei docenti (Codice;Cognome;Nome): NON si usa più dal 27/09/2026.
-  // I nomi stanno nella scheda Docenti del Foglio database (fileDatabaseOrario, colonne Cognome e Nome), condiviso in
-  // lettura con tutto l'Istituto. Resta vuoto; per tornare al vecchio file rimettere '1NcknVOHvTXHB2ue94FjFs-iY-vT54tq3tHc7CArTEmI'.
+  // File separato con i nomi dei docenti (Codice;Cognome;Nome). Finché qui c'è l'ID i nomi si leggono da questo file;
+  // svuotandolo ('') si leggono dalla scheda Docenti del Foglio database (fileDatabaseOrario, colonne Cognome e Nome).
+  // RIMESSO il 27/09/2026: con i nomi letti dal database non comparivano né i codici né i nomi (da verificare).
   // Nel repository i docenti sono solo codici (DOC01, DOC02…): i nomi li vede solo chi ha un account della scuola.
-  fileNomiDocenti: '',
+  fileNomiDocenti: '1NcknVOHvTXHB2ue94FjFs-iY-vT54tq3tHc7CArTEmI',
 
   // Foglio Google del conteggio ore ("Conteggio ore"): la scheda Sostituzioni lo legge da solo e,
   // quando si assegna una sostituzione, scrive +1 nella settimana del docente che sostituisce.
