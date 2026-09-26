@@ -77,16 +77,15 @@
     const d = new Date(); d.setDate(d.getDate() - 14);
     const da = d.toISOString().slice(0, 10);
     const recenti = x => x && String(x.data || '') >= da;
-    const assenze = Archivio.leggi('assenze', []).filter(recenti)
-      .map(a => ({ data: a.data, docente: a.docente, ore: a.ore }));
-    const registro = Archivio.leggi('registro', []).filter(recenti)
-      .map(s => ({ data: s.data, ora: s.ora, classe: s.classe, assente: s.assente, sostituto: s.sostituto }));
-    chiedi(`Pubblicare ${assenze.length} assenze e ${registro.length} sostituzioni? ` +
-      'L\'app Luis@i le mostrerà nella tabella dell\'orario su tutti i dispositivi.', () =>
+    const assenze = Archivio.leggi('assenze', []).filter(recenti);
+    const registro = Archivio.leggi('registro', []).filter(recenti);
+    chiedi(`Pubblicare ${assenze.length} assenze e ${registro.length} sostituzioni di questo computer? ` +
+      'Si uniscono a quelle già pubblicate da altri dispositivi (per esempio da «Sostituzioni smart»): ' +
+      'l\'app Luis@i le mostrerà nella tabella dell\'orario su tutti i dispositivi.', () =>
       lavora(tastoSost, $id('statoPubblicaSostituzioni'), async () => {
-        const testo = JSON.stringify({ pubblicato: new Date().toISOString(), assenze, registro });
-        const f = await PubblicaDrive.pubblicaSostituzioni(testo, email());
-        return esito(f, 'Sostituzioni pubblicate', 'fileSostituzioniPubblicate');
+        // app/js/pubblica-sostituzioni.js: rilegge il file pubblicato e cambia solo le sostituzioni di questo computer
+        const r = await PubblicaSostituzioni.unisciEPubblica(email());
+        return `Sostituzioni pubblicate: nel file ora ci sono ${r.registro} sostituzioni e ${r.assenze} assenze (comprese quelle degli altri dispositivi).`;
       }), 'Pubblica');
   });
 })();

@@ -9,6 +9,15 @@ che decide caso per caso se concederlo e a quali condizioni. Dettagli in [LICENZ
 
 ## Ultimi aggiornamenti
 
+**26/09/2026 – Sostituzioni pubblicate da sole (anche da «Sostituzioni smart»)**
+
+- chi assegna o annulla una sostituzione dall'app (Sostituzioni smart) non deve più premere niente: dopo pochi secondi
+  l'app la **pubblica da sola** e tutti la vedono (e il docente interessato riceve il riquadro «per te»);
+- se il permesso di Google non c'è ancora, in basso compare «Ci sono sostituzioni nuove da pubblicare · Pubblica ora»;
+- la pubblicazione **unisce** invece di sostituire: rilegge il file su Drive e cambia solo le sostituzioni di quel
+  dispositivo, così il telefono e il computer di Orario Facile non si cancellano il lavoro a vicenda. Se Drive non
+  risponde non pubblica. Lo fa anche il tasto «Pubblica sostituzioni» di Orario Facile (`app/js/pubblica-sostituzioni.js`).
+
 **26/09/2026 – Avviso «per te» che scende dall'alto**
 
 - quando un docente apre l'app (o mentre ce l'ha aperta), un riquadro arancione scende dall'alto con le **sue**

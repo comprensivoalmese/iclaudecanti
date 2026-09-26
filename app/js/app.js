@@ -268,6 +268,8 @@
       // «Sostituzioni smart»: sparisce anche per chi il foglio «Autorizzazioni» ha già rifiutato su questo dispositivo
       $('#btnSostSmart').hidden = !puo || Smart.negato(utente.email);
       $('#btnCambiAula').hidden = $('#btnSostSmart').hidden;   // stessi autorizzati delle sostituzioni
+      // chi fa le sostituzioni da qui le pubblica da solo per tutti (js/pubblica-sostituzioni.js)
+      if (puo && !aulaMonitor && !secondiIngresso && typeof PubblicaSostituzioni !== 'undefined') PubblicaSostituzioni.avviaAutomatica(utente.email);
     });
     $('#btnSchermoIntero').hidden = !document.fullscreenEnabled;
     // Tema: la voce "secondo l'ora" mostra gli orari impostati in config.js

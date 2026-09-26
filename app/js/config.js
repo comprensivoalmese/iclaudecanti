@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-26.14',
+  versioneApp: '2026-09-26.15',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
