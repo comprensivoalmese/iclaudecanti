@@ -93,7 +93,7 @@ Non tutti possono modificare l'orario: ora ci sono due ruoli.
 **25/09/2026 – Schermo all'ingresso con le viste a rotazione** (Chiara)
 
 Nuova modalità dell'app Orario DADA per il televisore o il proiettore all'ingresso:
-[.../app/?ingresso](https://alessandrotrino-creator.github.io/iclaudecanti/app/?ingresso) (o dal menu: "Uso di questo dispositivo").
+[.../app/?ingresso](https://comprensivoalmese.github.io/iclaudecanti/app/?ingresso) (o dal menu: "Uso di questo dispositivo").
 
 - l'orario di oggi cambia vista da solo: **Classi → Docenti → Aule**;
 - **ogni quanti secondi lo decide l'utente**: nel menu si scrive il numero (da 5 a 600) o lo si regola con − e +; anche dall'indirizzo, es. `?ingresso=30`;
@@ -104,7 +104,7 @@ Nuova modalità dell'app Orario DADA per il televisore o il proiettore all'ingre
 **25/09/2026 – Sostituzioni docenti dentro Orario Facile** (Chiara)
 
 Le sostituzioni sono ora la **scheda 9 «Sostituzioni»** di
-[Orario Facile](https://alessandrotrino-creator.github.io/iclaudecanti/orario-facile/#sostituzioni)
+[Orario Facile](https://comprensivoalmese.github.io/iclaudecanti/orario-facile/#sostituzioni)
 ([istruzioni](sostituzioni/LEGGIMI.md)); il vecchio indirizzo `sostituzioni/` porta lì.
 
 - usa direttamente l'**orario di Orario Facile**: se lo modifichi, le proposte si aggiornano;
@@ -129,7 +129,7 @@ Da completare: in 1C e 2C le cattedre di Laboratorio sommano 5 ore contro le 3 d
 
 **24/09/2026 – Orario Facile già compilato con i dati 2026/27** (Alessandro)
 
-Aprendo [Orario Facile](https://alessandrotrino-creator.github.io/iclaudecanti/orario-facile/)
+Aprendo [Orario Facile](https://comprensivoalmese.github.io/iclaudecanti/orario-facile/)
 si trova già la nostra scuola, ricavata dall'elenco "Docenti con materie e classi" 2026/27:
 
 - 15 classi (1A–3E) e 43 docenti con 174 cattedre;
@@ -163,7 +163,7 @@ git config rebase.autoStash true
 
 Orario scolastico di una scuola DADA, in HTML/CSS/JS puro.
 
-**Sito online:** https://alessandrotrino-creator.github.io/iclaudecanti/
+**Sito online:** https://comprensivoalmese.github.io/iclaudecanti/
 Regole e convenzioni complete in [CLAUDE.md](CLAUDE.md).
 
 ## Struttura
