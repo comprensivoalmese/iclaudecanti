@@ -6,7 +6,7 @@ nelle scuole DADA le aule sono assegnate alle materie/ai docenti e sono **gli st
 Il sito deve quindi mostrare chiaramente, per ogni ora: classe, materia, docente e **aula**.
 
 Viene pubblicato con **GitHub Pages** direttamente da `main`, cartella radice:
-https://alessandrotrino-creator.github.io/iclaudecanti/ (pagina iniziale con i link alle due app).
+https://comprensivoalmese.github.io/iclaudecanti/ (pagina iniziale con i link alle due app).
 Non rompere mai questi requisiti: percorsi relativi, niente build, `.nojekyll` presente,
 `localStorage` sempre dentro `try/catch` (su github.io è condiviso tra tutti i repo dello stesso utente,
 quindi usa chiavi con prefisso, es. `orariofacile.` e `orariodada.`).
