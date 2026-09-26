@@ -45,7 +45,7 @@ window.CONFIG = {
   // Foglio Google «database» dell'orario (vedi orario-facile/DATABASE.md): Orario Facile lo carica e ci salva
   // con i tasti «Carica dal Foglio» / «Salva sul Foglio» (scheda Esporta). Contiene i nomi veri dei docenti:
   // deve stare sul Drive della scuola, condiviso solo con chi prepara l'orario. Vuoto = tasti non attivi.
-  fileDatabaseOrario: '',
+  fileDatabaseOrario: '1gawzwbqDBwqONiZdnvbEprzYAiUOPc8IxP1fu-CrO30',
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).
   // Con la pubblicazione su Drive (vedi sotto) serve solo come riserva, se Drive non risponde.
