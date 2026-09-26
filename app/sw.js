@@ -4,7 +4,7 @@
 */
 // Nome della memoria dell'app: cambiandolo (per esempio con la data) i dispositivi buttano la copia vecchia
 // e scaricano tutto da capo. Tenerlo uguale a "versioneApp" in js/config.js.
-const CACHE = 'orario-dada-2026-09-27.3';
+const CACHE = 'orario-dada-2026-09-27.4';
 const FILE_APP = [
   './', 'index.html', 'manuale.html', 'css/app.css', 'css/brief.css', 'css/campanella.css', 'css/barra.css', 'css/smart.css', 'css/menu.css', 'css/avviso-per-te.css', 'manifest.webmanifest',
   'js/config.js', 'js/tema.js', 'js/dati.js', 'js/accesso.js', 'js/ruoli.js', 'js/nomi.js', 'js/supplenze.js', 'js/viste.js', 'js/brief.js', 'js/smart.js', 'js/ingresso.js', 'js/intervallo.js', 'js/modifiche.js', 'js/storie.js', 'js/campanella.js', 'js/installa.js', 'js/condividi.js', 'js/avviso-per-te.js', 'js/pubblica-drive.js', 'js/pubblica-sostituzioni.js', 'js/app.js',
