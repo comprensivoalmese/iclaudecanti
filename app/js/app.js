@@ -168,6 +168,9 @@
     // riga «Nomi dei docenti» in fondo alla pagina: dice quanti nomi sono stati abbinati ai codici
     if (nomi) {
       statoNomi = `${trovati} docenti su ${D.docente.length} con il nome (${nomi.size} righe lette dal Foglio)`;
+      // i codici senza nome (i codici non sono riservati: si possono mostrare)
+      const senza = D.docente.filter(e => !nomi.has(String(e.codice).trim().toUpperCase())).map(e => e.codice).sort();
+      if (trovati && senza.length) statoNomi += '; senza nome nel Foglio: ' + Viste.esc(senza.join(', '));
       if (!trovati) statoNomi += `: i codici non corrispondono (nell'orario per esempio «${Viste.esc((D.docente[0] || {}).codice || '')}», ` +
         `nel Foglio «${Viste.esc([...nomi.keys()][0] || '')}»)`;
     } else if (soloCodici) statoNomi = 'nascosti (hai scelto «Codici»)';
