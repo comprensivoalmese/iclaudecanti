@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-26.9',
+  versioneApp: '2026-09-26.10',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -23,7 +23,7 @@ window.CONFIG = {
   // ID client OAuth di Google (lo crea l'amministratore Google Workspace della scuola,
   // vedi app/LEGGIMI.md). Non è un dato segreto: può stare nel repository pubblico.
   // Se si svuota ('') l'app torna in "modalità dimostrativa": chiede solo l'email, SENZA verificarla.
-  googleClientId: '709643540266-2kcc07obqusacsm3qlu8trkc2gb4cjh1.apps.googleusercontent.com',
+  googleClientId: '709643540266-271bfausgqr5825uc772ufgnop23aa2t.apps.googleusercontent.com',
 
   // File riservato su Google Drive con la corrispondenza codice → nome dei docenti (Codice;Cognome;Nome).
   // Nel repository i docenti sono solo codici (DOC01, DOC02…): i nomi li vede solo chi ha accesso al file.
