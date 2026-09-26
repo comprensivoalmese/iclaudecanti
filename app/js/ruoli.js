@@ -15,6 +15,8 @@
 */
 const Ruoli = (() => {
   // Il codice di un'email, es. "3f9a0c1d2e4b5a6f"
+  // ATTENZIONE: "iclaudecanti|" è il vecchio nome del repo, ma NON va cambiato anche se ora il repo si chiama
+  // "orario": cambiandolo cambierebbero tutti i codici e nessuno sarebbe più tra gli editori di config.js.
   async function codice(email) {
     const testo = 'iclaudecanti|' + String(email || '').trim().toLowerCase();
     const impronta = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(testo));
