@@ -231,11 +231,13 @@ const DatabaseOrario = (() => {
     while (out.length < righe) out.push(new Array(colonne).fill(''));
     return out;
   };
-  // { cognome, nome } del docente: dai nomi mostrati in Orario Facile («👁 Nomi»), altrimenti quelli letti dal Foglio
+  // { cognome, nome } del docente: quelli che sono già nel Foglio (la fonte dei nomi); se lì mancano, quelli mostrati
+  // in Orario Facile con «👁 Nomi» (serve per il primo passaggio dal vecchio file dei nomi)
   function nomeVeroDi(codice) {
+    const f = nomiFoglio.get(codice);
+    if (f && (f.cognome || f.nome)) return f;
     const n = typeof NOMI !== 'undefined' && NOMI && NOMI.get(codice);
-    if (n && (n.cognome || n.nome)) return { cognome: n.cognome || '', nome: n.nome || '' };
-    return nomiFoglio.get(codice) || { cognome: '', nome: '' };
+    return n ? { cognome: n.cognome || '', nome: n.nome || '' } : { cognome: '', nome: '' };
   }
   const TITOLI_DOCENTI = ['Codice', 'Cognome', 'Nome', 'Aule (la prima è la principale)', 'Giorno libero', 'Max ore al giorno',
     'Max ore consecutive', 'Indisponibilità (es. Lunedì 1,2; Venerdì 6)'];
@@ -292,6 +294,18 @@ const DatabaseOrario = (() => {
     return { dati: out, avvisi };
   }
 
+  // Prima di salvare si rileggono i nomi veri che ci sono ADESSO nel Foglio (solo in memoria): i nomi si scrivono
+  // nel Foglio e lì restano, così un salvataggio non li svuota e non li cambia (anche senza «👁 Nomi»).
+  function ricordaNomiDelFoglio(z) {
+    const vecchio = !semplice((z.docentiTitoli[0] || [])[1]).startsWith('cognome') && semplice((z.docentiTitoli[0] || [])[2]).startsWith('aule');
+    nomiFoglio = new Map();
+    z.docenti.forEach(r => {
+      const codice = testo(r[0]); if (!codice) return;
+      const n = vecchio ? { cognome: testo(r[1]), nome: '' } : { cognome: testo(r[1]), nome: testo(r[2]) };
+      if (n.cognome || n.nome) nomiFoglio.set(codice, n);
+    });
+  }
+
   /* ---------------- azioni dei tasti ---------------- */
   async function carica() {
     const z = await leggiZone();
@@ -305,9 +319,11 @@ const DatabaseOrario = (() => {
   }
   async function salva(forza) {
     // se qualcuno ha cambiato il Foglio dopo l'ultimo caricamento/salvataggio, non sovrascrivo senza chiedere
-    const prima = impronta(await leggiZone());
+    const attuale = await leggiZone();
+    const prima = impronta(attuale);
     const nota = leggiImpronta();
     if (!forza && nota && nota !== prima) return { modificatoDaAltri: true };
+    ricordaNomiDelFoglio(attuale);
     const { dati, avvisi } = aFoglio(S);
     await chiama('/values:batchUpdate', 'POST', { valueInputOption: 'RAW', data: dati });
     salvaImpronta(impronta(await leggiZone()));
