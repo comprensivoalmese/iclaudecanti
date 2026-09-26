@@ -183,9 +183,12 @@
   let attesaTocco = false;   // i nomi aspettano il primo tocco (il browser ha bloccato la finestra di Google)
   let soloCodici = false;    // l'utente ha scelto «🙈 Codici» in questa apertura dell'app
   const GIORNI_RIPROVA = 7;
+  let avvisoNomi = '';       // perché i nomi non si sono caricati (si mostra in alto, vedi aggiorna)
+  // da quale file si leggono i nomi: se cambia (per esempio dal vecchio file al Foglio database) un rifiuto vecchio non vale più
+  const fonteNomi = () => CONFIG.fileNomiDocenti || CONFIG.fileDatabaseOrario || '';
   function nomiNegati() {
     const v = String(leggi(CHIAVE_NOMI) || ''), p = v.split(':');
-    if (p[0] !== 'negato' || p[1] !== utente.email.toLowerCase()) return false;
+    if (p[0] !== 'negato' || p[1] !== utente.email.toLowerCase() || p[3] !== fonteNomi()) return false;
     const quando = Date.parse(p[2] || '');   // le versioni vecchie non avevano la data: si riprova subito
     return !isNaN(quando) && Date.now() - quando < GIORNI_RIPROVA * 864e5;
   }
@@ -193,6 +196,7 @@
     if (nomi || !utente || aulaMonitor || secondiIngresso) return;
     if (typeof NomiDocenti === 'undefined' || !NomiDocenti.configurato() || !CONFIG.googleClientId) return;
     // Senza nomi veri serve comunque il permesso di Google per le sostituzioni pubblicate su Drive
+    if (nomiNegati()) avvisoNomi = 'Nomi dei docenti non caricati: il tuo account non può leggere la scheda Docenti del Foglio database.';
     if (soloCodici || nomiNegati()) { permessoDrive(); return; }
     try {
       nomi = await NomiDocenti.carica(utente.email);
@@ -200,7 +204,7 @@
       const msg = String(e && e.message || '');
       // Solo se Google dice che QUESTO ACCOUNT non può aprire il file (messaggi di nomi.js) smettiamo di riprovare
       if (/il tuo account non ha il permesso|file non trovato/i.test(msg)) {
-        scrivi(CHIAVE_NOMI, 'negato:' + utente.email.toLowerCase() + ':' + new Date().toISOString().slice(0, 10));
+        scrivi(CHIAVE_NOMI, 'negato:' + utente.email.toLowerCase() + ':' + new Date().toISOString().slice(0, 10) + ':' + fonteNomi());
         permessoDrive();   // il permesso di Google c'è già (il file dei nomi no): leggiamo le sostituzioni
       } else if (/bloccato la finestra|popup/i.test(msg) && !attesaTocco) {
         // Il browser apre la finestra di Google solo dopo un tocco: riproviamo al primo tocco sullo schermo
@@ -209,8 +213,12 @@
         const riprova = () => { document.removeEventListener('click', riprova, true); document.removeEventListener('keydown', riprova, true); attesaTocco = false; caricaNomiDaSoli(); };
         document.addEventListener('click', riprova, true); document.addEventListener('keydown', riprova, true);
       }
+      // qualsiasi problema (tranne la finestra di Google che aspetta un tocco): lo si scrive in alto, così si capisce
+      // perché restano i codici DOC01… (vedi aggiorna)
+      if (!/bloccato la finestra|popup/i.test(msg)) { avvisoNomi = 'Nomi dei docenti non caricati: ' + msg + '.'; aggiorna(); }
       return;
     }
+    avvisoNomi = '';
     applicaNomi();
     mioDocente = Dati.docentePerEmail(utente.email);
     preparaControlli();
@@ -317,6 +325,7 @@
     if (secondiIngresso && !Ingresso.attiva()) {
       avvisi.push(`Rotazione delle viste in pausa: riparte da sola dopo ${CONFIG.minutiRitornoMonitor} minuti senza tocchi.`);
     }
+    if (avvisoNomi && !aulaMonitor && !secondiIngresso) avvisi.push(avvisoNomi);
     const settimanaSenzaFiltro = stato.colonne === 'giorno' && !Viste.FILTRI.some(k => stato.filtri[k]);
     if (settimanaSenzaFiltro) avvisi.push('Per vedere la settimana scegli una classe, un docente o un\'aula.');
     else if (avvisoGiorno && stato.colonne !== 'giorno' && stato.giorno === avvisoGiorno.giorno) avvisi.push(avvisoGiorno.testo);

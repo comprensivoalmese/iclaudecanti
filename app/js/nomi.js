@@ -141,20 +141,21 @@ const NomiDocenti = (() => {
       throw new Error(spiega(r.status, testo));
     }
     const tutte = (await r.json()).values || [];
+    // Scheda Docenti: A codice, B cognome, C nome (dalla riga 2). Solo se nella riga 1 i titoli «Codice», «Cognome» e
+    // «Nome» sono tutti presenti ma in altre colonne si usano quelle; altrimenti valgono sempre A, B e C.
     const titoli = (tutte[0] || []).map(x => String(x || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase());
-    const cCod = titoli.indexOf('codice'), cCog = titoli.indexOf('cognome'), cNom = titoli.indexOf('nome');
-    // Fogli creati prima del 27/09/2026: un'unica colonna «Nome (vero)» con cognome e nome insieme
-    const cUnico = cCog < 0 ? titoli.findIndex(x => /^nome\s*\(?\s*vero/.test(x)) : -1;
-    if (cCod < 0 || (cCog < 0 && cUnico < 0)) throw new Error('nella scheda Docenti del database mancano le colonne «Codice» e «Cognome» (riga 1)');
+    let cCod = titoli.indexOf('codice'), cCog = titoli.indexOf('cognome'), cNom = titoli.indexOf('nome');
+    if (cCod < 0 || cCog < 0 || cNom < 0) { cCod = 0; cCog = 1; cNom = 2; }
     const righe = tutte.slice(1);
     const mappa = new Map();
     righe.forEach(riga => {
       const codice = String(riga[cCod] || '').trim().toUpperCase();
-      const cognome = String(riga[cCog >= 0 ? cCog : cUnico] || '').trim();
-      const nome = cNom >= 0 && cCog >= 0 ? String(riga[cNom] || '').trim() : '';
+      const cognome = String(riga[cCog] || '').trim();
+      const nome = String(riga[cNom] || '').trim();
       if (codice && (cognome || nome)) mappa.set(codice, { cognome: bello(cognome), nome: bello(nome) });
     });
-    if (!mappa.size) throw new Error('nella scheda Docenti del database non ci sono ancora i nomi');
+    if (!mappa.size) throw new Error(`nella scheda Docenti del database non ho trovato nomi (lette ${righe.length} righe; ` +
+      `prima riga: ${JSON.stringify((righe[0] || []).slice(0, 4))})`);
     return mappa;
   }
 
