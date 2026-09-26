@@ -9,6 +9,16 @@ che decide caso per caso se concederlo e a quali condizioni. Dettagli in [LICENZ
 
 ## Ultimi aggiornamenti
 
+**26/09/2026 – Il Foglio database dell'orario**
+
+- l'orario sta in **un solo file**, un Foglio Google sul Drive della scuola: Orario Facile lo carica e ci salva
+  (scheda Esporta → «📥 Carica dal Foglio» / «📤 Salva sul Foglio»); si può modificare anche a mano, con i colori che
+  segnalano doppioni e ore fuori cattedra;
+- la griglia ha una riga per docente e una colonna per ora: `1A`, `1A STO`, `1A ITA @MENSA`, `+2B SOS` (compresenza);
+- formato in [orario-facile/DATABASE.md](orario-facile/DATABASE.md); il Foglio si crea con `strumenti/crea-database.ps1`;
+  dal file Excel storico si passa con «Importa orario compilato» e poi «Salva sul Foglio»;
+- per attivarlo va scritto l'ID del Foglio in `app/js/config.js` (voce `fileDatabaseOrario`).
+
 **26/09/2026 – Copyright e condizioni d'uso**
 
 - nuovo file [LICENZA.md](LICENZA.md) (e `LICENSE`, letto da GitHub): **tutti i diritti riservati** all'Istituto

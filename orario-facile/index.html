@@ -455,6 +455,18 @@ td input[type=number]{width:64px}
       </ol>
       <div class="row"><button class="btn" id="btnPubblicaApp">Scarica orario.json</button></div>
     </div>
+    <!-- Foglio database su Google Drive: Orario Facile lo carica e ci salva (vedi database.js e DATABASE.md) -->
+    <div class="card">
+      <h3>Foglio database (Google Drive)</h3>
+      <p class="hint">L'archivio dell'orario è un Foglio Google condiviso: <b>Carica dal Foglio</b> prende da lì classi, docenti,
+        cattedre e orario; <b>Salva sul Foglio</b> ci scrive l'orario di questo computer. Il Foglio si può modificare anche a mano
+        (la griglia «Orario» ha una riga per docente: scrivi <code>1A</code>, <code>1A STO</code>, <code>1A ITA @MENSA</code>, <code>+2B SOS</code>).</p>
+      <div class="row">
+        <button class="btn" id="btnDbCarica">📥 Carica dal Foglio</button>
+        <button class="btn" id="btnDbSalva">📤 Salva sul Foglio</button>
+        <span class="hint" id="statoDb">Serve l'accesso con l'account della scuola e il permesso di modifica sul Foglio.</span>
+      </div>
+    </div>
     <div class="card">
       <h3>Backup completo (.json)</h3>
       <div class="row">
@@ -3686,5 +3698,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') chiudiModal(); 
 <!-- Tasti «Pubblica orario» e «Pubblica sostituzioni»: salvano su Google Drive (app/js/pubblica-drive.js) -->
 <script src="../app/js/pubblica-drive.js"></script>
 <script src="pubblica.js"></script>
+<!-- Foglio database: «Carica dal Foglio» e «Salva sul Foglio» nella scheda Esporta -->
+<script src="database.js"></script>
 </body>
 </html>

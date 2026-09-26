@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-26.11',
+  versioneApp: '2026-09-26.12',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -41,6 +41,11 @@ window.CONFIG = {
   // - foglio "Sostituzioni": qui l'app scrive le sostituzioni assegnate (con i nomi veri dei docenti)
   // Se si svuota (''), la scheda Sostituzioni funziona come prima (nessun controllo, niente scrittura nel foglio).
   fileSostituzioni: '1bd_d8oNdxSo8hIC26ONxN_RYUpV8dMzD2Ax78z76BJA',
+
+  // Foglio Google «database» dell'orario (vedi orario-facile/DATABASE.md): Orario Facile lo carica e ci salva
+  // con i tasti «Carica dal Foglio» / «Salva sul Foglio» (scheda Esporta). Contiene i nomi veri dei docenti:
+  // deve stare sul Drive della scuola, condiviso solo con chi prepara l'orario. Vuoto = tasti non attivi.
+  fileDatabaseOrario: '',
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).
   // Con la pubblicazione su Drive (vedi sotto) serve solo come riserva, se Drive non risponde.

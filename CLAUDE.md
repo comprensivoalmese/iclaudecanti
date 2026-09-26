@@ -29,6 +29,11 @@ Le parti del progetto:
   condivisione «Chiunque abbia il link», quindi `CONFIG.googleApiKey` resta vuota e basta la condivisione con l'Istituto.
   Se non si può leggere Drive, legge l'ultima copia salvata o `dati/orario.json` come prima.
   Nei file pubblicati solo codici DOC01…: mai nomi veri, mai il flag «permesso» delle assenze.
+- **Foglio database** (`orario-facile/database.js`, formato in `orario-facile/DATABASE.md`): l'archivio unico dell'orario è
+  un Foglio Google (`CONFIG.fileDatabaseOrario`) che Orario Facile carica e su cui salva (scheda Esporta). Legge/scrive
+  solo le colonne «dati» in posizioni fisse (le formule e i colori li crea una volta `strumenti/crea-database.ps1`);
+  la griglia «Orario» è docente × ora con la scrittura breve `1A`, `1A STO`, `1A ITA @MENSA`, `+2B SOS`, `… *`.
+  Se cambi il formato, aggiorna insieme database.js, DATABASE.md e lo script. I nomi veri del Foglio restano solo in memoria.
 - **Dati della scuola in Orario Facile**: `orario-facile/index.html` contiene i dati 2026/27
   (`CSV_SCUOLA_CLASSI`, `CSV_SCUOLA_DOCENTI` e `datiScuola()`), caricati alla prima apertura e con il pulsante
   "Dati scuola 2026/27". **Privacy**: il repo è pubblico, quindi i docenti compaiono solo con un codice
@@ -94,6 +99,7 @@ orario-facile/    l'app Orario Facile (un unico index.html autonomo + modelli CS
 sostituzioni/     codice della scheda Sostituzioni di Orario Facile (css/, js/, esempio/ con facsimili)
 potenziamento/    linee guida per assegnare le ore di potenziamento di italiano L2 (linee-guida-L2.md):
                   da seguire quando si costruisce in Orario Facile l'orario dei docenti di potenziamento
+strumenti/        script da usare sul PC (Windows + Excel), es. crea-database.ps1 per creare il Foglio database
 dati/orario.json  l'orario letto da app/ (formato dell'app o backup di Orario Facile)
 dati/campanella.json  orari della campanella per il tasto 🔔 dell'app (vedi app/js/campanella.js)
 img/              immagini
