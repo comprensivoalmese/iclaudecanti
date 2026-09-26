@@ -33,10 +33,11 @@
       const ipad = /iPad/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
       return `<ol>
         <li>Apri questa pagina con <strong>Safari</strong> (la fotocamera la apre già lì).</li>
-        <li>Tocca il pulsante <strong>Condividi</strong>, il quadrato con la freccia verso l'alto
-          (${ipad ? 'in alto a destra, accanto alla barra dell\'indirizzo' : 'in basso al centro'}).</li>
-        <li><strong>Scorri verso il basso</strong> l'elenco delle azioni e scegli <strong>Aggiungi alla schermata Home</strong>,
-          poi tocca <strong>Aggiungi</strong>.</li>
+                <li>Tocca il pulsante <strong>Condividi</strong>, il quadrato con la freccia verso l'alto
+          (${ipad ? 'in alto a destra, accanto alla barra dell\'indirizzo' : 'in basso al centro'}).
+          Non lo vedi? Tocca prima i <strong>tre puntini (•••)</strong> accanto all'indirizzo e poi <strong>Condividi</strong>.</li>
+        <li>Si apre un pannello: <strong>trascinalo verso l'alto</strong> e scorri l'elenco <strong>fino in fondo</strong>:
+          lì trovi <strong>Aggiungi alla schermata Home</strong>. Toccalo, poi tocca <strong>Aggiungi</strong>.</li>
         <li>Apri l'app dall'icona <strong>Orario</strong> sulla schermata Home ed entra con l'account della scuola
           (la prima volta va fatto anche se eri già entrato in Safari).</li>
       </ol>
