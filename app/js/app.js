@@ -158,11 +158,19 @@
   // Il codice originale (DOC01…) resta in e.codice; nulla di tutto questo viene salvato sul dispositivo.
   function applicaNomi() {
     if (!D) return;
+    let trovati = 0;
     D.docente.forEach(e => {
       if (e.codice === undefined) e.codice = e.nome;
       const v = nomi && nomi.get(String(e.codice).trim().toUpperCase());
+      if (v) trovati++;
       e.nome = v ? (v.cognome + ' ' + v.nome).trim() : e.codice;
     });
+    // riga «Nomi dei docenti» in fondo alla pagina: dice quanti nomi sono stati abbinati ai codici
+    if (nomi) {
+      statoNomi = `${trovati} docenti su ${D.docente.length} con il nome (${nomi.size} righe lette dal Foglio)`;
+      if (!trovati) statoNomi += `: i codici non corrispondono (nell'orario per esempio «${Viste.esc((D.docente[0] || {}).codice || '')}», ` +
+        `nel Foglio «${Viste.esc([...nomi.keys()][0] || '')}»)`;
+    } else if (soloCodici) statoNomi = 'nascosti (hai scelto «Codici»)';
     D.docente.sort((a, b) => a.nome.localeCompare(b.nome, 'it', { numeric: true }));
     const b = $('#btnNomi');
     b.textContent = nomi ? '🙈 Codici' : '👁 Nomi';
@@ -184,6 +192,7 @@
   let soloCodici = false;    // l'utente ha scelto «🙈 Codici» in questa apertura dell'app
   const GIORNI_RIPROVA = 7;
   let avvisoNomi = '';       // perché i nomi non si sono caricati (si mostra in alto, vedi aggiorna)
+  let statoNomi = 'non ancora richiesti';   // a che punto è il caricamento dei nomi (riga in fondo alla pagina)
   // da quale file si leggono i nomi: se cambia (per esempio dal vecchio file al Foglio database) un rifiuto vecchio non vale più
   const fonteNomi = () => CONFIG.fileNomiDocenti || CONFIG.fileDatabaseOrario || '';
   function nomiNegati() {
@@ -193,15 +202,18 @@
     return !isNaN(quando) && Date.now() - quando < GIORNI_RIPROVA * 864e5;
   }
   async function caricaNomiDaSoli() {
-    if (nomi || !utente || aulaMonitor || secondiIngresso) return;
-    if (typeof NomiDocenti === 'undefined' || !NomiDocenti.configurato() || !CONFIG.googleClientId) return;
+    if (nomi || !utente) return;
+    if (aulaMonitor || secondiIngresso) { statoNomi = 'non si caricano sui monitor e sullo schermo all’ingresso'; return; }
+    if (typeof NomiDocenti === 'undefined' || !NomiDocenti.configurato() || !CONFIG.googleClientId) { statoNomi = 'non configurati in config.js'; return; }
     // Senza nomi veri serve comunque il permesso di Google per le sostituzioni pubblicate su Drive
-    if (nomiNegati()) avvisoNomi = 'Nomi dei docenti non caricati: il tuo account non può leggere la scheda Docenti del Foglio database.';
+    if (nomiNegati()) { avvisoNomi = 'Nomi dei docenti non caricati: il tuo account non può leggere la scheda Docenti del Foglio database.'; statoNomi = 'rifiutati da Google nei giorni scorsi'; }
     if (soloCodici || nomiNegati()) { permessoDrive(); return; }
+    statoNomi = 'chiedo il permesso a Google…'; aggiorna();
     try {
       nomi = await NomiDocenti.carica(utente.email);
     } catch (e) {
       const msg = String(e && e.message || '');
+      statoNomi = 'non caricati: ' + Viste.esc(msg);
       // Solo se Google dice che QUESTO ACCOUNT non può aprire il file (messaggi di nomi.js) smettiamo di riprovare
       if (/il tuo account non ha il permesso|file non trovato/i.test(msg)) {
         scrivi(CHIAVE_NOMI, 'negato:' + utente.email.toLowerCase() + ':' + new Date().toISOString().slice(0, 10) + ':' + fonteNomi());
@@ -216,6 +228,7 @@
       // qualsiasi problema (tranne la finestra di Google che aspetta un tocco): lo si scrive in alto, così si capisce
       // perché restano i codici DOC01… (vedi aggiorna)
       if (!/bloccato la finestra|popup/i.test(msg)) { avvisoNomi = 'Nomi dei docenti non caricati: ' + msg + '.'; aggiorna(); }
+      else { statoNomi = 'aspetto un tocco sullo schermo per aprire la finestra di Google'; aggiorna(); }
       return;
     }
     avvisoNomi = '';
@@ -360,6 +373,8 @@
       D.fonte === 'bozza' ? 'Stai vedendo l’orario di <a href="../orario-facile/" target="orariofacile">Orario Facile</a> salvato su questo dispositivo: si aggiorna da solo mentre lo modifichi.' : '',
       // versione dell'app: serve a capire se il dispositivo ha l'ultima (vedi versioneApp in config.js)
       CONFIG.versioneApp ? 'Versione app ' + Viste.esc(CONFIG.versioneApp) : '',
+      // a che punto sono i nomi veri dei docenti (serve a capire perché restano i codici DOC01…)
+      'Nomi dei docenti: ' + statoNomi,
       // copyright e licenza (vedi LICENZA.md nella radice del sito)
       '© 2026 <a href="https://www.comprensivoalmese.it" target="_blank" rel="noopener">IC Almese</a> – Gruppo Wolf' +
         ' · <a href="https://github.com/comprensivoalmese/orario/blob/main/LICENZA.md" target="_blank" rel="noopener">Tutti i diritti riservati</a>'
@@ -684,8 +699,9 @@
       chiudiMenu();
       if (nomi) { nomi = null; soloCodici = true; }
       else {
+        statoNomi = 'chiedo il permesso a Google…'; aggiorna();
         try { nomi = await NomiDocenti.carica(utente.email); soloCodici = false; scrivi(CHIAVE_NOMI, ''); }
-        catch (e) { $('#avviso').hidden = false; $('#avviso').textContent = 'Non riesco a mostrare i nomi: ' + e.message + '.'; return; }
+        catch (e) { statoNomi = 'non caricati: ' + Viste.esc(e.message); aggiorna(); $('#avviso').hidden = false; $('#avviso').textContent = 'Non riesco a mostrare i nomi: ' + e.message + '.'; return; }
       }
       applicaNomi();
       mioDocente = Dati.docentePerEmail(utente.email);
