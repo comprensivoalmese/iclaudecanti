@@ -5,7 +5,7 @@
 Guida per chi costruisce l'orario, lo pubblica e gestisce le sostituzioni dei docenti assenti. Serve il ruolo di
 **modificatore**: l'account Google della scuola da solo non basta.
 
-Indirizzo: **https://alessandrotrino-creator.github.io/iclaudecanti/orario-facile/**
+Indirizzo: **https://comprensivoalmese.github.io/iclaudecanti/orario-facile/**
 Sostituzioni: scheda 9 di Orario Facile
 
 ## In breve
