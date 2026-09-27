@@ -9,6 +9,9 @@
   Per sapere cosa aveva pubblicato questo dispositivo si ricordano solo gli ID (chiave "sostituzioni.pubblicateDaQui").
   Le sostituzioni di ALTRI dispositivi annullate da qui (tasto «✕ Annulla» nella tabella dell'app) vanno nell'elenco
   "annullate" del file: tutti le nascondono e il dispositivo che le aveva registrate le toglie dal suo registro.
+  Allo stesso modo le assenze di ALTRI dispositivi tolte da qui vanno nell'elenco "assenzeAnnullate": tutti le nascondono
+  e il dispositivo che le aveva registrate le toglie dalle sue assenze (e, se erano a recupero, si ricorda di restituire
+  le ore nel foglio del conteggio: chiave "sostituzioni.daSistemare", ci pensa Sostituzioni.sistemaInSospeso).
 
   Nel file pubblicato vanno SOLO i dati che l'app mostra: giorno, ore, classe, codici dei docenti (niente permessi,
   niente nomi veri). Usa PubblicaDrive (pubblica-drive.js), Dati.leggiDrive (dati.js) e NomiDocenti (nomi.js).
@@ -45,6 +48,9 @@ const PubblicaSostituzioni = (() => {
         .map(c => ({ id: c.id, data: c.data, ora: c.ora, classe: c.classe, da: c.da, a: c.a, docente: c.docente })),
       // sostituzioni di altri dispositivi annullate da qui (tasto «✕ Annulla» nella tabella dell'app)
       annullate: leggiLocale('sostituzioni.annullate', []).filter(recente),
+      // assenze di altri dispositivi tolte da qui: solo { id, data, docente } (niente recupero)
+      assenzeAnnullate: leggiLocale('sostituzioni.assenzeAnnullate', []).filter(recente)
+        .map(a => ({ id: a.id || '', data: a.data, docente: a.docente })),
       // uscite didattiche (sostituzioni/js/uscite.js): solo quali classi sono fuori e quando (niente descrizione)
       uscite: leggiLocale('sostituzioni.uscite', []).filter(recente)
         .map(u => ({ id: u.id, data: u.data, classi: u.classi, ore: u.ore }))
@@ -69,27 +75,69 @@ const PubblicaSostituzioni = (() => {
     return s => (s.id && id.has(s.id)) || segni.has(segnoR(s));
   }
 
-  /*
-    Toglie dal registro di QUESTO dispositivo le sostituzioni annullate da qualcun altro (senza togliere ore dal foglio
-    del conteggio: l'ha già fatto chi le ha annullate). Avvisa il motore delle sostituzioni, se è aperto in questa
-    pagina, con un evento "storage" finto (quelli veri arrivano solo dalle altre schede). Restituisce quante ne ha tolte.
-  */
-  function applicaAnnullate(annullate) {
-    if (!Array.isArray(annullate) || !annullate.length) return 0;
-    const registro = leggiLocale('sostituzioni.registro', []);
-    const colpisce = colpita(annullate);
-    const resta = registro.filter(s => !colpisce(s));
-    if (resta.length === registro.length) return 0;
-    scriviLocale('sostituzioni.registro', resta);
-    try { window.dispatchEvent(new StorageEvent('storage', { key: 'sostituzioni.registro' })); } catch (e) { /* browser vecchio */ }
-    return registro.length - resta.length;
+  // Assenze annullate: elenco di { id, data, docente }; come per le sostituzioni conta l'ID (se c'è)
+  function assenzaColpita(assenzeAnnullate) {
+    const id = new Set(assenzeAnnullate.filter(t => t.id).map(t => t.id));
+    const segni = new Set(assenzeAnnullate.filter(t => !t.id).map(segnoA));
+    return a => (a.id && id.has(a.id)) || segni.has(segnoA(a));
   }
 
-  // Unisce due elenchi di annullate senza doppioni (tiene solo quelle recenti)
-  function unisciAnnullate(a, b) {
+  /*
+    Toglie da QUESTO dispositivo le sostituzioni e le assenze annullate da qualcun altro. Restituisce quante voci ha tolto.
+    - sostituzioni: si tolgono dal registro, senza togliere ore dal foglio del conteggio (l'ha già fatto chi le ha annullate);
+    - assenze: si tolgono dalle assenze di qui. Se erano a recupero (ore tolte nel foglio da QUESTO dispositivo), le ore
+      vanno restituite: se non l'ha già fatto chi le ha tolte, lo fa questo dispositivo appena può (coda
+      "sostituzioni.daSistemare", vedi Sostituzioni.sistemaInSospeso). Lo stesso per le sostituzioni di quelle assenze
+      che gli altri non potevano ancora vedere (non pubblicate): si tolgono e, se erano nel foglio, −1 al sostituto.
+    Avvisa il motore delle sostituzioni, se è aperto in questa pagina, con un evento "storage" finto
+    (quelli veri arrivano solo dalle altre schede).
+  */
+  function applicaAnnullate(annullate, assenzeAnnullate) {
+    let tolte = 0;
+    const coda = [];
+    if (Array.isArray(annullate) && annullate.length) {
+      const registro = leggiLocale('sostituzioni.registro', []);
+      const colpisce = colpita(annullate);
+      const resta = registro.filter(s => !colpisce(s));
+      if (resta.length !== registro.length) {
+        scriviLocale('sostituzioni.registro', resta);
+        tolte += registro.length - resta.length;
+      }
+    }
+    if (Array.isArray(assenzeAnnullate) && assenzeAnnullate.length) {
+      const assenze = leggiLocale('sostituzioni.assenze', []);
+      const colpisce = assenzaColpita(assenzeAnnullate);
+      const via = assenze.filter(colpisce);
+      if (via.length) {
+        scriviLocale('sostituzioni.assenze', assenze.filter(a => !colpisce(a)));
+        // recupero già segnato nel foglio: ore da restituire (conRiga = scritto anche nel foglio «Recuperi»)
+        via.filter(a => a.permessoSegnate).forEach(a => coda.push({ tipo: 'recupero', chiave: 'R|' + a.id,
+          id: a.id, data: a.data, docente: a.docente, ore: a.permessoSegnate, conRiga: !!a.rigaRecupero }));
+        // le sostituzioni di quelle assenze ancora qui (le altre le ha già annullate chi ha tolto l'assenza)
+        const registro = leggiLocale('sostituzioni.registro', []);
+        const diVia = s => via.some(a => a.data === s.data && a.docente === s.assente);
+        registro.filter(diVia).forEach(s => coda.push(Object.assign({ tipo: 'sostituzione', chiave: 'S|' + s.id }, s)));
+        if (registro.some(diVia)) scriviLocale('sostituzioni.registro', registro.filter(s => !diVia(s)));
+        tolte += via.length;
+      }
+    }
+    if (coda.length) {
+      const prima = leggiLocale('sostituzioni.daSistemare', []);
+      const gia = new Set(prima.map(x => x.chiave));
+      scriviLocale('sostituzioni.daSistemare', prima.concat(coda.filter(x => !gia.has(x.chiave))));
+    }
+    if (tolte) {
+      try { window.dispatchEvent(new StorageEvent('storage', { key: 'sostituzioni.registro' })); } catch (e) { /* browser vecchio */ }
+    }
+    return tolte;
+  }
+
+  // Unisce due elenchi di annullate senza doppioni (tiene solo quelle recenti);
+  // segno = come riconoscerle se non hanno l'ID (sostituzioni: data, ora, classe; assenze: data, docente)
+  function unisciAnnullate(a, b, segno) {
     const visti = new Set();
     return a.concat(b).filter(t => {
-      const k = t && (t.id || segnoR(t));
+      const k = t && (t.id || (segno || segnoR)(t));
       if (!t || !recente(t) || visti.has(k)) return false;
       visti.add(k);
       return true;
@@ -107,18 +155,21 @@ const PubblicaSostituzioni = (() => {
     let testo;
     try { testo = await Dati.leggiDrive(CONFIG.fileSostituzioniPubblicate); }
     catch (e) { throw new Error('non riesco a leggere le sostituzioni già pubblicate (' + (e && e.message ? e.message : e) + '): riprova tra poco'); }
-    let remoto = { assenze: [], registro: [], cambi: [], annullate: [], uscite: [] };
+    let remoto = { assenze: [], registro: [], cambi: [], annullate: [], uscite: [], assenzeAnnullate: [] };
     try {
       const o = JSON.parse(testo || '{}');
       remoto = { assenze: Array.isArray(o.assenze) ? o.assenze : [], registro: Array.isArray(o.registro) ? o.registro : [],
         cambi: Array.isArray(o.cambi) ? o.cambi : [], annullate: Array.isArray(o.annullate) ? o.annullate : [],
-        uscite: Array.isArray(o.uscite) ? o.uscite : [] };
+        uscite: Array.isArray(o.uscite) ? o.uscite : [], assenzeAnnullate: Array.isArray(o.assenzeAnnullate) ? o.assenzeAnnullate : [] };
     } catch (e) { throw new Error('il file delle sostituzioni pubblicate non è leggibile: controllalo su Drive prima di pubblicare'); }
     // prima di unire: le sostituzioni annullate da altri spariscono anche dal registro di questo dispositivo,
     // altrimenti le ripubblicheremmo noi
     const annullate = unisciAnnullate(remoto.annullate, leggiLocale('sostituzioni.annullate', []));
-    applicaAnnullate(annullate);
+    const assenzeAnnullate = unisciAnnullate(remoto.assenzeAnnullate, leggiLocale('sostituzioni.assenzeAnnullate', []), segnoA)
+      .map(a => ({ id: a.id || '', data: a.data, docente: a.docente }));
+    applicaAnnullate(annullate, assenzeAnnullate);
     const nonAnnullata = (colpisce => s => !colpisce(s))(colpita(annullate));
+    const assenzaValida = (colpisce => a => !colpisce(a))(assenzaColpita(assenzeAnnullate));
     const L = locali();
     const idLocali = new Set(L.assenze.map(x => x.id).concat(L.registro.map(x => x.id), L.cambi.map(x => x.id), L.uscite.map(x => x.id)));
     const primaDaQui = new Set(leggiLocale(CHIAVE_DA_QUI, []));
@@ -127,11 +178,12 @@ const PubblicaSostituzioni = (() => {
     const tieni = (x, segno) => recente(x) && !(x.id && (idLocali.has(x.id) || primaDaQui.has(x.id))) && !segniLocali.has(segno(x));
     const unito = {
       pubblicato: new Date().toISOString(),
-      assenze: remoto.assenze.filter(x => tieni(x, segnoA)).concat(L.assenze),
+      assenze: remoto.assenze.filter(x => tieni(x, segnoA)).concat(L.assenze).filter(assenzaValida),
       registro: remoto.registro.filter(x => tieni(x, segnoR)).concat(L.registro).filter(nonAnnullata),
       cambi: remoto.cambi.filter(x => tieni(x, segnoC)).concat(L.cambi),
       uscite: remoto.uscite.filter(x => tieni(x, segnoU)).concat(L.uscite),
-      annullate
+      annullate,
+      assenzeAnnullate
     };
     await PubblicaDrive.pubblicaSostituzioni(JSON.stringify(unito), email);
     scriviLocale(CHIAVE_DA_QUI, [...idLocali]);
@@ -193,5 +245,5 @@ const PubblicaSostituzioni = (() => {
     window.addEventListener('storage', e => { if (e.key && e.key.startsWith('sostituzioni.')) controlla(); });
   }
 
-  return { unisciEPubblica, avviaAutomatica, configurato, applicaAnnullate, colpita };
+  return { unisciEPubblica, avviaAutomatica, configurato, applicaAnnullate, colpita, assenzaColpita };
 })();

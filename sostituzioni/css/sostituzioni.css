@@ -69,6 +69,14 @@
 .sost-settimana .btn::first-letter { text-transform: uppercase; }
 .sost-settimana .sost-giorno-scoperto { border-color: var(--warn); }
 
+/* ---------- Sostituzioni di tutti (una riga per sostituzione, con «Annulla per tutti») ---------- */
+.sost-tutte { list-style: none; padding: 0; margin: 4px 0 12px; }
+.sost-tutte li {
+  display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
+  padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r); margin-top: 6px; background: var(--surface);
+}
+.sost-tutte .tag { margin-left: 4px; }
+
 /* ---------- Ore da coprire ---------- */
 .sost-ora { border: 1px solid var(--line); border-radius: var(--r); padding: 12px; margin-top: 10px; background: var(--surface); }
 .sost-ora h3 { font-size: 15px; }

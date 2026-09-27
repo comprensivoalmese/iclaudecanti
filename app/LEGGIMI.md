@@ -52,6 +52,13 @@ di Orario Facile in versione **semplice e rapida**, dentro l'app, con lo stile a
   giusto, si conferma e la sostituzione si annulla: al docente che sostituiva si toglie 1 ora nel **foglio del conteggio**
   (nella settimana della sostituzione), la riga sparisce dal foglio «Sostituzioni» e, con la pubblicazione automatica,
   sparisce per tutti. Chi non è autorizzato vede la sostituzione ma non il tasto; il tasto non si stampa.
+- **✕ Togli assenza nella tabella**: allo stesso modo, sulle ore di un docente assente ancora da coprire c'è *✕ Togli assenza*:
+  si apre questa pagina, si conferma e l'assenza sparisce per tutti; le sue sostituzioni si annullano (−1 a chi sostituiva) e le
+  ore di recupero tornano al docente nel foglio del conteggio. Anche *Togli* negli assenti fa tutto questo e pubblica subito.
+- **Assenze e sostituzioni di tutti**: in fondo alla pagina, *👥 Mostra le assenze e le sostituzioni di tutti* elenca quelle del
+  giorno scelto, anche registrate dai colleghi su altri dispositivi. *Togli per tutti* toglie l'assenza (come sopra); *Annulla per
+  tutti* annulla solo quella sostituzione (−1 al sostituto nel foglio del conteggio, riga tolta dal foglio «Sostituzioni»).
+  Tutti e due pubblicano subito, così la modifica si vede su tutti i dispositivi.
 - **🖨️ Stampa le sostituzioni del giorno**.
 
 **⇄ Cambi d'aula** ha una **voce di menu dedicata**, subito sotto: apre la stessa pagina a schede con solo il modulo dei

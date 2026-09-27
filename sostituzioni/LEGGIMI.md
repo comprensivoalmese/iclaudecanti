@@ -115,6 +115,19 @@ sul dispositivo). Dati: chiave `sostituzioni.uscite`; codice: `js/uscite.js`.
    del conteggio (se era stata segnata) e la riga dal foglio «Sostituzioni»; prima, se il foglio del conteggio non è
    ancora caricato, lo si legge da Drive. Le sostituzioni di altri dispositivi annullate vanno nell'elenco `annullate`
    (chiave `sostituzioni.annullate`), che viaggia nel file pubblicato e le fa sparire anche dal dispositivo d'origine.
+   **Assenze e sostituzioni di tutti** (riquadro sotto «Ore da coprire»): *👥 Mostra le assenze e le sostituzioni di tutti* legge
+   il file pubblicato e mostra, giorno per giorno, tutte le assenze e le sostituzioni (di qui e degli altri dispositivi).
+   *Annulla per tutti* annulla solo quella sostituzione, corregge il foglio del conteggio e pubblica subito.
+   Il tasto rosso in fondo cancella invece i dati SOLO di questo dispositivo.
+   **Togliere un'assenza** (*Togli* nell'elenco degli assenti, *Togli per tutti* nel riquadro, **✕ Togli assenza** nella
+   tabella dell'app): dopo la conferma si annullano anche le sue sostituzioni (−1 a chi sostituiva nel foglio del conteggio,
+   righe tolte dal foglio «Sostituzioni»), si **restituiscono le ore di recupero** al docente e si pubblica subito, così
+   l'assenza sparisce per tutti. Funziona anche per le assenze registrate su un altro dispositivo: vanno nell'elenco
+   `assenzeAnnullate` del file pubblicato. Le ore di recupero non sono nel file pubblicato (dato personale): per saperle,
+   chi toglie l'assenza legge la scheda **«Recuperi»** del file delle sostituzioni (l'app la crea da sola; una riga per ogni
+   assenza a recupero). Se la riga non c'è, le ore le restituisce il dispositivo che aveva registrato l'assenza, la prossima
+   volta che lì si aprono le sostituzioni (coda `sostituzioni.daSistemare`).
+   Se si **tolgono ore** a un'assenza già registrata, le sostituzioni di quelle ore si annullano (con −1 a chi sostituiva).
 5. A fine settimana copia nel foglio le ore della tabella **"Da aggiungere nel foglio"** (+1 per ogni ora
    di sostituzione, nella colonna della settimana), poi premi **"Segna come già riportate"** e ricarica il foglio.
 

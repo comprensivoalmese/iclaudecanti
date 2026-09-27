@@ -759,9 +759,17 @@
     // (le celle restano evidenziate), "Avvisami" chiede il permesso per le notifiche
     // «✕ Annulla» su una sostituzione della tabella (solo per chi è autorizzato, vedi viste.js): si apre la pagina
     // Sostituzioni, che chiede conferma e la annulla (anche nel foglio del conteggio e nel foglio «Sostituzioni»)
+    // «✕ Togli assenza» (stesso stile): la pagina Sostituzioni chiede conferma e toglie l'assenza per tutti
     $('#contenitoreTabella').addEventListener('click', e => {
       const b = e.target.closest('.annulla-sost');
       if (!b || !stato.sostituzioni) return;
+      if (b.dataset.togliAssenza) {
+        const [id, data, docente] = b.dataset.togliAssenza.split('|');
+        const assenza = [...stato.sostituzioni.segnate.values()].map(x => x.assenza).filter(Boolean)
+          .find(a => id ? a.id === id : a.data === data && a.docente === docente);
+        if (assenza) apriSmart(true, 'sostituzioni', { assenza });
+        return;
+      }
       const [id, data, ora, classe] = b.dataset.annullaSost.split('|');
       const voce = [...stato.sostituzioni.segnate.values()].map(x => x.voce).filter(Boolean)
         .find(v => id ? v.id === id : v.data === data && String(v.ora) === ora && v.classe === classe);

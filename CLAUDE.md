@@ -105,6 +105,17 @@ Le parti del progetto:
   Quelle vanno nell'elenco `annullate` (chiave `sostituzioni.annullate` e campo `annullate` del file pubblicato):
   `supplenze.js` le nasconde e `PubblicaSostituzioni.applicaAnnullate()` le toglie dal registro del dispositivo che le aveva
   registrate (senza un secondo −1). Il file pubblicato ora ha anche `nelFoglio`/`nelRegistro`/`riportata` per ogni sostituzione.
+  **Assenze e sostituzioni di tutti** (scheda di Orario Facile e pagina smart): `caricaTutte()` unisce il file pubblicato e i dati
+  di qui (senza le annullate; `tutte.elenco` = sostituzioni, `tutte.assenze` = assenze); «Annulla per tutti» chiama `annullaPerTutti()`
+  = `annullaVoce()` + `pubblicaSubito()`. **Togliere un'assenza è reversibile per tutti** (dal 27/09/2026): «Togli»/«Togli per tutti»
+  e il tasto «✕ Togli assenza» della tabella dell'app (`togliAssenza()` se è di qui, `togliAssenzaPerTutti()` se è di un altro
+  dispositivo) annullano anche le sue sostituzioni (−1 a chi sostituiva), restituiscono le ore di recupero nel foglio del conteggio
+  e pubblicano subito. Le assenze di altri dispositivi tolte finiscono in `assenzeAnnullate` (chiave e campo del file pubblicato):
+  tutti le nascondono e `applicaAnnullate()` le toglie al dispositivo d'origine. Le ore di recupero NON sono nel file pubblicato
+  (dato personale): stanno nella scheda «Recuperi» del file delle sostituzioni (`RegistroDrive`, tipo 'recuperi', riga per ID,
+  `aggiornaRigaRecupero`); chi toglie l'assenza le legge lì (`restituisciRecupero`); se la riga non c'è, le restituisce il
+  dispositivo d'origine (coda `sostituzioni.daSistemare`, `sistemaInSospeso()`). Ridurre le ore di un'assenza annulla (con −1)
+  le sostituzioni delle ore tolte.
   **Chi può fare le sostituzioni** lo decide il Foglio Google `CONFIG.fileSostituzioni` (`sostituzioni/js/registro-drive.js`):
   foglio «Autorizzazioni» (nomi ed email degli autorizzati) e foglio «Sostituzioni» (una riga per sostituzione assegnata,
   con i **nomi veri** dei docenti presi da `fileNomiDocenti` e tenuti solo in memoria). Su GitHub e in `localStorage`

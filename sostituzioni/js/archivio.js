@@ -10,6 +10,8 @@ const Archivio = (() => {
     registro: 'sostituzioni.registro',         // le sostituzioni assegnate
     abbinamenti: 'sostituzioni.abbinamenti',   // abbinamenti scelti a mano: docente dell'orario -> riga del foglio
     annullate: 'sostituzioni.annullate',       // sostituzioni di ALTRI dispositivi annullate da qui (vedi annullaVoce)
+    assenzeAnnullate: 'sostituzioni.assenzeAnnullate', // assenze di ALTRI dispositivi tolte da qui (vedi togliAssenzaPerTutti)
+    daSistemare: 'sostituzioni.daSistemare',   // correzioni del foglio del conteggio ancora da fare (assenze tolte da altri)
     cambiAula: 'sostituzioni.cambiAula',       // i cambi d'aula di un giorno (js/cambi-aula.js)
     uscite: 'sostituzioni.uscite'              // le uscite didattiche (js/uscite.js)
   };

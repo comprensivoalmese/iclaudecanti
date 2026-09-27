@@ -24,7 +24,7 @@ const Supplenze = (() => {
   let pubblicate = null;
   const elenchi = o => ({ assenze: Array.isArray(o && o.assenze) ? o.assenze : [], registro: Array.isArray(o && o.registro) ? o.registro : [],
     cambi: Array.isArray(o && o.cambi) ? o.cambi : [], annullate: Array.isArray(o && o.annullate) ? o.annullate : [],
-    uscite: Array.isArray(o && o.uscite) ? o.uscite : [] });
+    uscite: Array.isArray(o && o.uscite) ? o.uscite : [], assenzeAnnullate: Array.isArray(o && o.assenzeAnnullate) ? o.assenzeAnnullate : [] });
   // Come si riconosce la stessa voce anche senza ID (pubblicata con una versione vecchia)
   const SEGNO = { assenze: a => a.data + '|' + a.docente, registro: s => s.data + '|' + s.ora + '|' + s.classe, cambi: c => c.data + '|' + c.ora + '|' + c.classe,
     uscite: u => u.data + '|' + (u.classi || []).join(',') };
@@ -33,6 +33,7 @@ const Supplenze = (() => {
     spariscono quelle che questo dispositivo aveva pubblicato e poi annullato (ID in "sostituzioni.pubblicateDaQui").
     Spariscono anche le sostituzioni annullate da un altro dispositivo (elenco "annullate" del file pubblicato) o da qui
     con il tasto «✕ Annulla» della tabella (chiave "sostituzioni.annullate"), vedi app/js/pubblica-sostituzioni.js.
+    Allo stesso modo spariscono le assenze tolte da un altro dispositivo o da qui ("assenzeAnnullate").
   */
   function unisci(pub, loc) {
     const daQui = new Set(leggi('sostituzioni.pubblicateDaQui'));
@@ -45,6 +46,16 @@ const Supplenze = (() => {
     if (annullate.length && typeof PubblicaSostituzioni !== 'undefined') {
       const colpisce = PubblicaSostituzioni.colpita(annullate);
       out.registro = out.registro.filter(s => !colpisce(s));
+    }
+    const assenzeAnnullate = (pub ? pub.assenzeAnnullate : []).concat(loc.assenzeAnnullate || []);
+    if (assenzeAnnullate.length && typeof PubblicaSostituzioni !== 'undefined') {
+      const colpisce = PubblicaSostituzioni.assenzaColpita(assenzeAnnullate);
+      out.assenze = out.assenze.filter(a => !colpisce(a));
+      // anche le sostituzioni di quelle assenze (chi l'ha tolta le ha già annullate, ma può non averle viste tutte),
+      // purché quel giorno il docente non sia ancora assente per un'assenza nuova
+      const tolta = new Set(assenzeAnnullate.map(a => a.data + '|' + a.docente));
+      const resta = new Set(out.assenze.map(a => a.data + '|' + a.docente));
+      out.registro = out.registro.filter(s => !tolta.has(s.data + '|' + s.assente) || resta.has(s.data + '|' + s.assente));
     }
     return out;
   }
@@ -59,7 +70,8 @@ const Supplenze = (() => {
       pubblicate = elenchi(JSON.parse(testo));
       try { localStorage.setItem(CHIAVE_COPIA, testo); } catch (e) { /* spazio pieno o bloccato: pazienza */ }
       // sostituzioni di questo dispositivo annullate da qualcun altro: spariscono anche dal registro di qui
-      if (typeof PubblicaSostituzioni !== 'undefined') PubblicaSostituzioni.applicaAnnullate(pubblicate.annullate);
+      // (e così le assenze di qui tolte da qualcun altro)
+      if (typeof PubblicaSostituzioni !== 'undefined') PubblicaSostituzioni.applicaAnnullate(pubblicate.annullate, pubblicate.assenzeAnnullate);
     } catch (e) {
       // senza rete: l'ultima copia salvata su questo dispositivo
       if (!pubblicate) { try { const c = localStorage.getItem(CHIAVE_COPIA); if (c) pubblicate = elenchi(JSON.parse(c)); } catch (x) { /* ignorato */ } }
@@ -107,7 +119,7 @@ const Supplenze = (() => {
 
     // Le voci pubblicate (di tutti) unite a quelle registrate su questo dispositivo
     const locali = { assenze: leggi('sostituzioni.assenze'), registro: leggi('sostituzioni.registro'), cambi: leggi('sostituzioni.cambiAula'),
-      annullate: leggi('sostituzioni.annullate'), uscite: leggi('sostituzioni.uscite') };
+      annullate: leggi('sostituzioni.annullate'), uscite: leggi('sostituzioni.uscite'), assenzeAnnullate: leggi('sostituzioni.assenzeAnnullate') };
     const fonte = unisci(pubblicate, locali);
 
     // 0. le uscite didattiche (sostituzioni/js/uscite.js): "giorno|ora|classe" delle classi fuori
@@ -120,11 +132,13 @@ const Supplenze = (() => {
     D.lezioni.filter(eFuori).forEach(l => segnate.set(chiave(l.giorno, l.ora, l.classe, l.docente), { uscita: true, assente: '', sostituto: '' }));
 
     // 1. le lezioni dei docenti assenti (per ora senza sostituto: "da coprire"); non quelle delle classi fuori
+    //    assenza = l'assenza così com'è registrata: serve al tasto «✕ Togli assenza» della tabella
     fonte.assenze.forEach(a => {
       const giorno = giornoDi.get(a.data);
       if (!giorno || !Array.isArray(a.ore)) return;
+      const assenza = { id: a.id || '', data: a.data, docente: a.docente, ore: a.ore };
       D.lezioni.filter(l => l.giorno === giorno && l.docente === a.docente && a.ore.includes(l.ora) && !eFuori(l))
-        .forEach(l => segnate.set(chiave(giorno, l.ora, l.classe, l.docente), { assente: l.docente, sostituto: '' }));
+        .forEach(l => segnate.set(chiave(giorno, l.ora, l.classe, l.docente), { assente: l.docente, sostituto: '', assenza }));
     });
 
     // 2. le sostituzioni assegnate: chi sostituisce, e la lezione in più nel suo orario
@@ -160,5 +174,5 @@ const Supplenze = (() => {
     return sost.segnate.get(chiave(l.giorno, l.ora, l.classe, l.docente)) || null;
   }
 
-  return { settimana, di, cambioAula, scarica, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula', 'sostituzioni.annullate', 'sostituzioni.uscite'] };
+  return { settimana, di, cambioAula, scarica, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula', 'sostituzioni.annullate', 'sostituzioni.uscite', 'sostituzioni.assenzeAnnullate'] };
 })();

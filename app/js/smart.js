@@ -5,6 +5,7 @@
   - Assenze del giorno (docente, ore, permesso), anche per più giorni della stessa settimana;
   - pulsanti dei giorni della settimana, con quante ore restano da coprire;
   - Ore da coprire, con i docenti proposti già in ordine (prima chi ha più ore a debito);
+  - Assenze e sostituzioni di tutti (anche dei colleghi su altri dispositivi), con «Togli per tutti» e «Annulla per tutti»;
   - Stampa delle sostituzioni del giorno.
   Tutto il resto (autorizzazione, foglio del conteggio, abbinamenti, +1 / -1, registro su Drive) lo fa
   da solo lo stesso motore della scheda (sostituzioni/js/sostituzioni.js, Sostituzioni.collega):
@@ -108,7 +109,7 @@ const Smart = (() => {
       zona.innerHTML = testataHtml(D, st) + '<div class="schede-breve" id="smartCambi"></div>' + stampaCambiHtml(D);
       if (typeof CambiAula !== 'undefined') CambiAula.disegna(zona.querySelector('#smartCambi'), iso, 'smart');
     } else {
-      zona.innerHTML = testataHtml(D, st) + `<div class="schede-breve">${schedaAssenze(D)}</div>` + oreHtml(D) + stampaHtml(D);
+      zona.innerHTML = testataHtml(D, st) + `<div class="schede-breve">${schedaAssenze(D)}</div>` + oreHtml(D) + tutteHtml() + stampaHtml(D);
     }
     if (focus && document.getElementById(focus)) document.getElementById(focus).focus();
   }
@@ -250,7 +251,45 @@ const Smart = (() => {
     return `<h3 class="titoletto-breve">Ore da coprire</h3><ol class="giornata-breve ore-coprire-smart">${schede}</ol>`;
   }
 
-  // 3. Stampa: la tabella del giorno (si vede solo in stampa) e il pulsante
+  // 3. Assenze e sostituzioni di tutti del giorno scelto (anche dei colleghi, su altri dispositivi): ogni assenza con
+  //    «Togli per tutti», ogni sostituzione con «Annulla per tutti». L'elenco lo prepara il motore
+  //    (Sostituzioni: caricaTutte, tutte, annullaPerTutti, togliAssenzaPerTutti)
+  function tutteHtml() {
+    const t = motore.tutte();
+    const pulsante = `<button type="button" class="pulsante" data-azione="tutte-carica"${t.stato === 'carico' ? ' disabled' : ''}>` +
+      `${t.stato === 'mai' ? '👥 Mostra le assenze e le sostituzioni di tutti' : t.stato === 'carico' ? 'Leggo…' : '↻ Aggiorna l\'elenco'}</button>`;
+    let corpo = '';
+    if (t.stato !== 'mai') {
+      const assenzeG = t.assenze.map((a, i) => ({ a, i })).filter(x => x.a.data === iso);
+      const delGiorno = t.elenco.map((v, i) => ({ v, i })).filter(x => x.v.data === iso);
+      corpo = (assenzeG.length
+        ? '<ul class="assenti-smart">' + assenzeG.map(({ a, i }) => {
+          const occupato = motore.inCorsoAssenza(a);
+          return `<li><span><b>${esc(motore.nomeDocente(a.docente))}</b> assente · ${(a.ore || []).map(n => n + 'ª').join(', ')}
+              ${a.qui ? '' : ' · <span class="tag-smart">altro dispositivo</span>'}</span>
+            <button type="button" class="pulsante" data-azione="togli-tutti" data-i="${i}"${occupato ? ' disabled' : ''}
+              aria-label="Togli per tutti l'assenza di ${esc(motore.nomeDocente(a.docente))}">
+              ${occupato ? 'Aggiorno i fogli…' : 'Togli per tutti'}</button></li>`;
+        }).join('') + '</ul>' : '') +
+        (delGiorno.length
+        ? '<ul class="assenti-smart">' + delGiorno.map(({ v, i }) => {
+          const occupato = motore.inCorso(v.id);
+          return `<li><span><b>${v.ora}ª ora · ${esc(motore.nome('classe', v.classe))}</b> · ${esc(motore.nomeDocente(v.assente))} assente →
+              <b>${esc(motore.nomeDocente(v.sostituto))}</b>${v.qui ? '' : ' · <span class="tag-smart">altro dispositivo</span>'}</span>
+            <button type="button" class="pulsante" data-azione="annulla-tutti" data-i="${i}"${occupato ? ' disabled' : ''}
+              aria-label="Annulla per tutti la sostituzione della ${v.ora}ª ora in ${esc(motore.nome('classe', v.classe))}">
+              ${occupato ? 'Aggiorno i fogli…' : 'Annulla per tutti'}</button></li>`;
+        }).join('') + '</ul>'
+        : '') || '<p class="vuoto-breve">Nessuna assenza né sostituzione in questo giorno.</p>';
+    }
+    return `<h3 class="titoletto-breve">Assenze e sostituzioni di tutti</h3><div class="schede-breve"><article class="scheda-breve">
+      <p class="dettagli-breve">Anche quelle registrate dai colleghi su altri dispositivi. «Annulla per tutti» toglie 1 ora al sostituto
+        nel foglio del conteggio e fa sparire la sostituzione per tutti. «Togli per tutti» toglie l'assenza: annulla anche le sue
+        sostituzioni e restituisce le ore di recupero nel foglio del conteggio.</p>
+      ${t.messaggio ? `<p class="vuoto-breve">⚠️ ${esc(t.messaggio)}.</p>` : ''}${corpo}${pulsante}</article></div>`;
+  }
+
+  // 4. Stampa: la tabella del giorno (si vede solo in stampa) e il pulsante
   function stampaHtml(D) {
     const elenco = motore.oreDaCoprire(iso);
     if (!elenco.length) return '';
@@ -313,6 +352,17 @@ const Smart = (() => {
       return;
     }
     if (azione === 'tutti') { aperte.add(b.dataset.chiave); disegna(); return; }
+    if (azione === 'tutte-carica') { motore.caricaTutte(); return; }
+    if (azione === 'annulla-tutti') {
+      const v = motore.tutte().elenco[Number(b.dataset.i)];
+      if (v && confirm(motore.domandaPerTutti(v))) motore.annullaPerTutti(v);
+      return;
+    }
+    if (azione === 'togli-tutti') {
+      const a = motore.tutte().assenze[Number(b.dataset.i)];
+      if (a) motore.togliAssenzaPerTutti(a);   // la conferma la chiede il motore
+      return;
+    }
     if (azione === 'stampa') stampa();
   }
 
@@ -376,7 +426,33 @@ const Smart = (() => {
     const st = motore.stato();
     if (st.abilitazione.stato === 'da-verificare') motore.verifica();
     // Aperta dal tasto «✕ Annulla» di una sostituzione nella tabella: si passa ad annullarla
-    if (ctx.annulla && modo === 'sostituzioni') annullaDaTabella(ctx.annulla);
+    // Aperta dal tasto «✕ Togli assenza»: ctx.annulla = { assenza }
+    if (ctx.annulla && modo === 'sostituzioni') {
+      if (ctx.annulla.assenza) togliAssenzaDaTabella(ctx.annulla.assenza);
+      else annullaDaTabella(ctx.annulla);
+    }
+  }
+
+  // Aspetta (al massimo 30 secondi) il controllo del foglio «Autorizzazioni»; restituisce true se si può procedere
+  async function attendiAutorizzazione(cosa) {
+    const inAttesa = () => motore.stato().conRegistro && ['da-verificare', 'verifica'].includes(motore.stato().abilitazione.stato);
+    for (let i = 0; i < 100 && inAttesa(); i++) await new Promise(r => setTimeout(r, 300));
+    if (motore.stato().puoFare) return true;
+    avvisa(`Non posso ${cosa}: il tuo account non risulta autorizzato alle sostituzioni (foglio «Autorizzazioni»).`);
+    return false;
+  }
+
+  /*
+    Toglie l'assenza scelta nella tabella (tasto «✕ Togli assenza», voce di supplenze.js): mostra il suo giorno e lascia
+    fare al motore (Sostituzioni.togliAssenzaPerTutti), che chiede conferma, annulla le sue sostituzioni (−1 a chi
+    sostituiva), restituisce le ore di recupero nel foglio del conteggio e pubblica, così l'assenza sparisce per tutti.
+  */
+  async function togliAssenzaDaTabella(assenza) {
+    const D = contesto.orario();
+    if (Breve.giorniDiScuola(D).some(g => g.iso === assenza.data)) { iso = assenza.data; disegna(); }
+    if (!(await attendiAutorizzazione('togliere l\'assenza'))) return;
+    await motore.togliAssenzaPerTutti(assenza);
+    disegna();
   }
 
   /*
@@ -389,12 +465,7 @@ const Smart = (() => {
     const D = contesto.orario();
     if (Breve.giorniDiScuola(D).some(g => g.iso === voce.data)) { iso = voce.data; disegna(); }
     // il foglio «Autorizzazioni» si controlla da solo: aspetto al massimo 30 secondi
-    const inAttesa = () => motore.stato().conRegistro && ['da-verificare', 'verifica'].includes(motore.stato().abilitazione.stato);
-    for (let i = 0; i < 100 && inAttesa(); i++) await new Promise(r => setTimeout(r, 300));
-    if (!motore.stato().puoFare) {
-      avvisa('Non posso annullare la sostituzione: il tuo account non risulta autorizzato alle sostituzioni (foglio «Autorizzazioni»).');
-      return;
-    }
+    if (!(await attendiAutorizzazione('annullare la sostituzione'))) return;
     const domanda = `Annullare questa sostituzione?\n\n${motore.dataCorta(voce.data)} · ${motore.testoOra(voce.ora)}\n` +
       `Classe ${motore.nome('classe', voce.classe)} · assente ${motore.nomeDocente(voce.assente)}\n` +
       `Sostituisce: ${motore.nomeDocente(voce.sostituto)}\n\n` +

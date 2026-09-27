@@ -100,6 +100,12 @@ const Viste = (() => {
         rigaSost += `<button type="button" class="annulla-sost" data-annulla-sost="${esc([v.id || '', v.data, v.ora, v.classe].join('|'))}"
           aria-label="Annulla la sostituzione della ${l.ora}ª ora in ${esc(Dati.nome('classe', l.classe))} (sostituisce ${esc(Dati.nome('docente', sost.sostituto))})">✕ Annulla</button>`;
       }
+      // Allo stesso modo si può togliere l'assenza (tutte le sue ore di quel giorno): Sostituzioni.togliAssenzaPerTutti
+      if (sost && !sost.sostituto && !sost.uscita && sost.assenza && stato.puoAnnullare) {
+        const a = sost.assenza;
+        rigaSost += `<button type="button" class="annulla-sost" data-togli-assenza="${esc([a.id || '', a.data, a.docente].join('|'))}"
+          aria-label="Togli l'assenza di ${esc(Dati.nome('docente', sost.assente))} in questo giorno">✕ Togli assenza</button>`;
+      }
       // Cambio d'aula di questa settimana (sostituzioni/js/cambi-aula.js): etichetta e nuova aula ben visibili
       const cambio = Supplenze.cambioAula(stato.sostituzioni, l);
       const etichettaCambio = cambio ? '<span class="etichetta-cambio">⇄ Aula cambiata</span>' : '';

@@ -133,7 +133,9 @@
       $('portaAttesa').hidden = true;
       decidi(s, await Autorizzazioni.di(s.email));
       // «Verifica con Google»: il tocco permette a Google di aprire la finestra del permesso
-      $('portaVerificaTasto').onclick = async () => {
+      // (se si è già entrati, la porta non c'è più e il tasto nemmeno: niente da collegare)
+      const tasto = $('portaVerificaTasto');
+      if (tasto) tasto.onclick = async () => {
         $('portaVerificaEsito').textContent = '';
         const a = await Autorizzazioni.di(s.email, true);
         if (a.fonte === 'attesa') $('portaVerificaEsito').textContent = 'Google non ha dato il permesso: riprova (se il browser blocca le finestre, consentile per questo sito).';

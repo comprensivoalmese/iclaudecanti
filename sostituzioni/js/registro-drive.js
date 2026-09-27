@@ -5,6 +5,9 @@
   - "Autorizzazioni" (va bene anche "Abilitazioni"): nomi ed email di chi può fare le sostituzioni.
     L'email si cerca in qualsiasi cella; nome e cognome si prendono dalle colonne con quei titoli.
   - "Cambi aula": una riga per ogni cambio d'aula (se il foglio non c'è, l'app lo crea da sola).
+  - "Recuperi": una riga per ogni assenza «a recupero» con le ore già tolte nel foglio del conteggio (anche questo
+    lo crea l'app). Serve a chi annulla l'assenza da un ALTRO dispositivo: legge qui quante ore restituire.
+    Sta qui e non nel file pubblicato perché il recupero è un dato personale (il file pubblicato lo leggono tutti).
   - "Sostituzioni": qui l'app scrive una riga per ogni sostituzione assegnata
     (e la cancella se la sostituzione viene annullata). Se il foglio è vuoto, l'app scrive
     prima la riga di intestazione; se c'è già, riempie le colonne con lo stesso nome.
@@ -34,6 +37,11 @@ const RegistroDrive = (() => {
       nomi: ['cambiaula', 'cambidaula', 'cambiaule', 'cambi'],
       colonne: ['Data', 'Giorno', 'Ora', 'Classe', 'Materia', 'Docente', 'Aula prevista', 'Nuova aula', 'Motivo', 'Inserito da', 'Inserito il', 'ID'],
       nuovo: 'Cambi aula'
+    },
+    recuperi: {
+      nomi: ['recuperi', 'recupero', 'orerecupero'],
+      colonne: ['Data', 'Giorno', 'Docente', 'Ore di recupero', 'Inserita da', 'Inserita il', 'ID'],
+      nuovo: 'Recuperi'
     }
   };
 
@@ -183,5 +191,23 @@ const RegistroDrive = (() => {
     return true;
   }
 
-  return { configurato, pronto, abilitazione, abilitazioneVecchia, aggiungi, togli, permessi };
+  /*
+    Legge da un registro (tipo come in aggiungi) la riga con questo ID: restituisce un oggetto
+    { 'Data': …, 'Ore di recupero': …, … } con i titoli delle colonne, oppure null se la riga non c'è.
+  */
+  async function leggi(idVoce, email, tipo) {
+    const reg = REGISTRI[tipo || 'sostituzioni'];
+    const f = await trova(reg.nomi, email, reg.nuovo);
+    const righe = (await chiama('/values/' + encodeURIComponent(tra(f.titolo)), { email })).values || [];
+    const titoli = righe[0] || [];
+    const cId = titoli.findIndex(x => semplice(x) === 'id');
+    if (cId < 0) return null;
+    const riga = righe.find((r, i) => i > 0 && String(r[cId] || '') === String(idVoce));
+    if (!riga) return null;
+    const o = {};
+    titoli.forEach((t, i) => { o[String(t).trim()] = riga[i] === undefined ? '' : riga[i]; });
+    return o;
+  }
+
+  return { configurato, pronto, abilitazione, abilitazioneVecchia, aggiungi, togli, leggi, permessi };
 })();

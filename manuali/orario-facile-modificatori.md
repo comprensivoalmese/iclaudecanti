@@ -143,6 +143,12 @@ Foglio Google dedicato, con due schede:
 4. In "Ore da coprire", per ogni ora premi **Assegna** sul docente proposto.
    Per **annullare** una sostituzione: *Annulla la sostituzione* nella scheda, oppure **✕ Annulla** sulla sostituzione
    nella tabella dell'app Luis@i (funziona anche se l'ha registrata un collega). Al sostituto si toglie 1 ora nel foglio del conteggio.
+   Nel riquadro **Assenze e sostituzioni di tutti** premi *👥 Mostra le assenze e le sostituzioni di tutti*: vedi anche quelle
+   dei colleghi; con **Annulla per tutti** togli solo quella sostituzione, per tutti (il tasto rosso in fondo cancella solo i dati
+   di questo computer).
+   Per **togliere un'assenza** (docente segnato per sbaglio o tornato a scuola): *Togli* nell'elenco degli assenti, *Togli per
+   tutti* nel riquadro, oppure **✕ Togli assenza** nella tabella dell'app. Si annullano anche le sue sostituzioni (−1 a chi
+   sostituiva), le ore di recupero tornano al docente nel foglio del conteggio e l'assenza sparisce per tutti.
 5. A fine settimana copia le ore in "Da aggiungere nel foglio", premi **"Segna come già riportate"** e ricarica.
 
 Si possono stampare le sostituzioni del giorno e scaricare il registro in CSV.

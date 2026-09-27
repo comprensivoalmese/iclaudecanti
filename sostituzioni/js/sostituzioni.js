@@ -17,7 +17,7 @@ const Sostituzioni = (() => {
   const PROPOSTE_VISIBILI = 4;
   // Versione della scheda, mostrata in cima: serve a capire se la pagina aperta è quella aggiornata
   // (va cambiata a ogni modifica importante del modo in cui la scheda scrive nei fogli)
-  const VERSIONE = '27/09/2026 · 8 (uscite didattiche: docenti liberati, a disposizione, entra dopo / esce prima)';
+  const VERSIONE = '27/09/2026 · 10 (assenze e sostituzioni annullabili per tutti, con il foglio del conteggio aggiornato)';
   const NOMI_GIORNI = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
   // Dove si trovano i facsimili del foglio, rispetto alla pagina di Orario Facile
   const CARTELLA_ESEMPI = '../sostituzioni/esempio/';
@@ -283,6 +283,7 @@ const Sostituzioni = (() => {
       disegnaTutto();
       if (manuale || foglio.soloLettura) avvisa(`Foglio del conteggio letto da Google Drive: ${foglio.docenti.length} docenti.` +
         (foglio.soloLettura ? ' È un file Excel: per aggiornarlo in automatico aprilo in Fogli e usa File > Salva come Fogli Google.' : ''));
+      sistemaInSospeso();   // correzioni rimaste in sospeso (assenze di qui tolte da un altro dispositivo)
     } catch (errore) {
       console.error(errore);
       avvisa('Non riesco a leggere il foglio del conteggio da Drive: ' + errore.message + '.');
@@ -486,6 +487,7 @@ const Sostituzioni = (() => {
       if (esito.ok) {
         a.permessoSegnate = oreGiuste;
         salva('assenze', assenze);
+        await aggiornaRigaRecupero(a);
         const dove = `nel foglio del conteggio (settimana ${sett}${esito.cella ? ', cella ' + esito.cella : ''}: ora ${esito.nuovo})`;
         avvisa(differenza > 0
           ? `Recupero: ${ore(differenza)} a debito per ${nomeDocente(a.docente)} ${dove}.`
@@ -498,6 +500,59 @@ const Sostituzioni = (() => {
     } catch (errore) {
       console.error(errore);
       avvisa('Non ho potuto aggiornare il recupero nel foglio del conteggio: ' + errore.message + '. Correggi la cella a mano.');
+    }
+  }
+
+  /*
+    Foglio «Recuperi» (nel file delle sostituzioni, visibile solo agli autorizzati): una riga per ogni assenza a recupero
+    con le ore già tolte nel foglio del conteggio. Serve a chi toglie l'assenza da un ALTRO dispositivo: legge lì quante
+    ore restituire (nel file pubblicato il recupero non c'è, è un dato personale). Dopo ogni correzione del recupero la
+    riga si riscrive: si toglie quella vecchia e, se restano ore tolte, se ne scrive una nuova.
+    a.rigaRecupero = true se la riga c'è (resta solo su questo dispositivo, non si pubblica).
+  */
+  async function aggiornaRigaRecupero(a) {
+    if (!conRegistro() || !a.id) return;
+    try {
+      if (a.rigaRecupero) await RegistroDrive.togli(a.id, emailUtente(), 'recuperi');
+      a.rigaRecupero = false;
+      if (a.permessoSegnate > 0) {
+        await preparaNomiVeri();
+        await RegistroDrive.aggiungi({
+          'Data': dataBreve(a.data), 'Giorno': giornoOrario(a.data) || '', 'Docente': nomeVero(a.docente),
+          'Ore di recupero': a.permessoSegnate, 'Inserita da': abilitazione.nome || emailUtente(),
+          'Inserita il': new Date().toLocaleString('it-IT'), 'ID': a.id
+        }, emailUtente(), 'recuperi');
+        a.rigaRecupero = true;
+      }
+      salva('assenze', assenze);
+    } catch (errore) {
+      // non è grave: senza la riga, le ore le restituisce il dispositivo che ha registrato l'assenza (sistemaInSospeso)
+      console.error(errore);
+    }
+  }
+
+  /*
+    Restituisce le ore di recupero di un'assenza registrata su un ALTRO dispositivo, leggendole dal foglio «Recuperi».
+    Restituisce { stato: 'fatto', quante, esito } | { stato: 'nessuna' } (nessun recupero) |
+    { stato: 'sconosciuto' } (la riga non c'è: se era un recupero ci pensa l'altro dispositivo) | { stato: 'errore', motivo }.
+  */
+  async function restituisciRecupero(voce) {
+    if (!conRegistro() || !voce.id) return { stato: 'sconosciuto' };
+    try {
+      const riga = await RegistroDrive.leggi(voce.id, emailUtente(), 'recuperi');
+      if (!riga) return { stato: 'sconosciuto' };
+      const colonna = Object.keys(riga).find(t => /recuper/i.test(t));
+      const quante = parseInt(colonna ? riga[colonna] : '', 10) || 0;
+      if (quante <= 0) return { stato: 'nessuna' };
+      const esito = await segnaOre(voce.docente, settimanaDi(voce.data), quante);
+      if (!esito.ok) return { stato: 'errore', quante, motivo: esito.motivo };
+      // ore restituite: la riga va tolta, altrimenti l'altro dispositivo le restituirebbe una seconda volta
+      try { await RegistroDrive.togli(voce.id, emailUtente(), 'recuperi'); }
+      catch (e) { console.error(e); return { stato: 'fatto', quante, esito, avviso: 'cancella a mano la sua riga dal foglio «Recuperi»' }; }
+      return { stato: 'fatto', quante, esito };
+    } catch (errore) {
+      console.error(errore);
+      return { stato: 'errore', motivo: errore.message };
     }
   }
 
@@ -556,7 +611,7 @@ const Sostituzioni = (() => {
   /*
     Annulla una sostituzione. "esterna" = registrata su un ALTRO dispositivo (arriva dal file pubblicato):
     non è nel registro di qui, quindi invece di toglierla dal registro la si ricorda tra le "annullate".
-    Restituisce true se la sostituzione è stata annullata.
+    Restituisce il messaggio per l'utente (un testo, quindi «vero») se la sostituzione è stata annullata, altrimenti false.
   */
   async function annulla(s, esterna) {
     if (!controllaPermesso()) return false;
@@ -585,8 +640,9 @@ const Sostituzioni = (() => {
         registro = registro.filter(x => x.id !== s.id);
         salva('registro', registro);
       }
-      avvisa('Sostituzione annullata.' + dove);
-      return true;
+      const messaggio = 'Sostituzione annullata.' + dove;
+      avvisa(messaggio);
+      return messaggio;
     } finally {
       inCorso.delete(s.id);
       disegnaTutto();
@@ -614,6 +670,330 @@ const Sostituzioni = (() => {
       nelRegistro: voce.nelRegistro !== false && !!voce.id   // nel foglio «Sostituzioni» le righe si trovano per ID
     });
     return annulla(s, true);
+  }
+
+  // ---------- Assenze e sostituzioni di tutti: sceglierne una e annullarla per tutti ----------
+  /*
+    L'elenco di TUTTE le assenze e sostituzioni: quelle del file pubblicato su Drive (registrate su qualsiasi dispositivo)
+    più quelle di questo dispositivo, senza quelle già annullate. Serve alla sezione «Assenze e sostituzioni di tutti»
+    (qui nella scheda e nella pagina «Sostituzioni smart»): se ne sceglie una e la si annulla per tutti.
+    tutte = { stato: 'mai' | 'carico' | 'ok' | 'errore', elenco: [sostituzioni], assenze: [assenze], messaggio }
+    (ogni voce ha .qui = registrata su questo dispositivo)
+  */
+  let tutte = { stato: 'mai', elenco: [], assenze: [], messaggio: '' };
+  const segnoSost = x => x.data + '|' + x.ora + '|' + x.classe;
+  const segnoAss = x => x.data + '|' + x.docente;
+  function leggiLocale(chiave) { try { return JSON.parse(localStorage.getItem(chiave) || '[]') || []; } catch (e) { return []; } }
+
+  async function caricaTutte() {
+    if (tutte.stato === 'carico') return;
+    tutte = { stato: 'carico', elenco: tutte.elenco, assenze: tutte.assenze, messaggio: '' };
+    disegnaTutto();
+    let pub = { registro: [], annullate: [], assenze: [], assenzeAnnullate: [] }, messaggio = '', stato = 'ok';
+    const lista = (o, k) => Array.isArray(o[k]) ? o[k] : [];
+    if (typeof CONFIG !== 'undefined' && CONFIG.fileSostituzioniPubblicate && typeof Dati !== 'undefined' && Dati.leggiDrive) {
+      try {
+        const o = JSON.parse((await Dati.leggiDrive(CONFIG.fileSostituzioniPubblicate)) || '{}');
+        pub = { registro: lista(o, 'registro'), annullate: lista(o, 'annullate'), assenze: lista(o, 'assenze'), assenzeAnnullate: lista(o, 'assenzeAnnullate') };
+        // assenze e sostituzioni di QUESTO dispositivo annullate da qualcun altro: spariscono anche da qui
+        // (l'evento "storage" finto fa rileggere assenze e registro, vedi collegaPulsanti/collega)
+        if (typeof PubblicaSostituzioni !== 'undefined') PubblicaSostituzioni.applicaAnnullate(pub.annullate, pub.assenzeAnnullate);
+      } catch (errore) {
+        console.error(errore);
+        stato = 'errore';
+        messaggio = `non riesco a leggere le sostituzioni pubblicate su Drive (${errore.message}): vedi solo quelle di questo dispositivo`;
+      }
+    } else {
+      messaggio = 'in config.js non c\'è il file delle sostituzioni pubblicate: vedi solo quelle di questo dispositivo';
+    }
+    // come nell'app (supplenze.js): vincono quelle di qui; spariscono quelle pubblicate da qui e poi annullate qui
+    const id = new Set(registro.map(x => x.id)), segni = new Set(registro.map(segnoSost));
+    const daQui = new Set(leggiLocale('sostituzioni.pubblicateDaQui'));
+    const altre = pub.registro.filter(x => !(x.id && (id.has(x.id) || daQui.has(x.id))) && !segni.has(segnoSost(x)));
+    let elenco = altre.map(x => Object.assign({}, x, { qui: false }))
+      .concat(registro.map(x => Object.assign({}, x, { qui: true })));
+    const annullate = pub.annullate.concat(Archivio.leggi('annullate', []));
+    if (annullate.length && typeof PubblicaSostituzioni !== 'undefined') {
+      const colpisce = PubblicaSostituzioni.colpita(annullate);
+      elenco = elenco.filter(x => !colpisce(x));
+    }
+    elenco.sort((a, b) => String(a.data).localeCompare(String(b.data)) || a.ora - b.ora ||
+      nome('classe', a.classe).localeCompare(nome('classe', b.classe), 'it', { numeric: true }));
+    // le assenze, con le stesse regole: vincono quelle di qui, spariscono quelle tolte (da qui o da altri)
+    const idA = new Set(assenze.map(x => x.id)), segniA = new Set(assenze.map(segnoAss));
+    let elencoA = pub.assenze.filter(x => !(x.id && (idA.has(x.id) || daQui.has(x.id))) && !segniA.has(segnoAss(x)))
+      .map(x => Object.assign({}, x, { qui: false }))
+      .concat(assenze.map(x => ({ id: x.id, data: x.data, docente: x.docente, ore: x.ore, qui: true })));
+    const assenzeAnnullate = pub.assenzeAnnullate.concat(Archivio.leggi('assenzeAnnullate', []));
+    if (assenzeAnnullate.length && typeof PubblicaSostituzioni !== 'undefined') {
+      const colpisce = PubblicaSostituzioni.assenzaColpita(assenzeAnnullate);
+      elencoA = elencoA.filter(x => !colpisce(x));
+    }
+    elencoA.sort((a, b) => String(a.data).localeCompare(String(b.data)) || nomeDocente(a.docente).localeCompare(nomeDocente(b.docente), 'it'));
+    tutte = { stato, elenco, assenze: elencoA, messaggio };
+    disegnaTutto();
+  }
+
+  /*
+    Pubblica subito assenze e sostituzioni (pubblica-sostituzioni.js), così la modifica si vede su tutti i dispositivi,
+    e mostra il messaggio. cosa = «la sostituzione», «l'assenza»… (per il testo).
+  */
+  async function pubblicaSubito(messaggio, cosa) {
+    if (typeof PubblicaSostituzioni === 'undefined' || !PubblicaSostituzioni.configurato()) { avvisa(messaggio); return; }
+    try {
+      await PubblicaSostituzioni.unisciEPubblica(emailUtente());
+      avvisa(messaggio + ` Pubblicato: ${cosa} sparisce per tutti.`);
+    } catch (errore) {
+      console.error(errore);
+      avvisa(messaggio + ` ⚠️ Non sono riuscito a pubblicare (${errore.message}): premi «📤 Pubblica sostituzioni» ` +
+        `(o «Pubblica ora» nell'app) per farla sparire anche agli altri.`);
+    }
+  }
+
+  // La domanda di conferma prima di annullare per tutti
+  function domandaPerTutti(v) {
+    return `Annullare PER TUTTI questa sostituzione?\n\n${dataCorta(v.data)} · ${testoOra(v.ora)}\n` +
+      `Classe ${nome('classe', v.classe)} · assente ${nomeDocente(v.assente)}\nSostituisce: ${nomeDocente(v.sostituto)}` +
+      `${v.qui ? '' : ' (registrata su un altro dispositivo)'}\n\n` +
+      `Se l'ora era stata segnata nel foglio del conteggio, a ${nomeDocente(v.sostituto)} verrà tolta 1 ora. ` +
+      'La sostituzione sparisce dal foglio «Sostituzioni» e dall\'app per tutti.';
+  }
+
+  /*
+    Annulla una sostituzione dell'elenco «Sostituzioni di tutti» e PUBBLICA subito, così sparisce per tutti.
+    Il conteggio lo corregge annullaVoce (−1 al sostituto); la pubblicazione (pubblica-sostituzioni.js) toglie la
+    sostituzione dal file e, se era di un altro dispositivo, la mette tra le «annullate».
+  */
+  async function annullaPerTutti(v) {
+    const messaggio = await annullaVoce(v);
+    if (!messaggio) return false;
+    tutte.elenco = tutte.elenco.filter(x => x !== v);
+    await pubblicaSubito(messaggio, 'la sostituzione');
+    disegnaTutto();
+    return true;
+  }
+
+  // ---------- Togliere un'assenza (anche registrata su un altro dispositivo) ----------
+  // La domanda di conferma. quanteSost = sostituzioni che vengono annullate; recupero = true/false, null = non si sa
+  function domandaAssenza(a, quanteSost, recupero, altroDispositivo) {
+    return `Togliere ${altroDispositivo ? 'PER TUTTI ' : ''}l'assenza di ${nomeDocente(a.docente)}?\n\n` +
+      `${dataCorta(a.data)} · ${(a.ore || []).map(n => n + 'ª').join(', ')} ora` +
+      (altroDispositivo ? '\n(registrata su un altro dispositivo)' : '') + '\n\n' +
+      (quanteSost ? `Vengono annullate anche ${quanteSost === 1 ? 'la sostituzione già assegnata' : quanteSost + ' sostituzioni già assegnate'}: ` +
+        'a chi sostituiva si toglie l\'ora nel foglio del conteggio.\n' : '') +
+      (recupero === true ? `Le ore di recupero tolte a ${nomeDocente(a.docente)} nel foglio del conteggio vengono restituite.\n`
+        : recupero === null ? `Se era a recupero, le ore tolte a ${nomeDocente(a.docente)} nel foglio del conteggio vengono restituite.\n` : '') +
+      'L\'assenza sparisce dall\'app per tutti.';
+  }
+
+  /*
+    Toglie le sostituzioni di un'assenza tolta (o delle ore tolte a un'assenza), senza domande: per ognuna −1 al
+    sostituto nel foglio del conteggio (se era stata segnata) e la riga dal foglio «Sostituzioni».
+    Restituisce { tolte: quante ore tolte dal foglio, aMano: [correzioni da fare a mano] }.
+  */
+  async function togliSostituzioniCollegate(elenco) {
+    const esito = { tolte: 0, aMano: [] };
+    for (const s of elenco) {
+      inCorso.add(s.id);
+      try {
+        if (s.nelFoglio) {
+          const r = await segnaNelFoglio(s, -1);
+          if (r.ok) { s.nelFoglio = false; esito.tolte++; }
+          else esito.aMano.push(`togli 1 ora a ${nomeDocente(s.sostituto)} nella settimana ${s.settimana} (${r.motivo})`);
+        } else if (s.riportata && !s.reindirizzato) {
+          esito.aMano.push(`togli 1 ora a ${nomeDocente(s.sostituto)} nella settimana ${s.settimana} (era già stata riportata a mano)`);
+        }
+        await togliDalRegistro([s]);
+      } finally {
+        inCorso.delete(s.id);
+      }
+    }
+    return esito;
+  }
+
+  // Il testo finale dopo aver tolto un'assenza
+  function testoAssenzaTolta(a, quanteSost, esitoSost, testoRecupero) {
+    let t = `Assenza di ${nomeDocente(a.docente)} tolta (${dataCorta(a.data)}).`;
+    if (quanteSost) t += ` ${quanteSost === 1 ? 'Annullata 1 sostituzione' : 'Annullate ' + quanteSost + ' sostituzioni'}` +
+      (esitoSost.tolte ? ` (−1 nel foglio del conteggio a chi sostituiva: ${ore(esitoSost.tolte)} in tutto)` : '') + '.';
+    if (testoRecupero) t += ' ' + testoRecupero;
+    if (esitoSost.aMano.length) t += ' ⚠️ Da correggere a mano nel foglio del conteggio: ' + esitoSost.aMano.join('; ') + '.';
+    return t;
+  }
+
+  /*
+    Toglie un'assenza di QUESTO dispositivo: restituisce le ore di recupero (se erano state tolte nel foglio del
+    conteggio), annulla le sue sostituzioni (−1 a chi sostituiva) e pubblica subito, così sparisce per tutti.
+    senzaDomande: true quando la toglie il modulo delle uscite didattiche (ha già chiesto conferma e pubblica lui).
+    Restituisce il messaggio (vero) se l'ha tolta, altrimenti false.
+  */
+  async function togliAssenza(a, senzaDomande) {
+    if (!controllaPermesso()) return false;
+    if (inCorso.has(a.id)) return false;   // doppio tocco: c'è già un'operazione in corso su questa assenza
+    const collegate = registro.filter(x => x.data === a.data && x.assente === a.docente);
+    if (!senzaDomande && !confirm(domandaAssenza(a, collegate.length, !!a.permessoSegnate, false))) return false;
+    inCorso.add(a.id);
+    disegnaTutto();
+    try {
+      // recupero già segnato nel foglio del conteggio: le ore tolte vengono restituite (e la riga «Recuperi» sparisce)
+      const recuperoPrima = a.permessoSegnate || 0;
+      if (recuperoPrima) await aggiornaPermesso(a, 0).catch(() => {});
+      const testoRecupero = !recuperoPrima ? ''
+        : !a.permessoSegnate ? `Restituite ${ore(recuperoPrima)} di recupero a ${nomeDocente(a.docente)} nel foglio del conteggio.`
+          : `⚠️ Non ho potuto restituire le ${ore(recuperoPrima)} di recupero: aggiungile a mano nel foglio del conteggio (settimana ${settimanaDi(a.data)}).`;
+      const esito = await togliSostituzioniCollegate(collegate);
+      // (per ID: nel frattempo assenze e registro possono essere stati riletti dalla memoria)
+      const idColl = new Set(collegate.map(x => x.id));
+      assenze = assenze.filter(x => x.id !== a.id);
+      registro = registro.filter(x => !idColl.has(x.id));
+      salva('assenze', assenze);
+      salva('registro', registro);
+      tutte.assenze = tutte.assenze.filter(x => x.id !== a.id);
+      tutte.elenco = tutte.elenco.filter(x => !idColl.has(x.id));
+      const messaggio = testoAssenzaTolta(a, collegate.length, esito, testoRecupero);
+      if (senzaDomande) avvisa(messaggio);
+      else await pubblicaSubito(messaggio, 'l\'assenza');
+      return messaggio;
+    } finally {
+      inCorso.delete(a.id);
+      disegnaTutto();
+    }
+  }
+
+  /*
+    Toglie PER TUTTI un'assenza vista nell'elenco «di tutti» o nella tabella dell'app (tasto «✕ Togli assenza»).
+    voce = { id, data, docente, ore } del file pubblicato o di qui. Chiede conferma.
+    - registrata su questo dispositivo: la solita togliAssenza();
+    - registrata su un altro dispositivo: si annullano le sue sostituzioni (annullaVoce: −1 a chi sostituiva, riga tolta
+      dal foglio «Sostituzioni»), si restituiscono le ore di recupero lette dal foglio «Recuperi», la si mette tra le
+      «assenze annullate» e si pubblica: sparisce per tutti, anche dal dispositivo che l'aveva registrata.
+  */
+  async function togliAssenzaPerTutti(voce) {
+    if (!controllaPermesso()) return false;
+    const qui = assenze.find(x => voce.id && x.id === voce.id) || assenze.find(x => x.data === voce.data && x.docente === voce.docente);
+    if (qui) return togliAssenza(qui, false);
+    const chiave = 'A|' + (voce.id || segnoAss(voce));
+    if (inCorso.has(chiave)) return false;
+    // le sue sostituzioni stanno nel file pubblicato: se l'elenco di tutti non è ancora stato letto, lo leggo
+    if (tutte.stato !== 'ok') await caricaTutte();
+    const collegate = tutte.elenco.filter(v => v.data === voce.data && v.assente === voce.docente);
+    if (!confirm(domandaAssenza(voce, collegate.length, null, true))) return false;
+    inCorso.add(chiave);
+    disegnaTutto();
+    try {
+      // per togliere e restituire ore serve il foglio del conteggio: se qui non c'è ancora, lo leggo da Drive
+      if (suDrive() && (!foglio || !foglio.driveId) && FoglioDrive.pronto()) await caricaDaDrive(false);
+      const esito = { tolte: 0, aMano: [] };
+      for (const v of collegate) {
+        const fatto = await annullaVoce(v);
+        if (fatto) { if (/Tolta 1 ora/.test(fatto)) esito.tolte++; }
+        else esito.aMano.push(`la sostituzione della ${v.ora}ª ora in ${nome('classe', v.classe)} non è stata annullata: annullala a parte`);
+      }
+      const r = await restituisciRecupero(voce);
+      const testoRecupero = r.stato === 'fatto'
+        ? `Restituite ${ore(r.quante)} di recupero a ${nomeDocente(voce.docente)} nel foglio del conteggio` +
+          ` (settimana ${settimanaDi(voce.data)}${r.esito.cella ? ', cella ' + r.esito.cella : ''}: ora ${r.esito.nuovo}).` +
+          (r.avviso ? ` ⚠️ Poi ${r.avviso}.` : '')
+        : r.stato === 'errore' ? `⚠️ Non ho potuto restituire le ore di recupero (${r.motivo}): se era a recupero, lo farà il dispositivo che l'aveva registrata.`
+          : r.stato === 'sconosciuto' ? 'Se era a recupero, le ore le restituisce il dispositivo che l\'aveva registrata, appena si aprono lì le sostituzioni.' : '';
+      const annullate = Archivio.leggi('assenzeAnnullate', []);
+      annullate.push({ id: voce.id || '', data: voce.data, docente: voce.docente });
+      salva('assenzeAnnullate', annullate);
+      tutte.assenze = tutte.assenze.filter(x => !(x.data === voce.data && x.docente === voce.docente));
+      tutte.elenco = tutte.elenco.filter(x => !collegate.includes(x));
+      const messaggio = testoAssenzaTolta(voce, collegate.length, esito, testoRecupero);
+      await pubblicaSubito(messaggio, 'l\'assenza');
+      return messaggio;
+    } finally {
+      inCorso.delete(chiave);
+      disegnaTutto();
+    }
+  }
+
+  /*
+    Correzioni lasciate in sospeso (chiave "sostituzioni.daSistemare", le prepara PubblicaSostituzioni.applicaAnnullate):
+    un'assenza registrata QUI è stata tolta da un altro dispositivo. Appena il foglio del conteggio è caricato da Drive:
+    - recupero: si restituiscono le ore tolte (se non l'ha già fatto chi ha tolto l'assenza: in quel caso la riga del
+      foglio «Recuperi» non c'è più);
+    - sostituzione di quell'assenza che gli altri non vedevano: −1 al sostituto e riga tolta dal foglio «Sostituzioni».
+  */
+  let sistemando = false;
+  async function sistemaInSospeso() {
+    if (sistemando || !foglio || !foglio.driveId || !puoFare()) return;
+    const coda = Archivio.leggi('daSistemare', []);
+    if (!coda.length) return;
+    sistemando = true;
+    const fatte = [], aMano = [], finite = new Set();
+    try {
+      for (const x of coda) {
+        try {
+          if (x.tipo === 'recupero') {
+            const conRiga = x.conRiga && conRegistro();
+            if (conRiga && !(await RegistroDrive.leggi(x.id, emailUtente(), 'recuperi'))) { finite.add(x.chiave); continue; }
+            const sett = settimanaDi(x.data);
+            const esito = await segnaOre(x.docente, sett, x.ore);
+            if (esito.ok) {
+              fatte.push(`restituite ${ore(x.ore)} di recupero a ${nomeDocente(x.docente)} (settimana ${sett})`);
+              if (conRiga) await RegistroDrive.togli(x.id, emailUtente(), 'recuperi').catch(e => console.error(e));
+            } else aMano.push(`aggiungi ${ore(x.ore)} a ${nomeDocente(x.docente)} nella settimana ${sett} (${esito.motivo})`);
+          } else if (x.tipo === 'sostituzione') {
+            const esito = await togliSostituzioniCollegate([x]);
+            if (esito.tolte) fatte.push(`tolta 1 ora a ${nomeDocente(x.sostituto)} (settimana ${x.settimana})`);
+            aMano.push(...esito.aMano);
+          }
+          finite.add(x.chiave);
+        } catch (errore) {
+          console.error(errore);   // errore di Google: si riprova la prossima volta
+        }
+      }
+      // si rilegge la coda: nel frattempo possono esserne arrivate altre
+      Archivio.scrivi('daSistemare', Archivio.leggi('daSistemare', []).filter(x => !finite.has(x.chiave)));
+      if (fatte.length || aMano.length) {
+        avvisa('Assenze tolte da un altro dispositivo: ' + (fatte.length ? fatte.join('; ') + ' nel foglio del conteggio.' : '') +
+          (aMano.length ? ' ⚠️ Da correggere a mano: ' + aMano.join('; ') + '.' : ''));
+      }
+    } finally {
+      sistemando = false;
+    }
+  }
+
+  // Disegno della sezione «Assenze e sostituzioni di tutti» nella scheda di Orario Facile: giorno per giorno,
+  // prima le assenze («Togli per tutti») e poi le sostituzioni («Annulla per tutti»)
+  function disegnaTutte() {
+    const box = $('tutte');
+    if (!box) return;
+    box.replaceChildren();
+    $('caricaTutte').disabled = tutte.stato === 'carico';
+    $('caricaTutte').textContent = tutte.stato === 'mai' ? '👥 Mostra le assenze e le sostituzioni di tutti'
+      : tutte.stato === 'carico' ? 'Leggo…' : '↻ Aggiorna l\'elenco';
+    if (tutte.messaggio) box.append(el('p', { class: 'hint' }, '⚠️ ' + tutte.messaggio + '.'));
+    if (tutte.stato === 'mai') return;
+    if (!tutte.elenco.length && !tutte.assenze.length) { box.append(el('p', { class: 'hint' }, 'Nessuna assenza né sostituzione registrata.')); return; }
+    const giorni = [...new Set(tutte.assenze.map(a => a.data).concat(tutte.elenco.map(v => v.data)))].sort();
+    giorni.forEach(g => {
+      box.append(el('h4', {}, dataCorta(g)));
+      const assenzeG = tutte.assenze.filter(a => a.data === g);
+      if (assenzeG.length) box.append(el('ul', { class: 'sost-tutte' }, assenzeG.map(a => {
+        const occupato = inCorso.has(a.id) || inCorso.has('A|' + (a.id || segnoAss(a)));
+        return el('li', { class: 'sost-tutte-assenza' },
+          el('span', {}, el('b', {}, nomeDocente(a.docente)), ' assente · ', (a.ore || []).map(n => n + 'ª').join(', '), ' ora ',
+            el('span', { class: 'tag' }, a.qui ? 'registrata qui' : 'da un altro dispositivo')),
+          el('button', { type: 'button', class: 'btn danger sm', disabled: occupato || !puoFare(),
+            'aria-label': 'Togli per tutti l\'assenza di ' + nomeDocente(a.docente) + ' di ' + dataCorta(a.data),
+            onclick: () => togliAssenzaPerTutti(a) }, occupato ? 'Aggiorno i fogli…' : 'Togli per tutti'));
+      })));
+      const sostG = tutte.elenco.filter(v => v.data === g);
+      if (sostG.length) box.append(el('ul', { class: 'sost-tutte' }, sostG.map(v => {
+        const occupato = inCorso.has(v.id);
+        return el('li', {},
+          el('span', {}, el('b', {}, `${v.ora}ª ora · ${nome('classe', v.classe)}`),
+            ` · ${nomeDocente(v.assente)} assente → `, el('b', {}, nomeDocente(v.sostituto)), ' ',
+            el('span', { class: 'tag' }, v.qui ? 'registrata qui' : 'da un altro dispositivo')),
+          el('button', { type: 'button', class: 'btn danger sm', disabled: occupato || !puoFare(),
+            onclick: () => { if (confirm(domandaPerTutti(v))) annullaPerTutti(v); } },
+            occupato ? 'Aggiorno i fogli…' : 'Annulla per tutti'));
+      })));
+    });
   }
 
   // ---------- Disegno della sezione 1: dati ----------
@@ -725,10 +1105,10 @@ const Sostituzioni = (() => {
           a.uscita ? el('span', { class: 'tag' }, a.come === 'accompagna' ? '🚌 accompagna l\'uscita' : '🚌 classe in uscita: entra dopo / esce prima') : null,
           a.permesso ? el('span', { class: 'tag' }, a.permessoSegnate ? `recupero · −${a.permessoSegnate} nel foglio` : 'recupero') : null),
         el('button', {
-          type: 'button', class: 'btn ghost sm',
-          'aria-label': 'Togli l\'assenza di ' + nomeDocente(a.docente),
+          type: 'button', class: 'btn ghost sm', disabled: inCorso.has(a.id),
+          'aria-label': 'Togli l\'assenza di ' + nomeDocente(a.docente) + ' (anche per tutti)',
           onclick: () => togliAssenza(a)
-        }, 'Togli')))));
+        }, inCorso.has(a.id) ? 'Aggiorno i fogli…' : 'Togli')))));
   }
 
   // Le caselle con le ore di lezione del docente scelto
@@ -771,10 +1151,19 @@ const Sostituzioni = (() => {
     if (assenza) assenza.ore = oreScelte.slice().sort((a, b) => a - b);
     else { assenza = { id: nuovoId(), data: iso, docente: id, ore: oreScelte.slice().sort((a, b) => a - b) }; assenze.push(assenza); }
     assenza.permesso = permesso;
-    // Le sostituzioni già assegnate per ore tolte non servono più (anche nel foglio «Sostituzioni»)
-    const superate = registro.filter(x => x.data === iso && x.assente === id && !oreScelte.includes(x.ora) && !x.riportata);
-    togliDalRegistro(superate);
+    // Le sostituzioni già assegnate per ore tolte non servono più: spariscono e, se erano segnate nel foglio del
+    // conteggio, a chi sostituiva si toglie l'ora (e la riga dal foglio «Sostituzioni»); lo si fa dopo, senza aspettare
+    const superate = registro.filter(x => x.data === iso && x.assente === id && !oreScelte.includes(x.ora));
     registro = registro.filter(x => !superate.includes(x));
+    if (superate.length) {
+      togliSostituzioniCollegate(superate).then(esito => {
+        avvisa(`${nomeDocente(id)} non è più assente in ${superate.length === 1 ? '1 ora' : superate.length + ' ore'}: ` +
+          `${superate.length === 1 ? 'annullata la sostituzione' : 'annullate le sostituzioni'}` +
+          (esito.tolte ? ` (−1 nel foglio del conteggio a chi sostituiva: ${ore(esito.tolte)} in tutto)` : '') + '.' +
+          (esito.aMano.length ? ' ⚠️ Da correggere a mano: ' + esito.aMano.join('; ') + '.' : ''));
+        disegnaTutto();
+      });
+    }
     return assenza;
   }
 
@@ -819,21 +1208,6 @@ const Sostituzioni = (() => {
     $('permesso').checked = true;   // per la prossima assenza il permesso torna spuntato
     disegnaTutto();
     $('titoloCoprire').scrollIntoView({ behavior: 'smooth' });
-  }
-
-  // senzaDomande: true quando la toglie il modulo delle uscite didattiche (ha già chiesto conferma lui)
-  async function togliAssenza(a, senzaDomande) {
-    if (!controllaPermesso()) return;
-    const collegate = registro.filter(x => x.data === a.data && x.assente === a.docente);
-    if (collegate.length && !senzaDomande && !confirm(`Togliendo l'assenza vengono annullate anche ${collegate.length} sostituzioni già assegnate. Continuare?`)) return;
-    // Se era un permesso già segnato nel foglio del conteggio, le ore tolte vengono restituite
-    if (a.permessoSegnate) await aggiornaPermesso(a, 0);
-    togliDalRegistro(collegate);
-    assenze = assenze.filter(x => x.id !== a.id);
-    registro = registro.filter(x => !collegate.includes(x));
-    salva('assenze', assenze);
-    salva('registro', registro);
-    disegnaTutto();
   }
 
   // Quante ore sono da coprire e quante già coperte in un giorno
@@ -1043,6 +1417,7 @@ const Sostituzioni = (() => {
       if (!$('moduloUscita').hidden) Uscite.disegnaModulo($('moduloUscita'), dataScelta);
       Uscite.disegnaPiano($('pianoUscita'), dataScelta);
     }
+    disegnaTutte();
     // Cambi d'aula dello stesso giorno (modulo separato, js/cambi-aula.js)
     if (typeof CambiAula !== 'undefined') CambiAula.disegna($('cambiAula'), dataScelta, 'scheda');
     disegnaSaldi();
@@ -1198,6 +1573,17 @@ const Sostituzioni = (() => {
     </div>
 
     <div class="card">
+      <h3>Assenze e sostituzioni di tutti</h3>
+      <p class="hint">Tutte le assenze e le sostituzioni pubblicate, anche quelle registrate dai colleghi su altri dispositivi.
+        <b>Annulla per tutti</b> su una sostituzione: al docente che sostituiva si toglie 1 ora nel foglio del conteggio,
+        la riga sparisce dal foglio «Sostituzioni» e nessuno la vede più nell'app.
+        <b>Togli per tutti</b> su un'assenza: si annullano anche le sue sostituzioni (−1 a chi sostituiva), le ore di
+        recupero tornano al docente nel foglio del conteggio e l'assenza sparisce per tutti.</p>
+      <div class="row"><button type="button" id="sost-caricaTutte" class="btn ghost">👥 Mostra le assenze e le sostituzioni di tutti</button></div>
+      <div id="sost-tutte"></div>
+    </div>
+
+    <div class="card">
       <h3>Cambi d'aula</h3>
       <p class="hint">Per spostare una classe in un'altra aula <b>solo in questo giorno</b> (l'orario base non cambia).
         Vengono proposte solo le aule libere in tutte le ore scelte.</p>
@@ -1262,16 +1648,23 @@ const Sostituzioni = (() => {
     $('scaricaRiepilogo').addEventListener('click', scaricaRiepilogo);
     $('segnaRiportate').addEventListener('click', segnaRiportate);
     $('cancellaTutto').addEventListener('click', cancellaTutto);
+    $('caricaTutte').addEventListener('click', caricaTutte);
 
     // Se i dati delle sostituzioni cambiano in un'altra scheda del browser, ci aggiorniamo
     window.addEventListener('storage', e => {
       if (!Archivio.eNostra(e.key)) return;
-      foglio = Archivio.leggi('foglio', null);
-      assenze = Archivio.leggi('assenze', []);
-      registro = Archivio.leggi('registro', []);
-      manuali = Archivio.leggi('abbinamenti', {});
+      rileggiMemoria();
       aggiorna();
     });
+  }
+
+  // Rilegge i dati dalla memoria del browser (sono cambiati altrove: un'altra scheda, oppure assenze e sostituzioni
+  // annullate da un altro dispositivo e tolte da PubblicaSostituzioni.applicaAnnullate)
+  function rileggiMemoria() {
+    foglio = Archivio.leggi('foglio', null);
+    assenze = Archivio.leggi('assenze', []);
+    registro = Archivio.leggi('registro', []);
+    manuali = Archivio.leggi('abbinamenti', {});
   }
 
   // Rilegge l'orario e ridisegna tutto
@@ -1294,6 +1687,7 @@ const Sostituzioni = (() => {
     // Foglio del conteggio su Drive: lo rileggiamo da solo, una volta, se il permesso di Google c'è già
     // (per esempio dopo «👁 Nomi»); altrimenti c'è il pulsante «Carica dal Drive»
     if (suDrive() && !driveLetto && FoglioDrive.pronto() && (!foglio || foglio.driveId)) caricaDaDrive(false);
+    else sistemaInSospeso();   // correzioni rimaste in sospeso (assenze di qui tolte da un altro dispositivo)
   }
 
   /*
@@ -1311,6 +1705,7 @@ const Sostituzioni = (() => {
       document.body.append(el('div', { id: 'sost-avviso', class: 'sost-avviso', role: 'status', 'aria-live': 'polite' }));
       dataScelta = giornoPredefinito();
       collegaPulsanti();
+      rileggiMemoria();
       aggiorna();
       // Se ci sono abbinamenti da controllare, apriamo il riquadro
       if (foglio && D && D.docente.some(t => !(abbinati.get(t.id) || {}).chiave)) $('boxAbbinamenti').open = true;
@@ -1336,12 +1731,11 @@ const Sostituzioni = (() => {
       // Se i dati cambiano in un'altra scheda del browser (per esempio Orario Facile), ci aggiorniamo
       window.addEventListener('storage', e => {
         if (contenitore || !Archivio.eNostra(e.key)) return;   // con la scheda ci pensa già collegaPulsanti
-        foglio = Archivio.leggi('foglio', null);
-        assenze = Archivio.leggi('assenze', []);
-        registro = Archivio.leggi('registro', []);
-        manuali = Archivio.leggi('abbinamenti', {});
+        rileggiMemoria();
         aggiorna();
       });
+      // i file del motore possono essere stati caricati prima: nel frattempo la memoria può essere cambiata
+      rileggiMemoria();
     }
     aggiorna();
     return API;
@@ -1363,6 +1757,10 @@ const Sostituzioni = (() => {
     oreDaCoprire, sostituzioneDi, candidati, saldoDi, TESTI_POSIZIONE,
     inCorso: id => inCorso.has(id),
     registraAssenza: registraAssenzaDi, togliAssenza, assegna, annulla, annullaVoce,
+    // «Assenze e sostituzioni di tutti»: caricaTutte() legge l'elenco, tutte() lo restituisce ({ elenco, assenze, … }),
+    // annullaPerTutti(voce) annulla la sostituzione e pubblica, togliAssenzaPerTutti(voce) toglie l'assenza (chiede conferma)
+    caricaTutte, tutte: () => tutte, annullaPerTutti, domandaPerTutti, togliAssenzaPerTutti,
+    inCorsoAssenza: a => inCorso.has(a.id) || inCorso.has('A|' + (a.id || segnoAss(a))),
     // servono anche al modulo «Cambi d'aula» (js/cambi-aula.js)
     avvisa, ridisegna: () => disegnaTutto(), email: emailUtente, preparaNomiVeri, nomeVero,
     // servono al modulo «Uscite didattiche» (js/uscite.js)
