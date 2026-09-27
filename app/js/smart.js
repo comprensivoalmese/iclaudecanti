@@ -181,14 +181,14 @@ const Smart = (() => {
             <span><b>${l.ora}ª</b> ${esc(motore.nome('classe', l.classe))}</span></label>`).join('') + '</fieldset>' +
           altriGiorniHtml() +
           `<label class="permesso-smart"><input type="checkbox" id="smartPermesso"${permesso ? ' checked' : ''}>
-            <span><b>Permesso</b> · le ore sono a debito del docente</span></label>
+            <span><b>Recupero</b> · le ore sono a debito del docente</span></label>
           <button type="button" class="pulsante primario" data-azione="registra">Registra l'assenza</button>`
         : '<p class="vuoto-breve">Questo docente non ha lezioni in questo giorno.</p>';
     }
 
     const elenco = assenti.length
       ? '<ul class="assenti-smart">' + assenti.map(a => `<li><span><b>${esc(motore.nomeDocente(a.docente))}</b>
-          · ${a.ore.map(n => n + 'ª').join(', ')}${a.permesso ? ' · <span class="tag-smart">permesso</span>' : ''}</span>
+          · ${a.ore.map(n => n + 'ª').join(', ')}${a.permesso ? ' · <span class="tag-smart">recupero</span>' : ''}</span>
           <button type="button" class="pulsante" data-azione="togli" data-id="${esc(a.id)}"
             aria-label="Togli l'assenza di ${esc(motore.nomeDocente(a.docente))}">Togli</button></li>`).join('') + '</ul>'
       : '';

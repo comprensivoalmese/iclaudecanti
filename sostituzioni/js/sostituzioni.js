@@ -476,16 +476,16 @@ const Sostituzioni = (() => {
         salva('assenze', assenze);
         const dove = `nel foglio del conteggio (settimana ${sett}${esito.cella ? ', cella ' + esito.cella : ''}: ora ${esito.nuovo})`;
         avvisa(differenza > 0
-          ? `Permesso: ${ore(differenza)} a debito per ${nomeDocente(a.docente)} ${dove}.`
-          : `Permesso: ${differenza === -1 ? 'restituita' : 'restituite'} ${ore(-differenza)} a ${nomeDocente(a.docente)} ${dove}.`);
+          ? `Recupero: ${ore(differenza)} a debito per ${nomeDocente(a.docente)} ${dove}.`
+          : `Recupero: ${differenza === -1 ? 'restituita' : 'restituite'} ${ore(-differenza)} a ${nomeDocente(a.docente)} ${dove}.`);
         disegnaTutto();
       } else {
-        avvisa(`Permesso registrato, ma non posso aggiornare il foglio del conteggio (${esito.motivo}): ` +
+        avvisa(`Recupero registrato, ma non posso aggiornare il foglio del conteggio (${esito.motivo}): ` +
           `${differenza > 0 ? 'togli' : 'aggiungi'} a mano ${ore(Math.abs(differenza))} nella settimana ${sett}.`);
       }
     } catch (errore) {
       console.error(errore);
-      avvisa('Non ho potuto aggiornare il permesso nel foglio del conteggio: ' + errore.message + '. Correggi la cella a mano.');
+      avvisa('Non ho potuto aggiornare il recupero nel foglio del conteggio: ' + errore.message + '. Correggi la cella a mano.');
     }
   }
 
@@ -699,7 +699,7 @@ const Sostituzioni = (() => {
     box.append(el('h3', {}, 'Assenti'), el('ul', { class: 'sost-assenze' }, elenco.map(a =>
       el('li', {},
         el('span', {}, el('strong', {}, nomeDocente(a.docente)), ' – ', a.ore.map(n => n + 'ª').join(', '), ' ora',
-          a.permesso ? el('span', { class: 'tag' }, a.permessoSegnate ? `permesso · −${a.permessoSegnate} nel foglio` : 'permesso') : null),
+          a.permesso ? el('span', { class: 'tag' }, a.permessoSegnate ? `recupero · −${a.permessoSegnate} nel foglio` : 'recupero') : null),
         el('button', {
           type: 'button', class: 'btn ghost sm',
           'aria-label': 'Togli l\'assenza di ' + nomeDocente(a.docente),
@@ -769,9 +769,9 @@ const Sostituzioni = (() => {
     salva('registro', registro);
     const totale = giorni.reduce((n, g) => n + g.ore.length, 0);
     avvisa(giorni.length === 1
-      ? `Assenza registrata: ${nomeDocente(id)}, ${ore(totale)}${permesso ? ' (permesso)' : ''}.`
+      ? `Assenza registrata: ${nomeDocente(id)}, ${ore(totale)}${permesso ? ' (recupero)' : ''}.`
       : `Assenza registrata: ${nomeDocente(id)} in ${giorni.length} giorni (${giorni.map(g => dataCorta(g.iso)).join(', ')}), ` +
-        `${ore(totale)} in tutto${permesso ? ' (permesso)' : ''}. Con i pulsanti dei giorni in «Ore da coprire» passi da un giorno all'altro.`);
+        `${ore(totale)} in tutto${permesso ? ' (recupero)' : ''}. Con i pulsanti dei giorni in «Ore da coprire» passi da un giorno all'altro.`);
     disegnaTutto();
     // Permesso: -1 per ogni ora nel foglio del conteggio (o si restituiscono le ore se il permesso è stato tolto)
     segnate.forEach(a => aggiornaPermesso(a, permesso ? a.ore.length : 0));
@@ -1131,10 +1131,12 @@ const Sostituzioni = (() => {
         <label class="fl" for="sost-docenteAssente">Docente assente</label>
         <select id="sost-docenteAssente"></select>
         <div id="sost-oreAssenza"></div>
-        <!-- Permesso (spuntato di default): le ore di assenza vanno a debito del docente nel foglio del conteggio -->
+        <!-- Recupero (prima si chiamava «Permesso»; spuntato di default): le ore di assenza vanno a debito del docente
+             nel foglio del conteggio. Nei dati il campo resta «permesso», per non perdere le assenze già registrate -->
+
         <label class="sost-casella sost-permesso">
           <input type="checkbox" id="sost-permesso" checked>
-          <span><b>Permesso</b> – le ore di assenza sono a debito: nel foglio del conteggio tolgo 1 per ogni ora
+          <span><b>Recupero</b> – le ore di assenza sono a debito: nel foglio del conteggio tolgo 1 per ogni ora
             al docente assente (se la cella è vuota parte da −1)</span>
         </label>
         <button type="submit" class="btn">Registra l'assenza</button>
