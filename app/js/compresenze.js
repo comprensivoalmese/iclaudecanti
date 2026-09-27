@@ -172,5 +172,7 @@ const Compresenze = (() => {
   }
 
   return { configurato, scarica, applica, mostra, impostaMostra, interpreta, righeDaTabella, righeDaGriglia, completa, imposta, semplice,
-    impostaSostegno, vedeSostegno: () => vedeSostegno, fileSostegno };
+    impostaSostegno, vedeSostegno: () => vedeSostegno, fileSostegno,
+    // le righe complete del Foglio Compresenze (ultima copia letta), per l'«Orario di sintesi» di Orario Facile
+    elenco: () => (righe || []).slice() };
 })();

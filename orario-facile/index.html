@@ -439,6 +439,8 @@ td input[type=number]{width:64px}
       </div>
       <select id="selSoggetto" style="width:auto;max-width:260px"></select>
       <button class="btn ghost sm" id="btnStampa">Stampa / PDF</button>
+      <!-- quadro orario per docente in una pagina, da stampare per i piani e la segreteria (sintesi.js) -->
+      <button class="btn ghost sm" id="btnSintesi" title="Quadro orario per docente in una pagina A4 orizzontale, con i colori della legenda">🖨 Orario di sintesi</button>
     </div>
     <div id="vistaOrario"></div>
   </section>
@@ -482,6 +484,12 @@ td input[type=number]{width:64px}
         <button class="btn ghost" id="btnIncollaJson">Importa da testo</button>
         <input type="file" id="fileJson" accept=".json,application/json" hidden>
       </div>
+    </div>
+    <div class="card">
+      <h3>Orario di sintesi (per i piani e la segreteria)</h3>
+      <p class="hint">Il quadro orario per docente in una sola pagina A4 orizzontale, con i colori di potenziamento, Alternativa,
+        mensa e compresenze: da stampare (o salvare in PDF) oppure da aprire in Excel.</p>
+      <div class="row"><button class="btn" id="btnSintesiEsporta">🖨 Orario di sintesi</button></div>
     </div>
     <div class="card">
       <h3>Tabelle (.csv, si aprono in Excel)</h3>
@@ -552,6 +560,7 @@ td input[type=number]{width:64px}
 <script src="../app/js/dati.js"></script>
 <script src="../app/js/compresenze.js"></script>
 <script src="scheda-compresenze.js"></script>
+<script src="sintesi.js"></script>
 <script src="../sostituzioni/js/foglio.js"></script>
 <script src="../sostituzioni/js/drive.js"></script>
 <script src="../sostituzioni/js/registro-drive.js"></script>
@@ -3496,6 +3505,11 @@ $('#segVista').addEventListener('click', e => {
 });
 $('#selSoggetto').addEventListener('change', e => { S.ui.soggetto = e.target.value; renderVista(); save(); });
 $('#btnStampa').addEventListener('click', () => window.print());
+// «Orario di sintesi» (sintesi.js): stesso tasto nella scheda Orario e in Esporta
+['#btnSintesi', '#btnSintesiEsporta'].forEach(id => $(id).addEventListener('click', () => {
+  if(typeof Sintesi === 'undefined') { avvisa('Manca il file sintesi.js.'); return; }
+  Sintesi.chiedi();
+}));
 $('#btnAddFissa').addEventListener('click', modalFissa);
 $('#btnSbloccaTutte').addEventListener('click', () => {
   S.classi.forEach(c => S.giorni.forEach(g => (S.orario[c.id][g]||[]).forEach(v => { if(v) v.lock = false; })));

@@ -527,5 +527,8 @@ const SchedaCompresenze = (() => {
   // Ci sono modifiche non salvate (Orario Facile può chiedere conferma prima di chiudere la pagina)
   const daSalvare = () => modificato;
 
-  return { monta, daSalvare };
+  // Le ore già lette dal Foglio (per l'«Orario di sintesi», sintesi.js): null se la scheda non ha ancora letto il Foglio
+  const oreCaricate = () => stato === 'pronto' ? { righe: righe.filter(Compresenze.completa), sostegno: (griglia || []).slice() } : null;
+
+  return { monta, daSalvare, oreCaricate };
 })();
