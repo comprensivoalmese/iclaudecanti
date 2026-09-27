@@ -20,6 +20,7 @@ img{max-width:100%}
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Sans+Condensed:wght@600&display=swap">
 <!-- stile della scheda Sostituzioni (i suoi file stanno nella cartella sostituzioni/) -->
 <link rel="stylesheet" href="../sostituzioni/css/sostituzioni.css">
+<link rel="stylesheet" href="scheda-compresenze.css">
 <!-- Porta d'ingresso: entra solo chi può modificare l'orario (vedi porta.js e ../app/js/ruoli.js) -->
 <link rel="stylesheet" href="porta.css">
 <script src="../app/js/config.js"></script>
@@ -512,7 +513,18 @@ td input[type=number]{width:64px}
     </div>
   </section>
 
-  <!-- 9 SOSTITUZIONI: il contenuto lo disegna sostituzioni/js/sostituzioni.js -->
+  <!-- 8 COMPRESENZE: il contenuto lo disegna scheda-compresenze.js (dati nel Foglio Compresenze su Drive) -->
+  <section class="panel" id="p-compresenze" role="tabpanel" hidden>
+    <div class="phead">
+      <h2>Compresenze</h2>
+      <p>Le ore in cui un secondo docente è in classe insieme al titolare: potenziamento, Alternativa in parallelo a Religione,
+        ore eccedenti, completamento del tempo prolungato, sostegno. Ogni ora è di un docente. Si salvano nel Foglio Compresenze
+        su Google Drive e l'app Luis@i le mostra a chi spunta «Compresenze».</p>
+    </div>
+    <div id="compresenzeApp"><p class="hint">Caricamento…</p></div>
+  </section>
+
+  <!-- 10 SOSTITUZIONI: il contenuto lo disegna sostituzioni/js/sostituzioni.js -->
   <section class="panel" id="p-sostituzioni" role="tabpanel" hidden>
     <div class="phead">
       <h2>Sostituzioni docenti</h2>
@@ -538,6 +550,8 @@ td input[type=number]{width:64px}
 
 <!-- Scheda Sostituzioni: lettura dell'orario (dall'app Luis@i) e file della cartella sostituzioni/ -->
 <script src="../app/js/dati.js"></script>
+<script src="../app/js/compresenze.js"></script>
+<script src="scheda-compresenze.js"></script>
 <script src="../sostituzioni/js/foglio.js"></script>
 <script src="../sostituzioni/js/drive.js"></script>
 <script src="../sostituzioni/js/registro-drive.js"></script>
@@ -1549,7 +1563,7 @@ function aulaPerCella(docId, g, s, escludiClasse){
    =========================================================== */
 const TABS = [
   ['setup','Impostazioni'], ['discipline','Discipline'], ['aule','Aule'], ['quadro','Quadro orario'],
-  ['docenti','Docenti'], ['vincoli','Vincoli'], ['orario','Orario'], ['esporta','Esporta'],
+  ['docenti','Docenti'], ['vincoli','Vincoli'], ['orario','Orario'], ['compresenze','Compresenze'], ['esporta','Esporta'],
   ['sostituzioni','Sostituzioni']
 ];
 
@@ -1563,8 +1577,8 @@ function renderTabs(){
 }
 function vai(tab){
   S.ui.tab = tab;
-  // passando a un'altra scheda tolgo "#sostituzioni" dall'indirizzo, così il link dell'app funziona di nuovo
-  if(tab !== 'sostituzioni' && location.hash === '#sostituzioni') history.replaceState(null, '', location.pathname + location.search);
+  // passando a un'altra scheda tolgo "#sostituzioni" / "#compresenze" dall'indirizzo, così il link dell'app funziona di nuovo
+  if(location.hash && location.hash !== '#' + tab && ['#sostituzioni', '#compresenze'].includes(location.hash)) history.replaceState(null, '', location.pathname + location.search);
   TABS.forEach(([k]) => { const p = $('#p-'+k); if(p) p.hidden = (k !== tab); });
   renderTabs();
   render();
@@ -1573,9 +1587,25 @@ function vai(tab){
 function render(){
   $('#brandSub').textContent = (S.meta.nome||'') + (S.meta.anno ? ' · ' + S.meta.anno : '');
   const f = { setup:renderSetup, discipline:renderDiscipline, aule:renderAule, quadro:renderQuadro,
-              docenti:renderDocenti, vincoli:renderVincoli, orario:renderOrario, esporta:()=>{},
+              docenti:renderDocenti, vincoli:renderVincoli, orario:renderOrario, compresenze:renderCompresenze, esporta:()=>{},
               sostituzioni:renderSostituzioni }[S.ui.tab];
   if(f) f();
+}
+
+/* ---------------- 8. compresenze ---------------- */
+// La scheda vive in scheda-compresenze.js e salva nel Foglio Compresenze su Drive (l'app Luis@i le mostra):
+// qui le passiamo l'orario attuale, trasformato con Dati.normalizza, e i nomi veri (se caricati con «👁 Nomi»)
+function renderCompresenze(){
+  const box = $('#compresenzeApp');
+  if(typeof SchedaCompresenze === 'undefined' || typeof Dati === 'undefined'){
+    box.innerHTML = '<p class="hint">La scheda Compresenze non è disponibile: manca il file scheda-compresenze.js o app/js/dati.js.</p>';
+    return;
+  }
+  SchedaCompresenze.monta(box, {
+    orario: () => Dati.normalizza(S),
+    email: () => { const s = typeof Accesso !== 'undefined' && Accesso.sessione ? Accesso.sessione() : null; return s ? s.email : ''; },
+    nome: codice => nomeVero(codice) ? nomeVero(codice).completo : ''
+  });
 }
 
 /* ---------------- 9. sostituzioni ---------------- */
@@ -3602,7 +3632,16 @@ $('#btnExportJson').addEventListener('click', async () => {
 });
 // file per l'app Luis@i: è il backup completo con in più la data di pubblicazione
 $('#btnPubblicaApp').addEventListener('click', async () => {
-  const txt = JSON.stringify(Object.assign({}, S, { pubblicato: new Date().toISOString().slice(0,10) }), null, 1);
+  // PRIVACY: orario.json va su GitHub (pubblico). Le compresenze di sostegno (attività «SOS…») direbbero quali classi
+  // hanno alunni con disabilità: si tolgono qui. Il sostegno sta solo nel Foglio Compresenze su Drive (app/js/compresenze.js).
+  const pubblico = JSON.parse(JSON.stringify(S)); let tolte = 0;
+  Object.values(pubblico.orario || {}).forEach(gg => Object.values(gg || {}).forEach(ore => (ore || []).forEach(v => {
+    if (!v || !v.co) return;
+    const prima = v.co.length; v.co = v.co.filter(x => !/^sos/i.test(String(x.att || '')));
+    tolte += prima - v.co.length; if (!v.co.length) delete v.co;
+  })));
+  if (tolte) avvisa(`Tolte ${tolte} ore di sostegno dal file pubblico: il sostegno si scrive nel Foglio Compresenze.`);
+  const txt = JSON.stringify(Object.assign(pubblico, { pubblicato: new Date().toISOString().slice(0,10) }), null, 1);
   if(!(await scarica('orario.json', txt, 'application/json')))
     mostraTesto('File per l’app', txt, 'orario.json', 'application/json');
 });
@@ -3674,10 +3713,11 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') chiudiModal(); 
   const salvato = load();
   S = salvato || datiScuola();
   if(!salvato) S.ui.tab = 'orario';
-  // l'indirizzo .../orario-facile/#sostituzioni apre direttamente la scheda Sostituzioni
-  if(location.hash === '#sostituzioni') S.ui.tab = 'sostituzioni';
-  // ...anche se Orario Facile è già aperto (per esempio dal menu dell'app "Sostituzioni docenti")
-  window.addEventListener('hashchange', () => { if(location.hash === '#sostituzioni') vai('sostituzioni'); });
+  // gli indirizzi .../orario-facile/#sostituzioni e #compresenze aprono direttamente quella scheda
+  const DIRETTE = ['sostituzioni', 'compresenze'];
+  if(DIRETTE.includes(location.hash.slice(1))) S.ui.tab = location.hash.slice(1);
+  // ...anche se Orario Facile è già aperto (per esempio dal menu dell'app "Sostituzioni docenti" o dal tasto «✎ Modifica»)
+  window.addEventListener('hashchange', () => { const k = location.hash.slice(1); if(DIRETTE.includes(k)) vai(k); });
   normalizza();
   renderTabs();
   TABS.forEach(([k]) => { const p = $('#p-'+k); if(p) p.hidden = (k !== S.ui.tab); });

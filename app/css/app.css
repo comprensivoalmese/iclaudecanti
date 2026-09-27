@@ -439,6 +439,9 @@ body.modalita-monitor .modifiche, body.modalita-ingresso .modifiche { font-size:
   justify-self: start; font-size: .68rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
   padding: 0 6px; border-radius: 4px; border: 1px solid currentColor; color: var(--testo-tenue);
 }
+/* Quadratino «Compresenze» e collegamento «✎ Modifica» (scheda Compresenze di Orario Facile) sulla stessa riga */
+.gruppo-compresenze { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gruppo-compresenze a.pulsante { display: inline-flex; align-items: center; color: var(--testo); text-decoration: none; }
 /* Quadratino «Compresenze» accanto ai filtri */
 .filtri .spunta-compresenze { display: flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--testo); min-height: 44px; cursor: pointer; }
 .spunta-compresenze input { width: 20px; height: 20px; margin: 0; accent-color: var(--primario); }

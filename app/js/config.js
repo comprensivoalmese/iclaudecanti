@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.20',
+  versioneApp: '2026-09-27.21',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -53,9 +53,14 @@ window.CONFIG = {
   // quadratino «Compresenze». Sul Drive della scuola, condiviso in lettura con l'Istituto. Vuoto = solo le compresenze
   // scritte in Orario Facile.
   fileCompresenze: '1B-GJOvJoOY6NH0P5oMcYi1tRSCjBqEr54CFXHPPWkks',
-  // Gruppi PROPOSTI per la pagina «Compresenze» (js/compresenze-pagina.js), validi per qualsiasi scuola: si usano solo
-  // finché nel Foglio Compresenze non c'è la scheda «Gruppi». Le ore previste e i docenti di ogni gruppo cambiano da
-  // scuola a scuola (numero di classi, cattedre di potenziamento, ore eccedenti…): si scrivono nella pagina, che li salva
+  // SOSTEGNO: la griglia «Sostegno» (un docente per riga, in ogni ora la classe) e la scheda «Sostegno classi» (per ogni
+  // classe: sostegno sì/no e ore previste). Dato delicato: l'app lo mostra solo a docenti e a chi modifica l'orario, e
+  // non va mai su GitHub. Vuoto = schede dentro il Foglio Compresenze. Per nasconderlo anche su Drive agli studenti,
+  // si può mettere in un Foglio a parte condiviso solo con i docenti e scrivere qui il suo ID.
+  fileSostegno: '',
+  // Gruppi PROPOSTI per la scheda «Compresenze» di Orario Facile (orario-facile/scheda-compresenze.js), validi per qualsiasi
+  // scuola: si usano solo finché nel Foglio Compresenze non c'è la scheda «Gruppi». Le ore previste e i docenti di ogni gruppo
+  // cambiano da scuola a scuola (numero di classi, cattedre di potenziamento, ore eccedenti…): si scrivono nella scheda, che li salva
   // nella scheda «Gruppi» del Foglio, sul Drive della scuola (qui niente numeri, niente codici, niente nomi).
   // tipo = testo della colonna Tipo (e della casella nell'orario); nelleOreDi = materia in parallelo (le ore previste
   // si contano da sole nell'orario, es. Alternativa = quante ore di Religione ci sono); altriNomi = vecchi testi di Tipo.

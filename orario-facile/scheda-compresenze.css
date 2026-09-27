@@ -1,0 +1,46 @@
+/*
+  scheda-compresenze.css – stile della scheda «Compresenze» di Orario Facile (scheda-compresenze.js).
+  Usa i riquadri (.card), i tasti (.btn, .iconbtn), le etichette (.tag) e i colori di Orario Facile (--line, --surface…),
+  quindi il tema chiaro/scuro funziona da solo. Qui solo i pezzi nuovi: le righe della maschera e il sostegno.
+*/
+.comp-scheda > .row.spread { margin-bottom: 6px; }
+.comp-scheda h3 { margin: 0; }
+.comp-azioni { margin-top: 8px; }
+.comp-messaggio { margin: 6px 0 0; font-size: 13px; font-weight: 600; min-height: 1.2em; }
+.comp-messaggio:empty { display: none; }
+.comp-avviso { margin: 4px 0 0; font-size: 12.5px; font-weight: 600; color: var(--bad); }
+.comp-docenti { gap: 6px; margin: 4px 0; }
+
+/* Le righe: una per ogni ora di compresenza */
+.comp-righe { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 8px; }
+.comp-riga { padding: 8px 10px; border: 1px solid var(--line); border-radius: var(--r-sm); background: var(--surface); }
+.comp-riga.da-completare { border-style: dashed; border-color: var(--warn); }
+.comp-riga.da-completare .comp-avviso { color: var(--text-3); font-weight: 500; }   /* da completare non è un errore */
+.comp-riga.con-avvisi { border-color: var(--bad); }
+/* Schermi stretti: due campi per riga (docente e note su tutta la larghezza) */
+.comp-campi { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: end; }
+.comp-campo { min-width: 0; }
+.comp-codice, .comp-note, .comp-tipo { grid-column: 1 / -1; }
+.comp-campi .iconbtn { justify-self: end; }
+
+/* Riquadro «Gruppi e ore previste»: si apre e si chiude toccando il titolo */
+.comp-gruppi summary { cursor: pointer; list-style: revert; }
+.comp-gruppi summary h3 { display: inline; }
+.comp-gruppi[open] summary { margin-bottom: 6px; }
+
+/* Sostegno: una riga per classe, con spunta, ore previste ed esito */
+.comp-classi-sost { list-style: none; margin: 6px 0 0; padding: 0; display: grid; gap: 6px; }
+.comp-sost { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 6px 10px; border: 1px solid var(--line); border-radius: var(--r-sm); }
+.comp-sost.attivo { background: var(--surface-2); }
+.comp-spunta { gap: 8px; min-width: 70px; min-height: 36px; cursor: pointer; }
+.comp-ore-sost { width: 130px; }
+.comp-problemi summary { cursor: pointer; font-weight: 600; color: var(--bad); margin-top: 8px; }
+.comp-problemi ul { margin: 4px 0 0; padding-left: 20px; font-size: 12.5px; }
+
+/* Schermi larghi: tutti i campi di un'ora sulla stessa riga */
+@media (min-width: 900px) {
+  .comp-campi { grid-template-columns: minmax(180px, 2.2fr) .9fr 1.2fr 1fr 1.3fr 1.8fr auto; }
+  .comp-campi:has(.comp-tipo) { grid-template-columns: minmax(160px, 2fr) .9fr 1.1fr .9fr 1.2fr 1.2fr 1.4fr auto; }
+  .comp-campi.comp-campi-gruppo { grid-template-columns: minmax(170px, 1.6fr) .8fr 1.1fr 1.4fr 2fr auto; }
+  .comp-codice, .comp-note, .comp-tipo { grid-column: auto; }
+}

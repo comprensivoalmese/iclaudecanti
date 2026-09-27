@@ -70,17 +70,63 @@ const Compresenze = (() => {
   // una riga è valida per l'orario solo con docente, classe, giorno e ora (ogni compresenza è di un docente)
   const completa = x => !!(x.codice && x.classe && x.giorno && x.ora > 0);
 
+  /*
+    SOSTEGNO – scheda «Sostegno» del Foglio (o di CONFIG.fileSostegno), fatta come l'orario definitivo scritto a mano:
+    riga 1 i giorni (il nome del giorno sopra la sua prima ora), riga 2 le ore (1ª, 2ª…), dalla riga 3 un docente di
+    sostegno per riga: A codice docente, B nome (facoltativo, non letto), poi in ogni ora la classe (es. 2B), vuota = libera.
+    È un dato delicato (dice quali classi hanno alunni con disabilità): si legge solo per i docenti e chi modifica,
+    resta SOLO IN MEMORIA (mai sul dispositivo) e non va mai su GitHub.
+  */
+  function righeDaGriglia(tab) {
+    const r1 = tab[0] || [], r2 = tab[1] || [], colonne = [];
+    let giorno = '', n = 0;
+    for (let c = 2; c < Math.max(r1.length, r2.length); c++) {
+      const g = String(r1[c] == null ? '' : r1[c]).trim();
+      if (g) { giorno = GIORNI.find(x => semplice(x).startsWith(semplice(g).slice(0, 3))) || ''; n = 0; }
+      // l'ora è la posizione dentro il giorno (1ª, 2ª… anche per le ore del pomeriggio)
+      if (String(r2[c] == null ? '' : r2[c]).trim()) n++;
+      colonne[c] = giorno && String(r2[c] == null ? '' : r2[c]).trim() ? { giorno, ora: n } : null;
+    }
+    const out = [];
+    tab.slice(2).forEach(r => {
+      const codice = String(r[0] || '').trim().toUpperCase(); if (!codice) return;
+      for (let c = 2; c < r.length; c++) {
+        const k = colonne[c], v = String(r[c] == null ? '' : r[c]).trim();
+        if (k && v) out.push({ codice, classe: v.split(/\s+/)[0].replace(/^\+/, ''), giorno: k.giorno, ora: k.ora, tipo: 'Sostegno', aula: '' });
+      }
+    });
+    return out;
+  }
+  let sostegno = [];          // le ore di sostegno lette dalla griglia (solo in memoria)
+  let vedeSostegno = false;   // chi ha fatto l'accesso può vedere il sostegno (docente o chi modifica, vedi app.js)
+  const fileSostegno = () => (typeof CONFIG !== 'undefined' && (CONFIG.fileSostegno || CONFIG.fileCompresenze)) || '';
+  function impostaSostegno(si) { vedeSostegno = !!si; if (!vedeSostegno) sostegno = []; }
+  // Legge la griglia del sostegno con la Sheets API (basta il permesso di lettura di Drive); true se è cambiata
+  async function scaricaSostegno(t) {
+    if (!vedeSostegno || !fileSostegno()) return false;
+    const prima = JSON.stringify(sostegno);
+    try {
+      const url = 'https://sheets.googleapis.com/v4/spreadsheets/' + encodeURIComponent(fileSostegno()) + '/values/' + encodeURIComponent("'Sostegno'!A1:CZ300");
+      const r = await fetch(url, { cache: 'no-cache', headers: { Authorization: 'Bearer ' + t } });
+      sostegno = r.ok ? righeDaGriglia((await r.json()).values || []) : [];
+    } catch (e) { /* senza rete: resta quello di prima */ }
+    return JSON.stringify(sostegno) !== prima;
+  }
+
   // La pagina di inserimento ha salvato il Foglio: si usano subito le righe nuove (solo quelle complete)
   function imposta(tutteLeRighe) {
     righe = tutteLeRighe.filter(completa).map(x => ({ codice: x.codice, classe: x.classe, giorno: x.giorno, ora: Number(x.ora), tipo: x.tipo, aula: x.aula || '' }));
-    scrivi(CHIAVE_COPIA, JSON.stringify(righe));
+    scrivi(CHIAVE_COPIA, JSON.stringify(senzaSostegno(righe)));
   }
+  // la copia sul dispositivo non contiene mai ore di sostegno (dato delicato: solo in memoria)
+  function senzaSostegno(elenco) { return elenco.filter(x => !/^sostegno/i.test(x.tipo)); }
 
   // Scarica il Foglio Compresenze (serve il permesso Google già ottenuto); true se è cambiato. Non lancia errori.
   async function scarica() {
     if (!configurato() || typeof NomiDocenti === 'undefined') return false;
     const t = NomiDocenti.gettoneDisponibile([NomiDocenti.PERMESSO_DRIVE]);
     if (!t) return false;
+    const cambiatoSostegno = await scaricaSostegno(t);
     const prima = JSON.stringify(righe);
     try {
       // un Foglio Google si "esporta" in CSV: si legge il PRIMO foglio del file
@@ -88,9 +134,9 @@ const Compresenze = (() => {
       const r = await fetch(url, { cache: 'no-cache', headers: { Authorization: 'Bearer ' + t } });
       if (!r.ok) return false;
       righe = interpreta(await r.text());
-      scrivi(CHIAVE_COPIA, JSON.stringify(righe));
-    } catch (e) { return false; }
-    return JSON.stringify(righe) !== prima;
+      scrivi(CHIAVE_COPIA, JSON.stringify(senzaSostegno(righe)));
+    } catch (e) { return cambiatoSostegno; }
+    return JSON.stringify(righe) !== prima || cambiatoSostegno;
   }
 
   /*
@@ -108,7 +154,9 @@ const Compresenze = (() => {
     const perCodice = new Map(D.docente.map(e => [String(e.codice !== undefined ? e.codice : e.nome).trim().toUpperCase(), e.id]));
     const perAula = new Map(D.aula.map(a => [semplice(a.nome), a.id]));
     const extra = [];
-    (righe || []).forEach(x => {
+    // le ore di sostegno si aggiungono solo per chi le può vedere (docenti e chi modifica)
+    // (anche le righe del foglio principale con Tipo «Sostegno…», per sicurezza, solo per chi può vedere il sostegno)
+    (righe || []).filter(x => vedeSostegno || !/^sostegno/i.test(x.tipo)).concat(vedeSostegno ? sostegno : []).forEach(x => {
       const classe = perClasse.get(semplice(x.classe)), docente = perCodice.get(x.codice);
       if (!classe || !docente) return;
       const t = titolare(x.giorno, x.ora, classe);
@@ -123,5 +171,6 @@ const Compresenze = (() => {
     D.lezioni = base.concat(extra);
   }
 
-  return { configurato, scarica, applica, mostra, impostaMostra, interpreta, righeDaTabella, completa, imposta, semplice };
+  return { configurato, scarica, applica, mostra, impostaMostra, interpreta, righeDaTabella, righeDaGriglia, completa, imposta, semplice,
+    impostaSostegno, vedeSostegno: () => vedeSostegno, fileSostegno };
 })();

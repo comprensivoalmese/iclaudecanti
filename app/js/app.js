@@ -71,7 +71,6 @@
   function schermataIniziale() {
     apriBreve(false);
     apriSmart(false);
-    if (compresenzeAperta && !PaginaCompresenze.daSalvare()) apriCompresenze(false);   // con modifiche non salvate resta aperta
     const gi = giornoIniziale();
     stato.giorno = gi.giorno;
     avvisoGiorno = gi.testo ? gi : null;
@@ -285,12 +284,11 @@
     $('#btnSostSmart').hidden = true;
     $('#btnCambiAula').hidden = true;
     $('#btnCompresenze').hidden = true;
-    $('#btnCompresenzeMenu').hidden = true;
     Ruoli.puoModificare(utente.email).then(puo => {
+      puoModificareOrario = puo; aggiornaSostegno();
       $('#linkOrarioFacile').hidden = !puo; $('#linkSostituzioni').hidden = !puo;
-      // maschera delle compresenze: per chi può modificare, se il Foglio Compresenze è indicato in config.js
-      const comp = !puo || !CONFIG.fileCompresenze || aulaMonitor || secondiIngresso;
-      $('#btnCompresenze').hidden = !!comp; $('#btnCompresenzeMenu').hidden = !!comp;
+      // «✎ Modifica» (scheda Compresenze di Orario Facile): per chi può modificare, se il Foglio Compresenze è indicato
+      $('#btnCompresenze').hidden = !puo || !CONFIG.fileCompresenze || !!aulaMonitor || !!secondiIngresso;
       // «Sostituzioni smart»: sparisce anche per chi il foglio «Autorizzazioni» ha già rifiutato su questo dispositivo
       $('#btnSostSmart').hidden = !puo || Smart.negato(utente.email);
       $('#btnCambiAula').hidden = $('#btnSostSmart').hidden;   // stessi autorizzati delle sostituzioni
@@ -308,6 +306,7 @@
 
   /* ---------- disegno della pagina ---------- */
   function aggiorna() {
+    aggiornaSostegno();   // il sostegno si vede solo per docenti e chi modifica (vedi sopra)
     const a = adesso();
     ultimoMinuto = a.minuto;
     // Momento della giornata (mattina, pomeriggio, sera): colora il tasto «In breve»
@@ -372,7 +371,6 @@
     ].filter(Boolean).join(' · ');
     if (breveAperta) disegnaBreve();
     if (smartAperta) Smart.aggiorna();
-    if (compresenzeAperta) PaginaCompresenze.aggiorna();
     aggiornaMioOrario();
     aggiornaIntervallo();
     disegnaModifiche();
@@ -561,7 +559,6 @@
   // modo: 'sostituzioni' (Sostituzioni smart) oppure 'cambi' (pagina «Cambi d'aula», stessa vista)
   function apriSmart(apri, modo) {
     if (apri) apriBreve(false);
-    if (apri && compresenzeAperta) apriCompresenze(false);
     smartAperta = !!apri && !aulaMonitor && !secondiIngresso;
     document.body.classList.toggle('smart-aperta', smartAperta);
     $('#vistaSmart').hidden = !smartAperta;
@@ -572,29 +569,22 @@
     Smart.apri($('#vistaSmart'), { orario: () => D, chiudi: () => { apriSmart(false); $('#btnUtente').focus(); }, email: utente.email, modo: modo || 'sostituzioni' });
   }
 
-  /* ---------- pagina "Compresenze" (js/compresenze-pagina.js) ---------- */
-  // Apre (true) o chiude (false) la maschera delle compresenze; sui monitor e sullo schermo all'ingresso non si apre.
-  // Va chiamata direttamente dal tocco sul tasto, così Google può chiedere il permesso di modificare il Foglio.
-  let compresenzeAperta = false;
-  function apriCompresenze(apri) {
-    if (apri) { apriBreve(false); apriSmart(false); }
-    compresenzeAperta = !!apri && !aulaMonitor && !secondiIngresso;
-    document.body.classList.toggle('compresenze-aperta', compresenzeAperta);
-    $('#vistaCompresenze').hidden = !compresenzeAperta;
-    if (!compresenzeAperta) { aggiorna(); return; }
-    window.scrollTo(0, 0);
-    $('#vistaCompresenze').focus({ preventScroll: true });
-    PaginaCompresenze.apri($('#vistaCompresenze'), {
-      orario: () => D, email: utente.email,
-      chiudi: () => { apriCompresenze(false); $('#btnCompresenze').focus(); },
-      // dopo il salvataggio la tabella usa subito le compresenze nuove
-      applica: () => { Compresenze.applica(D); }
-    });
+  /*
+    Ore di SOSTEGNO (compresenze.js): dato delicato, si vedono solo se chi ha fatto l'accesso è un docente riconosciuto
+    (mioDocente) oppure può modificare l'orario; gli studenti vedono solo le altre compresenze. Si ricontrolla a ogni
+    ridisegno (i nomi veri, e quindi il docente, possono arrivare dopo): se cambia, si rilegge la griglia del sostegno.
+  */
+  let puoModificareOrario = false;
+  function aggiornaSostegno() {
+    const vede = !!utente && !aulaMonitor && !secondiIngresso && (puoModificareOrario || !!mioDocente);
+    if (Compresenze.vedeSostegno() === vede) return;
+    Compresenze.impostaSostegno(vede);
+    const ridisegna = () => { Compresenze.applica(D); aggiorna(); };
+    if (vede) Compresenze.scarica().then(ridisegna); else ridisegna();
   }
 
   function apriBreve(apri, mio) {
     if (apri && smartAperta) apriSmart(false);   // le due viste non stanno aperte insieme
-    if (apri && compresenzeAperta) apriCompresenze(false);
     if (!breveAperta) dataBreve = '';   // ogni volta che si apre la vista si riparte da oggi
     breveAperta = apri && !aulaMonitor;
     breveMio = breveAperta && !!mio && !!mioDocente;
@@ -661,9 +651,6 @@
     // Quadratino «Compresenze»: spuntato si vedono anche le ore di compresenza, altrimenti solo le curricolari
     $('#mostraCompresenze').checked = Compresenze.mostra();
     $('#mostraCompresenze').addEventListener('change', e => { Compresenze.impostaMostra(e.target.checked); Compresenze.applica(D); aggiorna(); });
-    // «✎ Modifica» (accanto al quadratino) e la voce del menu aprono la maschera delle compresenze
-    $('#btnCompresenze').addEventListener('click', () => apriCompresenze(true));
-    $('#btnCompresenzeMenu').addEventListener('click', () => { chiudiMenu(); apriCompresenze(true); });
     $('#giorni').addEventListener('click', e => {
       const b = e.target.closest('[data-giorno]');
       if (b) { stato.giorno = b.dataset.giorno; aggiorna(); }
