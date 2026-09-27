@@ -9,8 +9,20 @@ const Archivio = (() => {
     assenze: 'sostituzioni.assenze',           // le assenze registrate
     registro: 'sostituzioni.registro',         // le sostituzioni assegnate
     abbinamenti: 'sostituzioni.abbinamenti',   // abbinamenti scelti a mano: docente dell'orario -> riga del foglio
-    annullate: 'sostituzioni.annullate'        // sostituzioni di ALTRI dispositivi annullate da qui (vedi annullaVoce)
+    annullate: 'sostituzioni.annullate',       // sostituzioni di ALTRI dispositivi annullate da qui (vedi annullaVoce)
+    cambiAula: 'sostituzioni.cambiAula',       // i cambi d'aula di un giorno (js/cambi-aula.js)
+    uscite: 'sostituzioni.uscite'              // le uscite didattiche (js/uscite.js)
   };
+
+  // Fino al 27/09/2026 la chiave dei cambi d'aula mancava e i cambi finivano sotto la chiave "undefined":
+  // se ci sono, li spostiamo (una volta sola) sotto quella giusta
+  try {
+    const vecchi = JSON.parse(localStorage.getItem('undefined') || 'null');
+    if (Array.isArray(vecchi) && vecchi.length && vecchi.every(c => c && c.classe && 'a' in c) && !localStorage.getItem(CHIAVI.cambiAula)) {
+      localStorage.setItem(CHIAVI.cambiAula, JSON.stringify(vecchi));
+      localStorage.removeItem('undefined');
+    }
+  } catch (e) { /* memoria bloccata: pazienza */ }
 
   // Legge un dato; se manca o la memoria è bloccata restituisce il valore predefinito
   function leggi(nome, predefinito) {
