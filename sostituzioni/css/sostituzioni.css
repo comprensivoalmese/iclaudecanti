@@ -130,6 +130,8 @@
   body.us-stampa-piano .sost-stampabile:not(.us-piano-stampa) { display: none !important; }
   body.us-stampa-piano .us-piano-stampa h2 { color: #000; font-size: 18px; margin: 0 0 8px; }
   body.us-stampa-piano .us-piano-stampa .sost-tabella { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
+  /* gite di più giorni: ogni giorno su una pagina nuova */
+  .us-salto-pagina { break-after: page; page-break-after: always; height: 0; }
   body.sost-in-stampa .sost-tabella caption { color: #000; font-size: 16px; font-weight: 600; }
   body.sost-in-stampa .sost-tabella th,
   body.sost-in-stampa .sost-tabella td { color: #000; border-bottom: 1px solid #999; }

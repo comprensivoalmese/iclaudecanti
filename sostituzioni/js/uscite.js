@@ -37,7 +37,14 @@ const Uscite = (() => {
   const numerico = (a, b) => String(a).localeCompare(String(b), 'it', { numeric: true });
 
   // Il modulo: le scelte restano anche quando la pagina si ridisegna
-  const scelta = { data: '', nome: '', classi: new Set(), ore: null, accompagnatori: new Set() };
+  const scelta = { data: '', nome: '', fino: '', classi: new Set(), ore: null, accompagnatori: new Set() };
+  // "2026-09-28" + 1 giorno -> "2026-09-29" (a mezzogiorno, così l'ora legale non sposta la data)
+  const spostaIso = (iso, n) => { const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+  const dataCorta = iso => new Date(iso + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'short', day: 'numeric', month: 'numeric' });
+  // i giorni della stessa uscita di più giorni (gruppo), in ordine; per un'uscita di un giorno solo [u.data]
+  const giorniDi = u => u.gruppo ? [...new Set(uscite.filter(x => x.gruppo === u.gruppo).map(x => x.data))].sort() : [u.data];
+  // tutti i giorni delle uscite di un giorno (anche gli altri giorni delle gite di più giorni)
+  const giorniCollegati = iso => [...new Set(usciteDel(iso).flatMap(giorniDi))].sort();
   // Nel piano: docente scelto a mano per un'ora (chiave "data|ora|classe|assente" -> ID docente)
   const forzate = new Map();
   let inCorso = false;
@@ -174,11 +181,24 @@ const Uscite = (() => {
     const classi = [...scelta.classi], ore = [...(scelta.ore || oreDelGiorno(giorno))].sort((a, b) => a - b);
     if (!classi.length) { mo.avvisa('Scegli almeno una classe che esce.'); return; }
     if (!ore.length) { mo.avvisa('Scegli almeno un\'ora dell\'uscita.'); return; }
-    const u = { id: nuovoId(), data: iso, nome: scelta.nome.trim(), classi, ore, accompagnatori: [...scelta.accompagnatori], disposizione: [], confermata: false };
-    uscite.push(u); salva();
-    scelta.nome = ''; scelta.classi.clear(); scelta.ore = null; scelta.accompagnatori.clear();
-    mo.avvisa(`🧪 Simulazione dell'uscita: ${classi.length} ${classi.length === 1 ? 'classe' : 'classi'}, ${u.accompagnatori.length} ` +
-      `${u.accompagnatori.length === 1 ? 'accompagnatore' : 'accompagnatori'}. Guarda il piano in «Ore da coprire»: niente è registrato finché non premi «✔ Conferma il piano».`);
+    // Più giorni consecutivi (gita): un'uscita per ogni giorno DI SCUOLA da «iso» a «fino al giorno», legate da «gruppo».
+    // Se tutte le ore erano spuntate, ogni giorno prende tutte le sue ore; altrimenti le stesse ore scelte.
+    const giorni = [iso];
+    if (scelta.fino && scelta.fino > iso) {
+      for (let d = spostaIso(iso, 1); d <= scelta.fino && giorni.length < 15; d = spostaIso(d, 1)) if (mo.giornoOrario(d)) giorni.push(d);
+    }
+    const gruppo = giorni.length > 1 ? nuovoId() : '';
+    const acc = [...scelta.accompagnatori];
+    giorni.forEach(d => {
+      const oreGiorno = scelta.ore ? ore : oreDelGiorno(mo.giornoOrario(d));
+      const u = { id: nuovoId(), data: d, nome: scelta.nome.trim(), classi, ore: oreGiorno, accompagnatori: acc.slice(), disposizione: [], confermata: false };
+      if (gruppo) u.gruppo = gruppo;
+      uscite.push(u);
+    });
+    salva();
+    scelta.nome = ''; scelta.fino = ''; scelta.classi.clear(); scelta.ore = null; scelta.accompagnatori.clear();
+    mo.avvisa(`🧪 Simulazione dell'uscita${giorni.length > 1 ? ` di ${giorni.length} giorni di scuola` : ''}: ${classi.length} ${classi.length === 1 ? 'classe' : 'classi'}, ${acc.length} ` +
+      `${acc.length === 1 ? 'accompagnatore' : 'accompagnatori'}. Guarda il piano in «Ore da coprire»: niente è registrato finché non premi «✔ Conferma il piano».`);
     mo.ridisegna();
     const p = document.getElementById('sost-pianoUscita'); if (p) p.scrollIntoView({ behavior: 'smooth' });
   }
@@ -305,7 +325,7 @@ const Uscite = (() => {
     const mo = m(), D = mo.orario();
     if (!D) return;
     if (!legati.has(box)) { legati.add(box); box.addEventListener('click', clic); box.addEventListener('change', cambio); box.addEventListener('input', cambio); }
-    if (scelta.data !== iso) { scelta.data = iso; scelta.classi.clear(); scelta.ore = null; scelta.accompagnatori.clear(); }
+    if (scelta.data !== iso) { scelta.data = iso; scelta.fino = ''; scelta.classi.clear(); scelta.ore = null; scelta.accompagnatori.clear(); }
     const giorno = mo.giornoOrario(iso);
     if (!giorno) { box.innerHTML = '<p class="hint">In questo giorno non c\'è lezione.</p>'; return; }
     const ore = oreDelGiorno(giorno), oreScelte = scelta.ore || new Set(ore);
@@ -323,7 +343,8 @@ const Uscite = (() => {
     };
     const giaQui = usciteDel(iso);
     box.innerHTML =
-      (giaQui.length ? `<h4>Uscite di questo giorno</h4><ul class="sost-assenze">${giaQui.map(u => `<li><span><strong>${confermata(u) ? '🚌' : '🧪 simulazione ·'} ${esc(u.nome || 'Uscita didattica')}</strong> – ` +
+      (giaQui.length ? `<h4>Uscite di questo giorno</h4><ul class="sost-assenze">${giaQui.map(u => `<li><span><strong>${confermata(u) ? '🚌' : '🧪 simulazione ·'} ${esc(u.nome || 'Uscita didattica')}</strong>` +
+        (giorniDi(u).length > 1 ? ` (giorno ${giorniDi(u).indexOf(u.data) + 1} di ${giorniDi(u).length}, fino a ${esc(dataCorta(giorniDi(u).slice(-1)[0]))})` : '') + ' – ' +
         `${esc(u.classi.map(c => mo.nome('classe', c)).join(', '))} · ${oreTesto(u.ore)} ora` +
         (u.accompagnatori.length ? ` · accompagnano: ${esc(u.accompagnatori.map(mo.nomeDocente).join(', '))}` : '') +
         `</span><button type="button" class="btn ghost sm" data-us="togli" data-id="${esc(u.id)}">Togli</button></li>`).join('')}</ul>` : '') +
@@ -331,6 +352,8 @@ const Uscite = (() => {
         accompagnatori (prima i docenti rimasti senza classe), chi può entrare dopo o uscire prima (a recupero) e chi resta a disposizione.</p>
       <label class="fl">Descrizione (facoltativa, resta su questo dispositivo)
         <input type="text" data-us="nome" value="${esc(scelta.nome)}" maxlength="80" placeholder="es. Museo, teatro, uscita sul territorio"></label>
+      <label class="fl">Più giorni consecutivi? Fino al giorno (compreso; vuoto = solo oggi)
+        <input type="date" data-us="fino" value="${esc(scelta.fino)}" min="${esc(spostaIso(iso, 1))}" max="${esc(spostaIso(iso, 20))}"></label>
       <fieldset class="sost-ore"><legend>Classi che escono</legend>${classi.map(c => casella('classe', c.id, c.nome, scelta.classi.has(c.id))).join('')}</fieldset>
       <fieldset class="sost-ore"><legend>Ore dell'uscita</legend>${ore.map(h => casella('ora', h, mo.testoOra(h), oreScelte.has(h))).join('')}</fieldset>
       <fieldset class="sost-ore"><legend>Docenti che accompagnano</legend>
@@ -356,6 +379,7 @@ const Uscite = (() => {
     // chi è già stato messo a recupero dall'uscita (piano già applicato)
     const giaRecupero = mo.assenzeDel(iso).filter(a => a.come === 'recupero');
     const simulazione = qui.some(u => !confermata(u));
+    const giorni = giorniCollegati(iso);   // più di uno = gita di più giorni
     const inAttesa = simulazione || p.coperture.some(c => c.docente) || p.recuperi.length;
     const riga = c => {
       const nota = c.tipo === 'liberato' ? '🚌 liberato dall\'uscita: nessuna ora in più'
@@ -372,6 +396,16 @@ const Uscite = (() => {
       <p class="${simulazione ? 'sost-attenzione' : 'hint'}" role="status">${simulazione
         ? '🧪 <b>Simulazione</b>: niente è ancora registrato. Controlla il piano, poi premi «✔ Conferma il piano» oppure «↺ Azzera la simulazione».'
         : '✔ Uscita confermata: sostituzioni, assenze e recuperi sono registrati.'}</p>
+      ${giorni.length > 1 ? `<nav class="sost-settimana" aria-label="Giorni dell'uscita">
+        <span class="hint">🗓 Uscita di ${giorni.length} giorni:</span>
+        ${giorni.map(d => `<button type="button" class="btn sm${d === iso ? '' : ' ghost'}" data-us="vai" data-data="${esc(d)}"${d === iso ? ' aria-current="date"' : ''}>` +
+          `${esc(dataCorta(d))}${usciteDel(d).some(u => !confermata(u)) ? ' · 🧪' : ' · ✔'}</button>`).join('')}</nav>
+        <div class="row">
+          <button type="button" class="btn" data-us="confermaGiorni" data-giorni="${esc(giorni.join(','))}"${inCorso ? ' disabled' : ''}>✔ Conferma tutti i giorni</button>
+          <button type="button" class="btn" data-us="stampaGiorni" data-giorni="${esc(giorni.join(','))}">🖨️ Stampa tutti i giorni</button>
+          <button type="button" class="btn danger" data-us="azzeraGiorni" data-giorni="${esc(giorni.join(','))}"${inCorso ? ' disabled' : ''}>↺ Azzera tutti i giorni</button>
+        </div>
+        <p class="hint">Qui sotto il piano di ${esc(dataCorta(iso))}: tocca un giorno per vedere il suo.</p>` : ''}
       <p class="sost-dettagli">${qui.map(u => `${confermata(u) ? '' : '🧪 '}${esc(u.nome || 'Uscita')}: ${esc(u.classi.map(c => mo.nome('classe', c)).join(', '))} fuori (${oreTesto(u.ore)} ora)` +
         (u.accompagnatori.length ? ` · accompagnano ${esc(u.accompagnatori.map(mo.nomeDocente).join(', '))}` : '')).join(' · ')}</p>
       ${p.coperture.length ? `<div class="tablewrap"><table class="sost-tabella"><caption>Ore da coprire e proposta</caption>
@@ -410,16 +444,29 @@ const Uscite = (() => {
     uscite, chi copre ogni ora, chi entra dopo o esce prima (a recupero), chi resta a disposizione.
     Si prepara un riquadro a parte (.sost-stampabile.us-piano-stampa) e durante la stampa si vede solo quello.
   */
-  function stampaPiano(iso) {
-    const p = piano(iso); if (!p) return;
+  // giorni: un giorno ("2026-09-28") o più giorni (gita): una pagina per giorno
+  function stampaPiano(giorni) {
+    const html = [].concat(giorni).map(pianoStampaHtml).filter(Boolean);
+    if (!html.length) return;
+    const box = document.createElement('div');
+    box.className = 'sost-stampabile us-piano-stampa';
+    box.innerHTML = html.join('<div class="us-salto-pagina"></div>');
+    document.body.append(box);
+    document.body.classList.add('sost-in-stampa', 'us-stampa-piano');
+    // dopo la stampa si toglie tutto (anche se la stampa è stata annullata)
+    window.addEventListener('afterprint', () => { document.body.classList.remove('sost-in-stampa', 'us-stampa-piano'); box.remove(); }, { once: true });
+    window.print();
+  }
+
+  // Il piano di UN giorno, in HTML da stampare ('' se quel giorno non ci sono uscite)
+  function pianoStampaHtml(iso) {
+    const p = piano(iso); if (!p) return '';
     const mo = m(), qui = usciteDel(iso), nome = id => esc(mo.nomeDocente(id));
     const simulazione = qui.some(u => !confermata(u));
     const giorno = new Date(iso + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
     const giaRecupero = mo.assenzeDel(iso).filter(a => a.come === 'recupero');
     const nota = c => c.tipo === 'liberato' ? 'liberato dall\'uscita (nessuna ora in più)' : c.tipo === 'normale' ? '+1 nel conteggio' : 'DA COPRIRE';
-    const box = document.createElement('div');
-    box.className = 'sost-stampabile us-piano-stampa';
-    box.innerHTML = `<h2>🚌 Piano per l'uscita didattica · ${esc(giorno)}</h2>
+    return `<h2>🚌 Piano per l'uscita didattica · ${esc(giorno)}</h2>
       ${simulazione ? '<p><b>SIMULAZIONE – non ancora confermata</b></p>' : ''}
       <table class="sost-tabella"><caption>Uscite</caption>
         <thead><tr><th scope="col">Uscita</th><th scope="col">Classi fuori</th><th scope="col">Ore</th><th scope="col">Accompagnatori</th></tr></thead>
@@ -437,11 +484,18 @@ const Uscite = (() => {
       ${p.disposizione.length ? `<table class="sost-tabella"><caption>A disposizione (restano a scuola, nessun recupero)</caption>
         <thead><tr><th scope="col">Docente</th><th scope="col">Ore</th><th scope="col">Perché</th></tr></thead>
         <tbody>${p.disposizione.map(d => `<tr><th scope="row">${nome(d.docente)}</th><td>${oreTesto(d.ore)}</td><td>${esc(d.perche)}</td></tr>`).join('')}</tbody></table>` : ''}`;
-    document.body.append(box);
-    document.body.classList.add('sost-in-stampa', 'us-stampa-piano');
-    // dopo la stampa si toglie tutto (anche se la stampa è stata annullata)
-    window.addEventListener('afterprint', () => { document.body.classList.remove('sost-in-stampa', 'us-stampa-piano'); box.remove(); }, { once: true });
-    window.print();
+  }
+
+  // «✔ Conferma tutti i giorni» di una gita: un giorno dopo l'altro (il foglio del conteggio si aggiorna in fila)
+  async function confermaGiorni(giorni) {
+    if (!permesso()) return;
+    for (const d of giorni) if (piano(d)) await applica(d);
+  }
+  // «↺ Azzera tutti i giorni»: una sola domanda, poi toglie le uscite di quei giorni
+  async function azzeraGiorni(giorni) {
+    const qui = uscite.filter(u => giorni.includes(u.data)); if (!qui.length) return;
+    if (!confirm(`Togliere le uscite di tutti i ${giorni.length} giorni?` + (qui.some(confermata) ? ' Quelle già confermate tolgono anche sostituzioni, assenze e recuperi.' : ''))) return;
+    for (const u of qui) await togli(u.id, true);
   }
 
   // ---------- Eventi ----------
@@ -454,11 +508,17 @@ const Uscite = (() => {
     else if (a === 'azzera') azzera(b.dataset.data);
     else if (a === 'azzeraTutto') azzeraTutto();
     else if (a === 'stampa') stampaPiano(b.dataset.data);
+    // gite di più giorni: data-giorni = "2026-09-28,2026-09-29,…"
+    else if (a === 'vai') m().vaiA(b.dataset.data);
+    else if (a === 'stampaGiorni') stampaPiano(b.dataset.giorni.split(','));
+    else if (a === 'confermaGiorni') confermaGiorni(b.dataset.giorni.split(','));
+    else if (a === 'azzeraGiorni') azzeraGiorni(b.dataset.giorni.split(','));
   }
   function cambio(e) {
     const c = e.target.closest('[data-us]'); if (!c) return;
     const a = c.dataset.us;
     if (a === 'nome') { scelta.nome = c.value; return; }   // solo testo: niente ridisegno (si perderebbe il cursore)
+    if (a === 'fino') { scelta.fino = c.value; return; }
     if (e.type === 'input') return;
     if (a === 'classe') { c.checked ? scelta.classi.add(c.value) : scelta.classi.delete(c.value); }
     else if (a === 'ora') {

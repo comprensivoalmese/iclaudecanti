@@ -1765,6 +1765,8 @@ const Sostituzioni = (() => {
     avvisa, ridisegna: () => disegnaTutto(), email: emailUtente, preparaNomiVeri, nomeVero,
     // servono al modulo «Uscite didattiche» (js/uscite.js)
     registroDel: iso => registro.filter(x => x.data === iso), assentiAllOra, etichettaSaldo, el,
+    // mostra un altro giorno nella scheda (per esempio il giorno dopo di una gita di più giorni)
+    vaiA: iso => { dataScelta = iso; aperte.clear(); disegnaTutto(); },
     /*
       Toglie le assenze che non hanno lasciato tracce nei fogli (nessuna ora a recupero già tolta, nessuna sostituzione
       collegata): serve a cancellare un'uscita didattica di prova anche senza autorizzazione. Restituisce quante ne ha tolte.
