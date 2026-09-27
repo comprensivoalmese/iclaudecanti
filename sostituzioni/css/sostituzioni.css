@@ -126,6 +126,10 @@
   body.sost-in-stampa .sost-stampabile * { visibility: visible; }
   body.sost-in-stampa .sost-stampabile { position: absolute; left: 0; top: 0; width: 100%; margin: 0; }
   body.sost-in-stampa .tablewrap { border: 0; overflow: visible; }
+  /* stampa del piano dell'uscita didattica (js/uscite.js): si vede solo quel riquadro */
+  body.us-stampa-piano .sost-stampabile:not(.us-piano-stampa) { display: none !important; }
+  body.us-stampa-piano .us-piano-stampa h2 { color: #000; font-size: 18px; margin: 0 0 8px; }
+  body.us-stampa-piano .us-piano-stampa .sost-tabella { width: 100%; border-collapse: collapse; margin-bottom: 14px; }
   body.sost-in-stampa .sost-tabella caption { color: #000; font-size: 16px; font-weight: 600; }
   body.sost-in-stampa .sost-tabella th,
   body.sost-in-stampa .sost-tabella td { color: #000; border-bottom: 1px solid #999; }

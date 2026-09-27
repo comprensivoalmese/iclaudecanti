@@ -385,6 +385,7 @@ const Uscite = (() => {
         `<li><strong>${nome(d.docente)}</strong>: ${oreTesto(d.ore)} ora · ${esc(d.perche)}</li>`).join('')}</ul>` : ''}
       <div class="row">${inAttesa ? `<button type="button" class="btn" data-us="applica" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${inCorso ? 'Registro…' : simulazione ? '✔ Conferma il piano' : '✔ Conferma le modifiche'}</button>`
         : '<span class="tag ok">✔ Piano confermato</span>'}
+        <button type="button" class="btn" data-us="stampa" data-data="${esc(iso)}">🖨️ Stampa il piano</button>
         <button type="button" class="btn danger" data-us="azzera" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${simulazione && !qui.some(confermata) ? '↺ Azzera la simulazione' : '↺ Togli le uscite del giorno'}</button>
         ${p.coperture.length ? '<span class="hint">Si può cambiare chi copre con la tendina (🚌 = liberato dall\'uscita) o assegnare le ore una per una qui sotto.</span>' : ''}</div>
     </article>`;
@@ -404,6 +405,45 @@ const Uscite = (() => {
       <tbody>${righe}${disp ? `<tr><th scope="row">A disposizione</th><td colspan="3">${disp}</td></tr>` : ''}${rec ? `<tr><th scope="row">Entrano dopo / escono prima</th><td colspan="3">${rec}</td></tr>` : ''}</tbody></table>`;
   }
 
+  /*
+    «🖨️ Stampa il piano»: una pagina con tutto il piano del giorno (anche se è ancora una simulazione):
+    uscite, chi copre ogni ora, chi entra dopo o esce prima (a recupero), chi resta a disposizione.
+    Si prepara un riquadro a parte (.sost-stampabile.us-piano-stampa) e durante la stampa si vede solo quello.
+  */
+  function stampaPiano(iso) {
+    const p = piano(iso); if (!p) return;
+    const mo = m(), qui = usciteDel(iso), nome = id => esc(mo.nomeDocente(id));
+    const simulazione = qui.some(u => !confermata(u));
+    const giorno = new Date(iso + 'T12:00:00').toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const giaRecupero = mo.assenzeDel(iso).filter(a => a.come === 'recupero');
+    const nota = c => c.tipo === 'liberato' ? 'liberato dall\'uscita (nessuna ora in più)' : c.tipo === 'normale' ? '+1 nel conteggio' : 'DA COPRIRE';
+    const box = document.createElement('div');
+    box.className = 'sost-stampabile us-piano-stampa';
+    box.innerHTML = `<h2>🚌 Piano per l'uscita didattica · ${esc(giorno)}</h2>
+      ${simulazione ? '<p><b>SIMULAZIONE – non ancora confermata</b></p>' : ''}
+      <table class="sost-tabella"><caption>Uscite</caption>
+        <thead><tr><th scope="col">Uscita</th><th scope="col">Classi fuori</th><th scope="col">Ore</th><th scope="col">Accompagnatori</th></tr></thead>
+        <tbody>${qui.map(u => `<tr><th scope="row">${esc(u.nome || 'Uscita didattica')}</th><td>${esc(u.classi.map(c => mo.nome('classe', c)).join(', '))}</td>
+          <td>${oreTesto(u.ore)}</td><td>${esc(u.accompagnatori.map(mo.nomeDocente).join(', '))}</td></tr>`).join('')}</tbody></table>
+      ${p.coperture.length ? `<table class="sost-tabella"><caption>Ore da coprire</caption>
+        <thead><tr><th scope="col">Ora</th><th scope="col">Classe</th><th scope="col">Assente</th><th scope="col">Copre</th><th scope="col">Note</th></tr></thead>
+        <tbody>${p.coperture.map(c => `<tr><th scope="row">${esc(mo.testoOra(c.l.ora))}</th><td>${esc(mo.nome('classe', c.l.classe))}</td>
+          <td>${nome(c.l.assente)}</td><td>${c.docente ? nome(c.docente) : '—'}</td><td>${nota(c)}</td></tr>`).join('')}</tbody></table>` : ''}
+      ${p.recuperi.length || giaRecupero.length ? `<table class="sost-tabella"><caption>Entrano dopo o escono prima (ore a recupero)</caption>
+        <thead><tr><th scope="col">Docente</th><th scope="col">Ore a recupero</th></tr></thead>
+        <tbody>${p.recuperi.map(r => `<tr><th scope="row">${nome(r.docente)}</th><td>${[r.prima.length ? `entra alla ${r.entra}ª ora (${oreTesto(r.prima)})` : '',
+          r.dopo.length ? `esce dopo la ${r.esce}ª ora (${oreTesto(r.dopo)})` : ''].filter(Boolean).join(' e ')}</td></tr>`).join('')}
+          ${giaRecupero.map(a => `<tr><th scope="row">${nome(a.docente)}</th><td>${oreTesto(a.ore)} ora (già registrate)</td></tr>`).join('')}</tbody></table>` : ''}
+      ${p.disposizione.length ? `<table class="sost-tabella"><caption>A disposizione (restano a scuola, nessun recupero)</caption>
+        <thead><tr><th scope="col">Docente</th><th scope="col">Ore</th><th scope="col">Perché</th></tr></thead>
+        <tbody>${p.disposizione.map(d => `<tr><th scope="row">${nome(d.docente)}</th><td>${oreTesto(d.ore)}</td><td>${esc(d.perche)}</td></tr>`).join('')}</tbody></table>` : ''}`;
+    document.body.append(box);
+    document.body.classList.add('sost-in-stampa', 'us-stampa-piano');
+    // dopo la stampa si toglie tutto (anche se la stampa è stata annullata)
+    window.addEventListener('afterprint', () => { document.body.classList.remove('sost-in-stampa', 'us-stampa-piano'); box.remove(); }, { once: true });
+    window.print();
+  }
+
   // ---------- Eventi ----------
   function clic(e) {
     const b = e.target.closest('button[data-us]'); if (!b || b.disabled) return;
@@ -413,6 +453,7 @@ const Uscite = (() => {
     else if (a === 'applica') applica(b.dataset.data);
     else if (a === 'azzera') azzera(b.dataset.data);
     else if (a === 'azzeraTutto') azzeraTutto();
+    else if (a === 'stampa') stampaPiano(b.dataset.data);
   }
   function cambio(e) {
     const c = e.target.closest('[data-us]'); if (!c) return;

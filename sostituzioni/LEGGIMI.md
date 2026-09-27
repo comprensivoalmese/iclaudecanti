@@ -87,7 +87,7 @@ In «Assenze del giorno» si sceglie il caso: **👤 Assenza di un docente** (la
 
 «🧪 Simula l'uscita» è solo una **simulazione** (niente assenze, niente fogli, nessuna autorizzazione, non si pubblica):
 si può cambiare chi copre con la tendina, poi **✔ Conferma il piano** (registra gli accompagnatori assenti, assegna le
-sostituzioni e le ore a recupero) oppure **↺ Azzera la simulazione**. **🗑 Cancella tutte le uscite didattiche** (nel modulo
+sostituzioni e le ore a recupero) oppure **↺ Azzera la simulazione**; **🖨️ Stampa il piano** stampa tutto il piano del giorno (anche la simulazione). **🗑 Cancella tutte le uscite didattiche** (nel modulo
 dell'uscita) toglie tutte le uscite di tutti i giorni con le loro modifiche; quello che non ha scritto nei fogli si toglie
 anche senza autorizzazione.
 Anche le proposte normali delle singole ore mettono in cima i liberati (🚌), sia qui sia in «Sostituzioni smart».
