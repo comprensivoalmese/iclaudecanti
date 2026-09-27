@@ -11,8 +11,10 @@
   Orario Facile = i codici di CONFIG.editori (ruoli.js), Sostituzioni = il foglio «Autorizzazioni» del file delle
   sostituzioni (sostituzioni/js/registro-drive.js). Quando la scheda c'è, conta solo lei.
 
-  Il foglio si legge con il permesso Google di chi ha fatto l'accesso (lo stesso dei nomi veri, vedi nomi.js): serve
-  che il Foglio sia condiviso almeno in lettura con chi deve essere controllato.
+  Il foglio si legge con il permesso Google di chi ha fatto l'accesso (lo stesso dei nomi veri, vedi nomi.js).
+  Scelta della scuola (27/09/2026): un FILE A PARTE (CONFIG.fileAutorizzazioni), condiviso in lettura SOLO con le persone
+  autorizzate e in modifica solo con chi gestisce l'app. Chi non può aprire il file non ha nessuna autorizzazione
+  (anche se era abilitato con le regole di prima); chi può aprirlo ha quelle con SI nella sua riga.
   È un controllo fatto nel browser (il sito è pubblico): serve a mostrare a ciascuno solo quello che gli compete.
   La vera protezione restano i permessi di Google Drive (chi può modificare i Fogli) e di GitHub.
 */
@@ -28,9 +30,20 @@ const Autorizzazioni = (() => {
   let letta = null;   // { righe: [...], esiste: true/false } l'ultima lettura della scheda (solo in memoria)
 
   // Legge la scheda «Autorizzazioni». esiste = false se la scheda non c'è (si usano le regole di prima)
+  // (in un file SOLO per le autorizzazioni va bene anche la prima scheda, qualunque nome abbia, se ha la colonna Email)
+  const fileDedicato = () => !!CONFIG.fileAutorizzazioni && CONFIG.fileAutorizzazioni !== CONFIG.fileNomiDocenti && CONFIG.fileAutorizzazioni !== CONFIG.fileDatabaseOrario;
   async function leggi(t) {
-    const r = await fetch(url('/values/' + encodeURIComponent(`'${SCHEDA}'!A1:Z500`)), { cache: 'no-cache', headers: { Authorization: 'Bearer ' + t } });
+    const prendi = zona => fetch(url('/values/' + encodeURIComponent(zona)), { cache: 'no-cache', headers: { Authorization: 'Bearer ' + t } });
+    let r = await prendi(`'${SCHEDA}'!A1:Z500`);
+    if (r.status === 400 && fileDedicato()) {
+      r = await prendi('A1:Z500');   // senza nome = la prima scheda del file
+      if (r.ok) {
+        const righe = (await r.json()).values || [];
+        return righe.some(x => x.some(c => semplice(c).includes('mail'))) ? { esiste: true, righe } : { esiste: false, righe: [] };
+      }
+    }
     if (r.status === 400) return { esiste: false, righe: [] };          // scheda assente
+    // 403/404: questo account non può aprire il file = nessuna autorizzazione (vedi di)
     if (!r.ok) throw Object.assign(new Error('errore ' + r.status), { stato: r.status });
     return { esiste: true, righe: (await r.json()).values || [] };
   }
