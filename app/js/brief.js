@@ -65,11 +65,19 @@ const Breve = (() => {
     return parti.join(' · ');
   }
 
+  // L'aula in grande con il segnaposto: se è segnata sulla piantina (piantine.js) diventa un tasto «dov'è»
+  function aulaHtml(classe, idAula) {
+    const nome = Dati.nome('aula', idAula);
+    if (typeof Piantine !== 'undefined' && Piantine.segnata(nome))
+      return `<button type="button" class="${classe} link-piantina" data-piantina="${esc(nome)}" title="Dov'è l'aula ${esc(nome)}">${ICONA_AULA}<span class="solo-lettori">Aula (mostra sulla piantina): </span>${esc(nome)}</button>`;
+    return `<span class="${classe}">${ICONA_AULA}<span class="solo-lettori">Aula: </span>${esc(nome)}</span>`;
+  }
+
   // Scheda grande (Adesso / Dopo) con una o più lezioni della stessa ora (compresenze)
   function scheda(classe, etichetta, orario, lezioni, tipo, extra) {
     const righe = lezioni.map(l => `
       <div class="riga-breve"><span class="materia-breve">${esc(l.materia || '—')}</span><span class="dettagli-breve">${esc(dettagli(l, tipo))}</span></div>
-      ${tipo !== 'aula' && l.aula ? `<span class="aula-breve">${ICONA_AULA}<span class="solo-lettori">Aula: </span>${esc(Dati.nome('aula', l.aula))}</span>` : ''}`).join('');
+      ${tipo !== 'aula' && l.aula ? aulaHtml('aula-breve', l.aula) : ''}`).join('');
     return `<article class="scheda-breve ${classe}">
       <div class="riga-breve"><span class="pill-breve">${etichetta}</span><span class="dettagli-breve">${esc(orario)}</span></div>
       ${righe}${extra || ''}</article>`;
@@ -176,7 +184,7 @@ const Breve = (() => {
       const testo = lez.length
         ? lez.map(l => `
           <div class="riga-breve"><span class="materia-breve">${esc(l.materia || '—')}</span><span class="dettagli-breve">${esc(dettagli(l, soggetto.tipo))}</span></div>
-          ${soggetto.tipo !== 'aula' && l.aula ? `<span class="aula-ora">${ICONA_AULA}<span class="solo-lettori">Aula: </span>${esc(Dati.nome('aula', l.aula))}</span>` : ''}`).join('')
+          ${soggetto.tipo !== 'aula' && l.aula ? aulaHtml('aula-ora', l.aula) : ''}`).join('')
         : '<span class="materia-breve">Ora libera</span>';
       return `<li class="scheda-breve scheda-ora ${stato}">
         <div class="riga-breve"><span class="dettagli-breve">${esc(`${o.n}ª ora · ${o.inizio}–${o.fine}`)}</span>${pill}</div>${testo}</li>`;

@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.30',
+  versioneApp: '2026-09-27.31',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -84,6 +84,17 @@ window.CONFIG = {
     // luogo = dove si svolge (se l'aula non è indicata)
     { tipo: 'Ricevimento parenti', senzaClasse: true, luogo: 'Atrio – accoglienza dei genitori', altriNomi: ['Ricevimento'], spiegazione: 'L\'ora in cui il docente riceve i genitori, accolti nell\'atrio: non serve la classe.' },
     { tipo: 'Disponibilità supplenze', senzaClasse: true, altriNomi: ['Disponibilità', 'Disposizione'], spiegazione: 'Le ore in cui il docente è a disposizione per le sostituzioni: non serve la classe.' }
+  ],
+
+  // PIANTINE (js/piantine.js): un'immagine per piano, su Google Drive (condivisa in lettura con l'Istituto; mai su GitHub:
+  // sono tavole tecniche dell'edificio). piano = la lettera o cifra con cui iniziano i codici delle aule di quel piano
+  // (S03ART1 → S, 110ITA4 → 1…), nome = come si chiama, file = ID del file su Drive. La posizione di ogni aula si segna in
+  // Orario Facile (scheda Aule) e va nel Foglio Database, scheda «Aule», colonne Piano, X, Y.
+  piantine: [
+    { piano: 'S', nome: 'Piano seminterrato', file: '' },
+    { piano: '1', nome: 'Piano terreno', file: '' },
+    { piano: '2', nome: 'Primo piano', file: '' },
+    { piano: '3', nome: 'Secondo piano', file: '' }
   ],
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).

@@ -32,7 +32,7 @@ rinominare le schede (si possono aggiungere righe nelle zone gialle).
 | **Impostazioni** | voce per voce | A voce · B valore: Scuola, Anno scolastico, Durata ora (minuti), Inizio lezioni, Ore del mattino, Ore del pomeriggio, Giorni (separati da virgola), Versione dati | – |
 | **Vincoli** | 2–41 | A nome del vincolo (come in Orario Facile, es. `maxConsec`) · B valore (numero oppure SI/NO) · C spiegazione | – |
 | **Discipline** | 2–41 | A sigla · B nome · C ore standard · D principale · E blocchi di 2 ore · F modo blocchi · G può stare all'ultima ora · H colore (0-360) | – |
-| **Aule** | 2–81 | A aula · B tipo · C più classi insieme (SI/NO) | – |
+| **Aule** | 2–81 | A aula · B tipo · C più classi insieme (SI/NO) · D piano · E X (%) · F Y (%) (posizione sulla piantina: le scrive la scheda Aule → «Aule sulla piantina», Orario Facile non le tocca quando salva) | – |
 | **Classi** | riga 1 intestazione, 2–41 classi | A classe · B anno · C..N ore attive «‹giorno› mattino» / «‹giorno› pomeriggio» (l'intestazione dice quale giorno) | P ore settimanali |
 | **Quadro** | riga 1 sigle, 2–41 classi | A classe · B..AN ore settimanali di ogni materia (la riga 1 dice quale) | AP totale |
 | **Docenti** | 2–121 | A codice (DOC01…) · B cognome · C nome · D aule (separate da virgola, la prima è la principale) · E giorno libero · F max ore al giorno · G max ore consecutive · H indisponibilità | J–L ore nelle cattedre, ore nell'orario, esito |

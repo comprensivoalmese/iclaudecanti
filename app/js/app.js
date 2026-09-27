@@ -675,6 +675,11 @@
     $$('[data-colonne]').forEach(b => b.addEventListener('click', () => { stato.colonne = b.dataset.colonne; aggiorna(); }));
     Viste.FILTRI.forEach(k => $('#filtro-' + k).addEventListener('change', e => { stato.filtri[k] = e.target.value; aggiorna(); }));
     $('#btnAzzera').addEventListener('click', () => { stato.filtri = { classe: '', docente: '', aula: '' }; aggiorna(); });
+    // Un'aula segnata sulla piantina (tabella o «In breve»): toccandola si apre la piantina del piano (js/piantine.js)
+    document.addEventListener('click', e => {
+      const b = e.target.closest('[data-piantina]');
+      if (b) { e.preventDefault(); Piantine.mostra(b.dataset.piantina); }
+    });
     // Quadratino «Compresenze»: spuntato si vedono anche le ore di compresenza, altrimenti solo le curricolari
     $('#mostraCompresenze').checked = Compresenze.mostra();
     $('#mostraCompresenze').addEventListener('change', e => { Compresenze.impostaMostra(e.target.checked); Compresenze.applica(D); aggiorna(); });
@@ -792,7 +797,7 @@
     try {
       const fontePrima = D.fonte, filtri = Object.assign({}, stato.filtri);
       // le sostituzioni pubblicate su Drive e il Foglio delle compresenze (se configurati in config.js)
-      await Promise.all([Supplenze.scarica(), Compresenze.scarica()]);
+      await Promise.all([Supplenze.scarica(), Compresenze.scarica(), Piantine.prepara()]);
       D = await Dati.carica();
       applicaNomi();
       Compresenze.applica(D);

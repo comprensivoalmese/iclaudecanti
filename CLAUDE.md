@@ -54,6 +54,10 @@ Le parti del progetto:
   **Sostegno** (dato sanitario, GDPR): griglia «Sostegno» (un docente per riga, giorni × ore, in ogni cella la classe) e scheda
   «Sostegno classi» (spunta e ore previste) nel Foglio Compresenze o in `CONFIG.fileSostegno`; nell'app solo per docenti e
   modificatori, solo in memoria; «Scarica orario.json» di Orario Facile toglie le compresenze «SOS…». Mai su GitHub.
+- **Piantine** (`app/js/piantine.js`, `app/css/piantine.css`, editor `orario-facile/scheda-piantine.js` nella scheda 3 Aule):
+  un'immagine per piano su Drive (`CONFIG.piantine`: piano = lettera/cifra iniziale dei codici delle aule, nome, file = ID),
+  MAI su GitHub (tavole tecniche); la posizione di ogni aula (Piano, X %, Y %) nelle colonne D-F della scheda «Aule» del
+  Foglio Database. Nell'app un'aula segnata diventa un tasto (`data-piantina`) che apre «📍 Dov'è».
 - **Dati della scuola in Orario Facile**: `orario-facile/index.html` contiene i dati 2026/27
   (`CSV_SCUOLA_CLASSI`, `CSV_SCUOLA_DOCENTI` e `datiScuola()`), caricati alla prima apertura e con il pulsante
   "Dati scuola 2026/27". **Privacy**: il repo è pubblico, quindi i docenti compaiono solo con un codice

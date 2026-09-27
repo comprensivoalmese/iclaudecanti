@@ -21,6 +21,7 @@ img{max-width:100%}
 <!-- stile della scheda Sostituzioni (i suoi file stanno nella cartella sostituzioni/) -->
 <link rel="stylesheet" href="../sostituzioni/css/sostituzioni.css">
 <link rel="stylesheet" href="scheda-compresenze.css">
+<link rel="stylesheet" href="../app/css/piantine.css">
 <!-- Porta d'ingresso: entra solo chi può modificare l'orario (vedi porta.js e ../app/js/ruoli.js) -->
 <link rel="stylesheet" href="porta.css">
 <script src="../app/js/config.js"></script>
@@ -339,6 +340,11 @@ td input[type=number]{width:64px}
       </div>
       <p class="hint" style="margin-top:8px">Un docente senza aula assegnata non occupa nessuno spazio: la casella dell'orario resterà senza numero.</p>
     </div>
+    <!-- Dove si trova ogni aula: si segna sulla piantina del piano (scheda-piantine.js); nell'app diventa «📍 Dov'è» -->
+    <div class="card no-print">
+      <h3>Aule sulla piantina</h3>
+      <div id="piantineApp"><p class="hint">Caricamento…</p></div>
+    </div>
   </section>
 
   <!-- 4 QUADRO ORARIO -->
@@ -568,6 +574,8 @@ td input[type=number]{width:64px}
 <script src="../app/js/compresenze.js"></script>
 <script src="scheda-compresenze.js"></script>
 <script src="sintesi.js"></script>
+<script src="../app/js/piantine.js"></script>
+<script src="scheda-piantine.js"></script>
 <script src="../sostituzioni/js/foglio.js"></script>
 <script src="../sostituzioni/js/drive.js"></script>
 <script src="../sostituzioni/js/registro-drive.js"></script>
@@ -1715,6 +1723,11 @@ function aulaUsata(id){
   return S.classi.some(c => S.giorni.some(g => (S.orario[c.id]?.[g]||[]).some(v => v && v.aula===id)));
 }
 function renderAule(){
+  // «Aule sulla piantina» (scheda-piantine.js): dove si trova ogni aula, per l'app («📍 Dov'è»)
+  if(typeof SchedaPiantine !== 'undefined') SchedaPiantine.monta($('#piantineApp'), {
+    aule: () => S.aule.map(a => a.nome),
+    email: () => { const s = typeof Accesso !== 'undefined' && Accesso.sessione ? Accesso.sessione() : null; return s ? s.email : ''; }
+  });
   const need = auleServono();
   const condivise = S.aule.filter(a => a.contemporanea).length;
   $('#auleMsg').innerHTML = S.aule.length >= need || condivise

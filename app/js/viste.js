@@ -62,7 +62,13 @@ const Viste = (() => {
     return lezioniCella.map(l => {
       const righe = FILTRI
         .filter(k => k !== stato.colonne && !stato.filtri[k])
-        .map(k => `<span class="dato dato-${k}"><span class="solo-lettori">${DIMENSIONI[k].singolare}: </span>${esc(Dati.nome(k, l[k]))}</span>`)
+        .map(k => {
+          const nome = Dati.nome(k, l[k]);
+          // un'aula segnata sulla piantina (piantine.js) diventa un tasto: toccandolo si vede dov'è
+          if (k === 'aula' && typeof Piantine !== 'undefined' && Piantine.segnata(nome))
+            return `<button type="button" class="dato dato-aula link-piantina" data-piantina="${esc(nome)}" title="Dov'è l'aula ${esc(nome)}"><span class="solo-lettori">Aula (mostra sulla piantina): </span>${esc(nome)}</button>`;
+          return `<span class="dato dato-${k}"><span class="solo-lettori">${DIMENSIONI[k].singolare}: </span>${esc(nome)}</span>`;
+        })
         .join('');
       // Lezione cambiata all'ultimo minuto (vedi modifiche.js): bordo evidenziato ed etichetta
       const cambiata = stato.modificate && stato.modificate.has(l.giorno + '|' + l.ora + '|' + l.classe);
