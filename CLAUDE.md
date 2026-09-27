@@ -46,8 +46,10 @@ Le parti del progetto:
   `D.lezioni` (con `compresenza: true`) solo se è spuntato il quadratino «Compresenze»; le curricolari restano in
   `D.lezioniCurricolari` (le usa modifiche.js). Sul dispositivo si salva solo una copia con i codici.
   La pagina «Compresenze» (`app/js/compresenze-pagina.js`, `css/compresenze.css`; tasto «✎ Modifica» e voce di menu, solo
-  per i modificatori) è la maschera d'inserimento: gruppi e ore previste in `CONFIG.gruppiCompresenze` (solo codici DOC),
-  legge e riscrive il primo foglio del Foglio Compresenze con la Sheets API.
+  per i modificatori) è la maschera d'inserimento: legge e riscrive con la Sheets API il primo foglio del Foglio Compresenze
+  e la scheda «Gruppi» (gruppi, ore previste e docenti previsti di QUESTA scuola: cambiano da scuola a scuola, quindi
+  stanno su Drive e non nel codice; `CONFIG.gruppiCompresenze` contiene solo i gruppi proposti, senza numeri né codici).
+  Un gruppo con «nelle ore di» una materia (Alternativa → Religione) conta da solo le ore previste nell'orario.
 - **Dati della scuola in Orario Facile**: `orario-facile/index.html` contiene i dati 2026/27
   (`CSV_SCUOLA_CLASSI`, `CSV_SCUOLA_DOCENTI` e `datiScuola()`), caricati alla prima apertura e con il pulsante
   "Dati scuola 2026/27". **Privacy**: il repo è pubblico, quindi i docenti compaiono solo con un codice
