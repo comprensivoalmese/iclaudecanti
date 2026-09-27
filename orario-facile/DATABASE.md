@@ -1,6 +1,7 @@
 # Il Foglio database dell'orario
 
-L'orario sta in **un solo file**: un Foglio Google sul Drive della scuola.
+L'orario sta in **un solo file**: un Foglio Google sul Drive della scuola, che si chiama **«Database»**
+(prima «Orario database»: il nome si può cambiare, l'app lo trova dall'ID).
 **Orario Facile** lo carica e ci salva (scheda **Esporta** → «📥 Carica dal Foglio» / «📤 Salva sul Foglio»),
 e chi prepara l'orario a mano può lavorarci direttamente: la griglia ha i colori che segnalano gli errori.
 
@@ -68,7 +69,7 @@ chiedere conferma. Un'aula lasciata vuota in Orario Facile diventa l'aula princi
 
 1. Orario Facile → Esporta → «📥 Carica dal Foglio» (legge il Foglio vecchio: così non si perde nessuna modifica).
 2. «👁 Nomi» (legge i nomi dal vecchio file dei nomi, ancora indicato in config.js).
-3. Nel Foglio: File → Importa → il nuovo `Orario database.xlsx` → «Sostituisci foglio di lavoro».
+3. Nel Foglio: File → Importa → il nuovo `Database.xlsx` (creato da `strumenti/crea-database.ps1`) → «Sostituisci foglio di lavoro».
 4. Orario Facile → «📤 Salva sul Foglio» (avvisa che il Foglio è cambiato: «Salva comunque»). Cognome e Nome si riempiono.
 5. In config.js si svuota `fileNomiDocenti`: da quel momento l'app legge i nomi dal Foglio database.
 

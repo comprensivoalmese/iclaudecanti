@@ -34,7 +34,7 @@ Le parti del progetto:
   nell'app `avviaAutomatica()` pubblica da sola le modifiche fatte da «Sostituzioni smart». Nel file pubblicato ci sono
   `assenze`, `registro` e `cambi` (cambi d'aula, chiave locale `sostituzioni.cambiAula`, senza il motivo); l'app li unisce
   ai dati locali in `Supplenze.settimana()` (`cambioAula()` per la tabella, `avviso-per-te.js` per il riquadro).
-- **Foglio database** (`orario-facile/database.js`, formato in `orario-facile/DATABASE.md`): l'archivio unico dell'orario è
+- **Foglio database** (su Drive si chiama «Database» dal 27/09/2026; `orario-facile/database.js`, formato in `orario-facile/DATABASE.md`): l'archivio unico dell'orario è
   un Foglio Google (`CONFIG.fileDatabaseOrario`) che Orario Facile carica e su cui salva (scheda Esporta). Legge/scrive
   solo le colonne «dati» in posizioni fisse (le formule e i colori li crea una volta `strumenti/crea-database.ps1`);
   la griglia «Orario» è docente × ora con la scrittura breve `1A`, `1A STO`, `1A ITA @MENSA`, `+2B SOS`, `… *`.
@@ -127,8 +127,8 @@ orario-facile/    l'app Orario Facile (un unico index.html autonomo + modelli CS
 sostituzioni/     codice della scheda Sostituzioni di Orario Facile (css/, js/, esempio/ con facsimili)
 potenziamento/    linee guida per assegnare le ore di potenziamento di italiano L2 (linee-guida-L2.md):
                   da seguire quando si costruisce in Orario Facile l'orario dei docenti di potenziamento;
-                  l'orario di potenziamento attuale è il Foglio Google «Orario potenziamento» sul Drive della scuola
-                  (ID 1eoYYg-TTgqz3hf_EB1rsA8lbOo8Nj1oqTqM1p21MehM): può contenere nomi, quindi mai copiarlo nel repo
+                  le ore di potenziamento stanno nel Foglio Compresenze (gruppo «Potenziamento L2», scheda 8 di
+                  Orario Facile); il vecchio Foglio «Orario potenziamento» è archiviato (27/09/2026)
 strumenti/        script da usare sul PC (Windows + Excel), es. crea-database.ps1 per creare il Foglio database
 dati/orario.json  l'orario letto da app/ (formato dell'app o backup di Orario Facile)
 dati/campanella.json  orari della campanella per il tasto 🔔 dell'app (vedi app/js/campanella.js)

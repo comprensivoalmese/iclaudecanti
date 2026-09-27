@@ -1,4 +1,4 @@
-﻿# strumenti/crea-database.ps1 – vedi orario-facile/DATABASE.md. Uso: powershell -ExecutionPolicy Bypass -File strumenti\crea-database.ps1 -Backup dati\orario.json -Uscita "C:\...\Orario database.xlsx" (serve Excel per Windows)
+﻿# strumenti/crea-database.ps1 – vedi orario-facile/DATABASE.md. Uso: powershell -ExecutionPolicy Bypass -File strumenti\crea-database.ps1 -Backup dati\orario.json -Uscita "C:\...\Database.xlsx" (serve Excel per Windows)
 # Crea il FILE DATABASE dell'orario (xlsx da caricare su Google Drive e aprire come Foglio Google)
 # a partire da un backup di Orario Facile (es. dati/orario.json).
 # Il formato è descritto in orario-facile/DATABASE.md: Orario Facile legge e scrive le colonne "dati",

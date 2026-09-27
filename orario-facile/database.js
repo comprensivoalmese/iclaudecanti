@@ -353,7 +353,7 @@ const DatabaseOrario = (() => {
     const COL = colonneDocenti(attuale.docentiTitoli[0]);
     if (!COL.standard && !COL.vecchio) throw new Error('la scheda Docenti del Foglio ha le colonne in un ordine diverso dal modello ' +
       '(A Codice, B Cognome, C Nome, D Aule, E Giorno libero, F Max ore al giorno, G Max ore consecutive, H Indisponibilità): ' +
-      'sistemala così, oppure reimporta il modello «Orario database.xlsx», poi salva di nuovo');
+      'sistemala così, oppure reimporta il modello «Database.xlsx», poi salva di nuovo');
     ricordaNomiDelFoglio(attuale);
     const { dati, avvisi } = aFoglio(S);
     await chiama('/values:batchUpdate', 'POST', { valueInputOption: 'RAW', data: dati });
