@@ -8,6 +8,9 @@
              (in una scuola DADA sono gli studenti a cambiare aula).
   3. Il resto della giornata, come schede piccole da scorrere.
   I colori della testata cambiano con il momento della giornata (mattina, pomeriggio, sera).
+  Nei giorni della settimana in corso si vedono anche le sostituzioni, le assenze, le uscite didattiche e i cambi d'aula
+  (gli stessi della tabella, vedi supplenze.js): chi sostituisce trova l'ora in più nella sua giornata, e l'aula
+  mostrata è già quella nuova.
 */
 const Breve = (() => {
   const esc = s => Viste.esc(s);
@@ -73,11 +76,33 @@ const Breve = (() => {
     return `<span class="${classe}">${ICONA_AULA}<span class="solo-lettori">Aula: </span>${esc(nome)}</span>`;
   }
 
+  /*
+    Sostituzioni della settimana (supplenze.js) per il giorno mostrato: sost = Supplenze.settimana, oppure null se il
+    giorno non è nella settimana in corso. Per ogni lezione: l'aula giusta (quella nuova se c'è un cambio d'aula) e una
+    riga che spiega cosa succede (sostituzione, docente assente, uscita didattica, aula cambiata).
+  */
+  let sost = null;
+  const cambio = l => (sost && Supplenze.cambioAula(sost, l)) || null;
+  const aulaDi = l => { const c = cambio(l); return c ? c.a : l.aula; };
+  function notaSost(l) {
+    const s = sost && Supplenze.di(sost, l);
+    const c = cambio(l);
+    const nome = id => esc(Dati.nome('docente', id));
+    let nota = '';
+    if (s && s.uscita) nota = '🚌 Uscita didattica: la classe è fuori, lezione non svolta';
+    else if (s && s.copia) nota = `🔄 Sostituisci ${nome(s.assente)}`;
+    else if (s && s.sostituto) nota = `🔄 ${nome(s.assente)} assente → sostituisce <b>${nome(s.sostituto)}</b>`;
+    else if (s) nota = `⚠ ${nome(s.assente)} assente · sostituto da trovare`;
+    const tipo = s && s.uscita ? ' uscita' : s && !s.sostituto && !s.copia ? ' scoperta' : '';
+    return (nota ? `<p class="nota-sost-breve${tipo}">${nota}</p>` : '') +
+      (c ? `<p class="nota-sost-breve cambio">⇄ Aula cambiata${c.da ? ` (era ${esc(Dati.nome('aula', c.da))})` : ''}</p>` : '');
+  }
+
   // Scheda grande (Adesso / Dopo) con una o più lezioni della stessa ora (compresenze)
   function scheda(classe, etichetta, orario, lezioni, tipo, extra) {
     const righe = lezioni.map(l => `
       <div class="riga-breve"><span class="materia-breve">${esc(l.materia || '—')}</span><span class="dettagli-breve">${esc(dettagli(l, tipo))}</span></div>
-      ${tipo !== 'aula' && l.aula ? aulaHtml('aula-breve', l.aula) : ''}`).join('');
+      ${tipo !== 'aula' && aulaDi(l) ? aulaHtml('aula-breve', aulaDi(l)) : ''}${notaSost(l)}`).join('');
     return `<article class="scheda-breve ${classe}">
       <div class="riga-breve"><span class="pill-breve">${etichetta}</span><span class="dettagli-breve">${esc(orario)}</span></div>
       ${righe}${extra || ''}</article>`;
@@ -119,9 +144,14 @@ const Breve = (() => {
       return;
     }
 
+    // Sostituzioni: solo se il giorno mostrato è nella settimana in corso (quella di Supplenze.settimana).
+    // Chi sostituisce ha un'ora in più: le "copie" delle lezioni (extra) si aggiungono solo guardando un docente
+    sost = c.sostituzioni && c.sostituzioni.date && c.sostituzioni.date.get(giorno) === scelto.iso ? c.sostituzioni : null;
+    const tutte = sost && soggetto.tipo === 'docente' ? D.lezioni.concat(sost.extra) : D.lezioni;
+
     // Lezioni del giorno per questo soggetto, raggruppate per ora
     const perOra = new Map();
-    D.lezioni.filter(l => l.giorno === giorno && l[soggetto.tipo] === soggetto.id).forEach(l => {
+    tutte.filter(l => l.giorno === giorno && l[soggetto.tipo] === soggetto.id).forEach(l => {
       if (!perOra.has(l.ora)) perOra.set(l.ora, []);
       perOra.get(l.ora).push(l);
     });
@@ -161,7 +191,7 @@ const Breve = (() => {
       let sposta = '';
       const prima = oggi ? numeri.filter(x => x < n && minuti(oraDi(x).inizio) <= adesso.minuto).pop() : null;
       if (soggetto.tipo !== 'aula' && prima) {
-        const da = perOra.get(prima)[0].aula, a = prossime[0].aula;
+        const da = aulaDi(perOra.get(prima)[0]), a = aulaDi(prossime[0]);
         // La freccia non viene letta: al suo posto i lettori di schermo dicono "verso"
         if (da && a && da !== a) sposta = `<p class="spostati-breve">Al cambio dell’ora si cambia aula: <b>${esc(Dati.nome('aula', da))}</b> <span aria-hidden="true">→</span><span class="solo-lettori">verso</span> <b>${esc(Dati.nome('aula', a))}</b></p>`;
       }
@@ -184,7 +214,7 @@ const Breve = (() => {
       const testo = lez.length
         ? lez.map(l => `
           <div class="riga-breve"><span class="materia-breve">${esc(l.materia || '—')}</span><span class="dettagli-breve">${esc(dettagli(l, soggetto.tipo))}</span></div>
-          ${soggetto.tipo !== 'aula' && l.aula ? aulaHtml('aula-ora', l.aula) : ''}`).join('')
+          ${soggetto.tipo !== 'aula' && aulaDi(l) ? aulaHtml('aula-ora', aulaDi(l)) : ''}${notaSost(l)}`).join('')
         : '<span class="materia-breve">Ora libera</span>';
       return `<li class="scheda-breve scheda-ora ${stato}">
         <div class="riga-breve"><span class="dettagli-breve">${esc(`${o.n}ª ora · ${o.inizio}–${o.fine}`)}</span>${pill}</div>${testo}</li>`;

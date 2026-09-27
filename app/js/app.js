@@ -535,7 +535,8 @@
     const gi = giornoIniziale(), s = soggettoBreve();
     Breve.disegna($('#vistaBreve'), {
       D, adesso: adesso(), giorno: gi.giorno, avviso: gi.testo, soggetto: s, nomeUtente: utente.nome,
-      eIo: !!(s && mioDocente && s.tipo === 'docente' && s.id === mioDocente.id), data: dataBreve
+      eIo: !!(s && mioDocente && s.tipo === 'docente' && s.id === mioDocente.id), data: dataBreve,
+      sostituzioni: stato.sostituzioni   // sostituzioni e cambi d'aula della settimana (supplenze.js)
     });
   }
 

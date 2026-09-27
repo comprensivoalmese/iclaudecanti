@@ -137,3 +137,13 @@ body.breve-aperta .controlli, body.breve-aperta #contenuto { display: none; }
 }
 
 @media print { .vista-breve, .pulsante-breve { display: none !important; } }
+
+/* Sostituzioni, assenze, uscite e cambi d'aula della settimana nella giornata a schede (brief.js):
+   arancione = sostituzione, rosso = manca il sostituto, grigio = uscita didattica, blu = aula cambiata */
+.nota-sost-breve {
+  margin: 0; padding: 6px 10px; border-radius: 10px; font-size: .88rem; font-weight: 600; line-height: 1.3;
+  border-left: 4px solid var(--sost-bordo); background: color-mix(in srgb, var(--sost-bordo) 12%, transparent);
+}
+.nota-sost-breve.scoperta { border-left-color: var(--errore); background: color-mix(in srgb, var(--errore) 10%, transparent); }
+.nota-sost-breve.uscita { border-left-color: #6b7280; background: color-mix(in srgb, #6b7280 12%, transparent); }
+.nota-sost-breve.cambio { border-left-color: var(--primario); background: color-mix(in srgb, var(--primario) 10%, transparent); }
