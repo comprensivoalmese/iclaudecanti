@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.19',
+  versioneApp: '2026-09-27.20',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -53,15 +53,18 @@ window.CONFIG = {
   // quadratino «Compresenze». Sul Drive della scuola, condiviso in lettura con l'Istituto. Vuoto = solo le compresenze
   // scritte in Orario Facile.
   fileCompresenze: '1B-GJOvJoOY6NH0P5oMcYi1tRSCjBqEr54CFXHPPWkks',
-  // I gruppi della pagina «Compresenze» (js/compresenze-pagina.js): tipo = testo della colonna Tipo del Foglio (e della
-  // casella nell'orario), previste = quante ore ci devono essere, docenti = chi le deve avere e quante (solo codici:
-  // il repository è pubblico), religione = true se sono nelle ore di Religione, altriNomi = vecchi testi della colonna Tipo.
+  // Gruppi PROPOSTI per la pagina «Compresenze» (js/compresenze-pagina.js), validi per qualsiasi scuola: si usano solo
+  // finché nel Foglio Compresenze non c'è la scheda «Gruppi». Le ore previste e i docenti di ogni gruppo cambiano da
+  // scuola a scuola (numero di classi, cattedre di potenziamento, ore eccedenti…): si scrivono nella pagina, che li salva
+  // nella scheda «Gruppi» del Foglio, sul Drive della scuola (qui niente numeri, niente codici, niente nomi).
+  // tipo = testo della colonna Tipo (e della casella nell'orario); nelleOreDi = materia in parallelo (le ore previste
+  // si contano da sole nell'orario, es. Alternativa = quante ore di Religione ci sono); altriNomi = vecchi testi di Tipo.
   gruppiCompresenze: [
-    { tipo: 'Potenziamento L2', previste: 18, spiegazione: 'Italiano per alunni stranieri: completa le cattedre di lettere.' },
-    { tipo: 'Alternativa', previste: 15, religione: true, spiegazione: 'In parallelo a Religione, alla stessa ora; in qualche classe può non esserci.' },
-    { tipo: 'Italiano eccedente (prolungato)', previste: 3, docenti: [{ codice: 'DOC08', ore: 1 }, { codice: 'DOC19', ore: 2 }], spiegazione: 'Ore aggiuntive di italiano sul tempo prolungato.' },
-    { tipo: 'Matematica eccedente (prolungato)', previste: 3, docenti: [{ codice: 'DOC12', ore: 3 }], spiegazione: 'Ore aggiuntive di matematica sul tempo prolungato.' },
-    { tipo: 'Completamento tempo prolungato', previste: 2, docenti: [{ codice: 'DOC08', ore: 1 }, { codice: 'DOC12', ore: 1 }], altriNomi: ['Tempo prolungato'], spiegazione: 'Ore di cattedra che mancano nell\'orario: diventano compresenze.' }
+    { tipo: 'Potenziamento L2', spiegazione: 'Italiano per alunni stranieri: completa le cattedre di lettere.' },
+    { tipo: 'Alternativa', nelleOreDi: 'Religione', spiegazione: 'In parallelo a Religione, alla stessa ora; in qualche classe può non esserci.' },
+    { tipo: 'Italiano eccedente (prolungato)', spiegazione: 'Ore aggiuntive di italiano sul tempo prolungato.' },
+    { tipo: 'Matematica eccedente (prolungato)', spiegazione: 'Ore aggiuntive di matematica sul tempo prolungato.' },
+    { tipo: 'Completamento tempo prolungato', altriNomi: ['Tempo prolungato'], spiegazione: 'Ore di cattedra che mancano nell\'orario: diventano compresenze.' }
   ],
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).

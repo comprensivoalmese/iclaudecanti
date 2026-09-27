@@ -5,10 +5,13 @@
   può modificare l'orario. Legge e scrive il Foglio Google «Compresenze» (CONFIG.fileCompresenze) con il permesso
   Google di chi la usa: per salvare bisogna poter modificare quel Foglio su Drive.
 
-  Le ore sono divise nei gruppi di CONFIG.gruppiCompresenze (potenziamento L2, Alternativa, ore eccedenti, completamento…),
-  ognuno con le ore previste. Ogni ora è di un docente: docente, classe, giorno, ora e aula (vuota = aula del titolare).
+  Le ore sono divise in gruppi (potenziamento L2, Alternativa, ore eccedenti, completamento…). I gruppi di OGNI SCUOLA,
+  con le ore previste e i docenti previsti, stanno nella scheda «Gruppi» del Foglio (si modificano dalla pagina, riquadro
+  «Gruppi e ore previste»); se la scheda non c'è si parte dai gruppi proposti in CONFIG.gruppiCompresenze, senza numeri.
+  Un gruppo «nelle ore di» una materia (Alternativa → Religione) conta da solo le ore previste nell'orario.
+  Ogni ora è di un docente: docente, classe, giorno, ora e aula (vuota = aula del titolare).
   Per ogni ora la pagina controlla che la classe abbia lezione, che il docente sia libero e (Alternativa) che in quell'ora
-  ci sia Religione. Le ore con un tipo che non è in nessun gruppo stanno in «Altre compresenze».
+  ci sia la materia in parallelo. Le ore con un tipo che non è in nessun gruppo stanno in «Altre compresenze».
   Nel Foglio, accanto al codice, si scrive anche il nome del docente (solo se è stato caricato): i nomi veri stanno solo
   su Drive, mai su GitHub né sul dispositivo.
 */
@@ -28,12 +31,32 @@ const PaginaCompresenze = (() => {
   let salvo = false;      // salvataggio in corso
   let messaggio = '';
   let permesso = null;    // Promise del permesso Google (chiesto subito, al tocco)
+  // i gruppi di questa scuola, letti dalla scheda «Gruppi» del Foglio (null = scheda assente: si usano quelli proposti)
+  // { tipo, previste (numero o ''), docenti: [{ codice, ore }], nelleOreDi, spiegazione, altriNomi }
+  let gruppiScuola = null;
+  let gruppiAperti = null;   // riquadro «Gruppi e ore previste» aperto (null = aperto solo se la scheda «Gruppi» non c'è ancora)
+  let gruppiDalFoglio = false;   // true se i gruppi sono stati letti dalla scheda «Gruppi»
+  const TITOLI_GRUPPI = ['Tipo', 'Ore previste', 'Docenti previsti (es. DOC08:1, DOC19:2)', 'Nelle ore di (materia in parallelo)', 'Spiegazione'];
 
-  const gruppi = () => (typeof CONFIG !== 'undefined' && CONFIG.gruppiCompresenze) || [];
+  const proposti = () => ((typeof CONFIG !== 'undefined' && CONFIG.gruppiCompresenze) || [])
+    .map(g => ({ tipo: g.tipo, previste: g.previste || '', docenti: g.docenti || [], nelleOreDi: g.nelleOreDi || '', spiegazione: g.spiegazione || '', altriNomi: g.altriNomi || [] }));
+  const gruppi = () => gruppiScuola || (gruppiScuola = proposti());
   const gruppoDi = tipo => gruppi().find(g => semplice(g.tipo) === semplice(tipo) || (g.altriNomi || []).some(n => semplice(n) === semplice(tipo)));
   const D = () => ctx.orario();
   const codiceDi = e => String(e.codice !== undefined ? e.codice : e.nome).trim().toUpperCase();
   const curricolari = () => { const d = D(); return d.lezioniCurricolari || d.lezioni.filter(l => !l.compresenza); };
+  // le lezioni della materia in parallelo (es. tutte le ore di Religione), per i gruppi «nelle ore di»
+  const lezioniDi = materia => curricolari().filter(l => semplice(l.materia).includes(semplice(materia)));
+  // ore previste di un gruppo: quelle scritte; se mancano e il gruppo è «nelle ore di» una materia, quante ore ha quella materia
+  function previsteDi(g) {
+    if (g.previste !== '' && g.previste != null && !isNaN(Number(g.previste))) return Number(g.previste);
+    return g.nelleOreDi ? lezioniDi(g.nelleOreDi).length : null;
+  }
+  // "DOC08:1, DOC19:2" <-> [{ codice, ore }]
+  const leggiDocenti = testo => String(testo || '').split(/[,;]/).map(x => x.trim()).filter(Boolean).map(x => {
+    const [c, o] = x.split(/[:=]/); return { codice: String(c).trim().toUpperCase(), ore: parseInt(o, 10) || 1 };
+  });
+  const scriviDocenti = elenco => (elenco || []).map(x => x.codice + ':' + x.ore).join(', ');
 
   // Nome da mostrare per un codice (il nome vero se è stato caricato, altrimenti il codice)
   function nomeDoc(codice) {
@@ -67,6 +90,20 @@ const PaginaCompresenze = (() => {
       const j = await chiama(t, '/values/' + encodeURIComponent('A1:Z1000'));
       const tab = j.values && j.values.length ? j.values : [TITOLI];
       righe = Compresenze.righeDaTabella(tab);
+      // la scheda «Gruppi» (se non c'è ancora, si parte da quelli proposti e la si crea al primo salvataggio)
+      gruppiScuola = null; gruppiDalFoglio = false;
+      try {
+        const gj = await chiama(t, '/values/' + encodeURIComponent("'Gruppi'!A1:E100"));
+        const gr = (gj.values || []).slice(1).filter(r => String(r[0] || '').trim());
+        if (gr.length) {
+          gruppiScuola = gr.map(r => {
+            const tipo = String(r[0]).trim(), p = proposti().find(x => semplice(x.tipo) === semplice(tipo));
+            return { tipo, previste: String(r[1] || '').trim(), docenti: leggiDocenti(r[2]), nelleOreDi: String(r[3] || '').trim(),
+              spiegazione: String(r[4] || '').trim(), altriNomi: p ? p.altriNomi : [] };
+          });
+          gruppiDalFoglio = true;
+        }
+      } catch (e) { /* scheda «Gruppi» assente: gruppi proposti */ }
       // i vecchi nomi del tipo (es. «Tempo prolungato») diventano quelli del gruppo
       righe.forEach(r => { const g = gruppoDi(r.tipo); if (g) r.tipo = g.tipo; });
       modificato = false; stato = 'pronto';
@@ -83,13 +120,22 @@ const PaginaCompresenze = (() => {
       const t = await NomiDocenti.gettone([NomiDocenti.PERMESSO_DRIVE, SCRIVERE], ctx.email);
       // il nome del primo foglio, per cancellare e riscrivere solo quello
       const info = await chiama(t, '?fields=sheets.properties(title,index)');
-      const primo = (info.sheets || []).map(s => s.properties).sort((a, b) => a.index - b.index)[0];
+      const schede = (info.sheets || []).map(s => s.properties).sort((a, b) => a.index - b.index);
+      const primo = schede[0];
       const foglio = "'" + String(primo ? primo.title : 'Compresenze').replace(/'/g, "''") + "'";
       const valori = [TITOLI].concat(righe.map(r => [r.codice, r.classe, r.giorno, r.ora === '' ? '' : Number(r.ora), r.tipo, r.aula,
         nomeVero(r.codice) || r.nome || '', r.note]));
       await chiama(t, '/values/' + encodeURIComponent(foglio + '!A1:Z1000') + ':clear', { method: 'POST', body: '{}' });
       await chiama(t, '/values/' + encodeURIComponent(foglio + '!A1:H' + valori.length) + '?valueInputOption=RAW',
         { method: 'PUT', body: JSON.stringify({ values: valori }) });
+      // la scheda «Gruppi» con i gruppi e le ore previste di questa scuola (creata se manca, mai come prima scheda)
+      if (!schede.some(s => s.title === 'Gruppi')) {
+        await chiama(t, ':batchUpdate', { method: 'POST', body: JSON.stringify({ requests: [{ addSheet: { properties: { title: 'Gruppi', index: schede.length } } }] }) });
+      }
+      const valGruppi = [TITOLI_GRUPPI].concat(gruppi().map(g => [g.tipo, g.previste === '' ? '' : Number(g.previste), scriviDocenti(g.docenti), g.nelleOreDi, g.spiegazione]));
+      await chiama(t, '/values/' + encodeURIComponent("'Gruppi'!A1:E100") + ':clear', { method: 'POST', body: '{}' });
+      await chiama(t, '/values/' + encodeURIComponent("'Gruppi'!A1:E" + valGruppi.length) + '?valueInputOption=RAW',
+        { method: 'PUT', body: JSON.stringify({ values: valGruppi }) });
       Compresenze.imposta(righe);
       ctx.applica();   // la tabella dell'app usa subito le ore nuove
       modificato = false;
@@ -122,7 +168,7 @@ const PaginaCompresenze = (() => {
       else {
         info = `In classe: ${t.materia || '—'} · ${Dati.nome('docente', t.docente)} · aula ${Dati.nome('aula', t.aula)}`;
         const g = gruppoDi(r.tipo);
-        if (g && g.religione && !/relig/i.test(t.materia || '')) avvisi.push('In quell\'ora la classe non ha Religione.');
+        if (g && g.nelleOreDi && !semplice(t.materia).includes(semplice(g.nelleOreDi))) avvisi.push(`In quell'ora la classe non ha ${g.nelleOreDi}.`);
       }
     }
     if (docente) {
@@ -177,12 +223,13 @@ const PaginaCompresenze = (() => {
     const complete = mie.filter(x => Compresenze.completa(x.r)).length;
     const titolo = g ? g.tipo : 'Altre compresenze';
     let conto = '';
-    if (g && g.previste) {
-      const ok = mie.length === g.previste && complete === g.previste;
-      conto = `<span class="conto-comp${ok ? ' ok' : ''}">${complete} di ${g.previste}${mie.length > g.previste ? ` · ${mie.length - g.previste} in più` : ''}</span>`;
+    const prev = g ? previsteDi(g) : null;
+    if (prev) {
+      const ok = mie.length === prev && complete === prev;
+      conto = `<span class="conto-comp${ok ? ' ok' : ''}">${complete} di ${prev}${mie.length > prev ? ` · ${mie.length - prev} in più` : ''}</span>`;
     } else conto = `<span class="conto-comp">${complete} ore</span>`;
     // quante ore ha già ciascun docente previsto
-    const docenti = g && g.docenti ? `<ul class="docenti-comp">${g.docenti.map(x => {
+    const docenti = g && g.docenti && g.docenti.length ? `<ul class="docenti-comp">${g.docenti.map(x => {
       const n = mie.filter(y => y.r.codice === x.codice).length;
       return `<li class="${n === x.ore ? 'ok' : ''}">${esc(nomeDoc(x.codice))}: ${n} di ${x.ore}</li>`;
     }).join('')}</ul>` : '';
@@ -192,7 +239,7 @@ const PaginaCompresenze = (() => {
       (g && g.spiegazione ? `<p class="spiega-comp">${esc(g.spiegazione)}</p>` : '') + docenti +
       (mie.length ? `<ol class="righe-comp">${mie.map(x => rigaHtml(x.r, x.i, g)).join('')}</ol>` : '<p class="vuoto-breve">Nessuna ora inserita.</p>') +
       `<div class="azioni-scheda-comp"><button type="button" class="pulsante" data-azione="aggiungi" data-gruppo="${gid}">＋ Aggiungi un'ora</button>` +
-      (g && g.religione ? `<button type="button" class="pulsante leggero" data-azione="religione" data-gruppo="${gid}">Aggiungi le ore di Religione che mancano</button>` : '') +
+      (g && g.nelleOreDi ? `<button type="button" class="pulsante leggero" data-azione="parallelo" data-gruppo="${gid}">Aggiungi le ore di ${esc(g.nelleOreDi)} che mancano</button>` : '') +
       `</div></section>`;
   }
 
@@ -210,17 +257,17 @@ const PaginaCompresenze = (() => {
         (modificato ? '<p class="avviso-breve">Ci sono modifiche non salvate.</p>' : '');
     }
     const schede = stato === 'pronto'
-      ? `<div class="schede-breve schede-comp">${gruppi().map((g, i) => schedaHtml(g, i)).join('')}${schedaHtml(null)}` +
+      ? `<div class="schede-breve schede-comp">${gruppiHtml()}${gruppi().map((g, i) => schedaHtml(g, i)).join('')}${schedaHtml(null)}` +
         `<p class="nota-comp">Ogni ora è di un docente: le righe senza docente, giorno o ora restano «da completare» e l'app non le mostra. ` +
         `Nell'orario le compresenze si vedono spuntando «Compresenze».</p></div>`
       : '';
     // si ricorda dov'era il cursore, per rimetterlo lì dopo aver ridisegnato
-    const a = document.activeElement, fuoco = a && box.contains(a) ? { i: a.dataset.i, campo: a.dataset.campo, azione: a.dataset.azione, gruppo: a.dataset.gruppo } : null;
+    const a = document.activeElement, fuoco = a && box.contains(a) ? { i: a.dataset.i, g: a.dataset.g, campo: a.dataset.campo, azione: a.dataset.azione, gruppo: a.dataset.gruppo } : null;
     box.innerHTML = `<div class="testata-breve"><div class="riga-testata"><span class="marchio-breve">Gestione</span>${chiudi}</div>` +
       `<h2 id="titoloCompresenze">Compresenze</h2>${corpo}` +
       `<p class="messaggio-comp" role="status" aria-live="polite">${esc(messaggio)}</p></div>${schede}`;
     if (fuoco) {
-      const sel = fuoco.campo ? `[data-i="${fuoco.i}"][data-campo="${fuoco.campo}"]`
+      const sel = fuoco.campo ? (fuoco.g !== undefined ? `[data-g="${fuoco.g}"][data-campo="${fuoco.campo}"]` : `[data-i="${fuoco.i}"][data-campo="${fuoco.campo}"]`)
         : fuoco.azione ? `[data-azione="${fuoco.azione}"]${fuoco.gruppo ? `[data-gruppo="${fuoco.gruppo}"]` : fuoco.i ? `[data-i="${fuoco.i}"]` : ''}` : '';
       const el = sel && box.querySelector(sel);
       if (el) el.focus({ preventScroll: true });
@@ -246,17 +293,55 @@ const PaginaCompresenze = (() => {
     if (nuova) nuova.focus();
   }
 
-  // Alternativa: una riga per ogni ora di Religione che non ha ancora la sua riga (il docente si sceglie dopo)
-  function aggiungiReligione(id) {
-    const g = gruppoDaId(id); if (!g) return;
+  // Gruppo «nelle ore di» una materia (es. Alternativa in parallelo a Religione): una riga per ogni ora di quella materia
+  // che non ha ancora la sua riga; il docente si sceglie dopo
+  function aggiungiParallelo(id) {
+    const g = gruppoDaId(id); if (!g || !g.nelleOreDi) return;
     let n = 0;
-    curricolari().filter(l => /relig/i.test(l.materia || '')).forEach(l => {
+    lezioniDi(g.nelleOreDi).forEach(l => {
       const cl = Dati.nome('classe', l.classe);
       const c = righe.some(r => gruppoDi(r.tipo) === g && semplice(r.classe) === semplice(cl) && r.giorno === l.giorno && Number(r.ora) === l.ora);
       if (!c) { righe.push({ codice: '', classe: cl, giorno: l.giorno, ora: l.ora, tipo: g.tipo, aula: '', note: '', nome: '' }); n++; }
     });
     if (n) modificato = true;
-    messaggio = n ? `Aggiunte ${n} ore di Religione: scegli il docente di Alternativa.` : 'Tutte le ore di Religione hanno già la loro riga.';
+    messaggio = n ? `Aggiunte ${n} ore di ${g.nelleOreDi}: scegli il docente di ogni ora.` : `Tutte le ore di ${g.nelleOreDi} hanno già la loro riga.`;
+    disegna();
+  }
+
+  /* ---------- riquadro «Gruppi e ore previste» (i dati di questa scuola, salvati nella scheda «Gruppi») ---------- */
+  function gruppiHtml() {
+    const riga = (g, i) => {
+      const auto = g.nelleOreDi && (g.previste === '' || g.previste == null) ? ` (da sole: ${lezioniDi(g.nelleOreDi).length})` : '';
+      const nomi = (g.docenti || []).map(x => nomeDoc(x.codice) + ' ' + x.ore).join(' · ');
+      return `<li class="riga-comp"><div class="campi-comp campi-gruppo">` +
+        `<label class="campo-comp campo-codice"><span>Gruppo (testo della colonna Tipo)</span><input type="text" data-g="${i}" data-campo="tipo" value="${esc(g.tipo)}"></label>` +
+        `<label class="campo-comp"><span>Ore previste${esc(auto)}</span><input type="number" min="0" data-g="${i}" data-campo="previste" value="${esc(g.previste)}" placeholder="${g.nelleOreDi ? 'da sole' : '—'}"></label>` +
+        `<label class="campo-comp"><span>Nelle ore di (materia)</span><input type="text" data-g="${i}" data-campo="nelleOreDi" value="${esc(g.nelleOreDi)}" placeholder="es. Religione"></label>` +
+        `<label class="campo-comp campo-note"><span>Docenti previsti (codice:ore)</span><input type="text" data-g="${i}" data-campo="docenti" value="${esc(scriviDocenti(g.docenti))}" placeholder="es. DOC08:1, DOC19:2"></label>` +
+        `<label class="campo-comp campo-note"><span>Spiegazione</span><input type="text" data-g="${i}" data-campo="spiegazione" value="${esc(g.spiegazione)}"></label>` +
+        `<button type="button" class="togli-comp" data-azione="togli-gruppo" data-g="${i}" aria-label="Togli il gruppo ${esc(g.tipo)}">✕</button>` +
+        `</div>${nomi ? `<p class="info-comp">${esc(nomi)}</p>` : ''}</li>`;
+    };
+    const aperto = gruppiAperti === null ? !gruppiDalFoglio : gruppiAperti;
+    return `<details class="scheda-breve scheda-comp gruppi-comp"${aperto ? ' open' : ''}>` +
+      `<summary class="titolo-comp">Gruppi e ore previste di questa scuola</summary>` +
+      `<p class="spiega-comp">Cambiano da scuola a scuola (numero di classi, cattedre di potenziamento, ore eccedenti…): si salvano nella scheda «Gruppi» del Foglio. ` +
+      `Con «Nelle ore di» (es. Religione) le ore previste si contano da sole nell'orario.</p>` +
+      `<ol class="righe-comp">${gruppi().map(riga).join('')}</ol>` +
+      `<div class="azioni-scheda-comp"><button type="button" class="pulsante" data-azione="aggiungi-gruppo">＋ Aggiungi un gruppo</button></div></details>`;
+  }
+
+  function cambioGruppo(el) {
+    const g = gruppi()[Number(el.dataset.g)]; if (!g) return;
+    const campo = el.dataset.campo, v = el.value.trim();
+    if (campo === 'tipo') {
+      if (!v) return;
+      righe.forEach(r => { if (gruppoDi(r.tipo) === g) r.tipo = v; });   // le ore del gruppo seguono il nuovo nome
+      g.tipo = v;
+    } else if (campo === 'docenti') g.docenti = leggiDocenti(v);
+    else if (campo === 'previste') g.previste = v === '' ? '' : String(Math.max(0, parseInt(v, 10) || 0));
+    else g[campo] = v;
+    modificato = true; messaggio = '';
     disegna();
   }
 
@@ -271,7 +356,17 @@ const PaginaCompresenze = (() => {
       if (modificato && !confirm('Annullare le modifiche non salvate e rileggere il Foglio?')) return;
       carica();
     } else if (azione === 'aggiungi') aggiungi(b.dataset.gruppo);
-    else if (azione === 'religione') aggiungiReligione(b.dataset.gruppo);
+    else if (azione === 'parallelo') aggiungiParallelo(b.dataset.gruppo);
+    else if (azione === 'aggiungi-gruppo') {
+      gruppi().push({ tipo: 'Nuovo gruppo', previste: '', docenti: [], nelleOreDi: '', spiegazione: '', altriNomi: [] });
+      gruppiAperti = true; modificato = true; messaggio = ''; disegna();
+    } else if (azione === 'togli-gruppo') {
+      const g = gruppi()[Number(b.dataset.g)]; if (!g) return;
+      const n = righe.filter(r => gruppoDi(r.tipo) === g).length;
+      if (n && !confirm('Il gruppo ha ' + n + ' ore: restano, ma passano in «Altre compresenze». Togliere il gruppo?')) return;
+      gruppi().splice(Number(b.dataset.g), 1);
+      modificato = true; messaggio = ''; disegna();
+    }
     else if (azione === 'togli') {
       righe.splice(Number(b.dataset.i), 1);
       modificato = true; messaggio = 'Ora tolta (si toglie dal Foglio quando salvi).';
@@ -280,7 +375,9 @@ const PaginaCompresenze = (() => {
   }
 
   function cambio(e) {
-    const el = e.target; if (el.dataset.i === undefined || !el.dataset.campo) return;
+    const el = e.target;
+    if (el.dataset.g !== undefined && el.dataset.campo) { cambioGruppo(el); return; }
+    if (el.dataset.i === undefined || !el.dataset.campo) return;
     const r = righe[Number(el.dataset.i)]; if (!r) return;
     r[el.dataset.campo] = el.dataset.campo === 'ora' ? (parseInt(el.value, 10) || '') : el.value.trim();
     modificato = true; messaggio = '';
@@ -298,6 +395,8 @@ const PaginaCompresenze = (() => {
       box = el;
       box.addEventListener('click', clic);
       box.addEventListener('change', cambio);
+      // il riquadro dei gruppi resta aperto o chiuso anche quando la pagina si ridisegna («toggle» non risale: si ascolta in cattura)
+      box.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('gruppi-comp')) gruppiAperti = e.target.open; }, true);
     }
     permesso = NomiDocenti.gettone([NomiDocenti.PERMESSO_DRIVE, SCRIVERE], ctx.email);
     permesso.catch(() => {});   // l'errore lo mostra carica()
