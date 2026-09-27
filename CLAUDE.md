@@ -105,7 +105,9 @@ app/              Luis@i, app di visualizzazione (css/, js/, icone/, sw.js, mani
 orario-facile/    l'app Orario Facile (un unico index.html autonomo + modelli CSV)
 sostituzioni/     codice della scheda Sostituzioni di Orario Facile (css/, js/, esempio/ con facsimili)
 potenziamento/    linee guida per assegnare le ore di potenziamento di italiano L2 (linee-guida-L2.md):
-                  da seguire quando si costruisce in Orario Facile l'orario dei docenti di potenziamento
+                  da seguire quando si costruisce in Orario Facile l'orario dei docenti di potenziamento;
+                  l'orario di potenziamento attuale è il Foglio Google «Orario potenziamento» sul Drive della scuola
+                  (ID 1eoYYg-TTgqz3hf_EB1rsA8lbOo8Nj1oqTqM1p21MehM): può contenere nomi, quindi mai copiarlo nel repo
 strumenti/        script da usare sul PC (Windows + Excel), es. crea-database.ps1 per creare il Foglio database
 dati/orario.json  l'orario letto da app/ (formato dell'app o backup di Orario Facile)
 dati/campanella.json  orari della campanella per il tasto 🔔 dell'app (vedi app/js/campanella.js)
