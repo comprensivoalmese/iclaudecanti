@@ -2,7 +2,7 @@
   autorizzazioni.js – CHI PUÒ FARE COSA, in un unico elenco: la scheda «Autorizzazioni» del Foglio Database
   (CONFIG.fileDatabaseOrario, oppure CONFIG.fileAutorizzazioni se si vuole un file a parte).
 
-  Una riga per persona: Nome, Cognome, Email e una colonna per ogni autorizzazione:
+  Una riga per persona: Cognome, Nome, email (colonna «Email», «Utente» o «Account») e una colonna per ogni autorizzazione:
   - «Orario Facile»: può aprire Orario Facile (preparare l'orario, compresenze…) e nell'app vede «Passa a Orario Facile»;
   - «Sostituzioni»: può fare le sostituzioni e i cambi d'aula (nell'app «Sostituzioni smart» e «Cambi d'aula»).
   Nelle colonne va SI (oppure X, ✓, 1): vuoto o NO = non autorizzato. Le colonne si trovano dal titolo.
@@ -39,7 +39,8 @@ const Autorizzazioni = (() => {
       r = await prendi('A1:Z500');   // senza nome = la prima scheda del file
       if (r.ok) {
         const righe = (await r.json()).values || [];
-        return righe.some(x => x.some(c => semplice(c).includes('mail'))) ? { esiste: true, righe } : { esiste: false, righe: [] };
+        // il file è «compilato» se c'è almeno un indirizzo email (in qualsiasi colonna)
+        return righe.some(x => x.some(c => EMAIL.test(String(c || '')))) ? { esiste: true, righe } : { esiste: false, righe: [] };
       }
     }
     if (r.status === 400) return { esiste: false, righe: [] };          // scheda assente
@@ -48,12 +49,16 @@ const Autorizzazioni = (() => {
     return { esiste: true, righe: (await r.json()).values || [] };
   }
 
+  const EMAIL = /[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/i;
+  // titolo della colonna delle email: «Email», «Mail», «Utente», «Account»…
+  const titoloEmail = x => x.includes('mail') || x.includes('utente') || x.includes('account');
   // Dalla tabella alla persona con questa email: { orarioFacile, sostituzioni, nome } (null se non c'è)
   function cerca(righe, email) {
     const mia = semplice(email);
-    const intest = (righe.find(r => r.some(c => semplice(c).includes('mail'))) || righe[0] || []).map(semplice);
+    // la riga dei titoli: quella con «Orario…» o «Sostitu…» (o con il titolo dell'email), altrimenti la prima
+    const intest = (righe.find(r => r.some(c => { const s = semplice(c); return s.includes('orario') || s.includes('sostitu') || titoloEmail(s); })) || righe[0] || []).map(semplice);
     const col = f => intest.findIndex(f);
-    const cMail = col(x => x.includes('mail')), cOF = col(x => x.includes('orario')), cSost = col(x => x.includes('sostitu'));
+    const cMail = col(titoloEmail), cOF = col(x => x.includes('orario')), cSost = col(x => x.includes('sostitu'));
     const cNome = col(x => x.includes('nome') && !x.includes('cognome')), cCognome = col(x => x.includes('cognome'));
     const emailDentro = c => (String(c || '').toLowerCase().match(/[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}/g) || []).map(semplice);
     const riga = righe.find(r => (cMail >= 0 ? emailDentro(r[cMail]) : r.flatMap(emailDentro)).includes(mia));
@@ -121,7 +126,7 @@ const Autorizzazioni = (() => {
     const prima = fileDedicato() ? (info.sheets || []).map(s => s.properties).sort((a, b) => a.index - b.index)[0] : null;
     if (prima) {
       const g = await chiama(baseDb, '/values/' + encodeURIComponent('A1:Z5'));
-      if ((g.values || []).some(r => r.some(c => semplice(c).includes('mail')))) throw new Error('il file delle autorizzazioni è già compilato: completalo direttamente nel Foglio');
+      if ((g.values || []).some(r => r.some(c => EMAIL.test(String(c || '')) || titoloEmail(semplice(c))))) throw new Error('il file delle autorizzazioni è già compilato: completalo direttamente nel Foglio');
     }
     // l'elenco di prima, dal file delle sostituzioni (se si riesce a leggerlo)
     const persone = [];
