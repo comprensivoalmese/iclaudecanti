@@ -82,7 +82,8 @@ const SchedaPiantine = (() => {
         <span class="hint">${modifiche.size ? modifiche.size + ' aule da salvare' : ''}</span>
         ${scelta ? `<button type="button" class="btn" data-pa="togli">Togli ${esc(scelta)} dalla piantina</button>` : ''}</div>` +
       (messaggio ? `<p class="comp-messaggio" role="status">${esc(messaggio)}</p>` : '') +
-      (!img ? '<p class="hint">Carico la piantina…</p>' : img.errore ? `<p class="comp-avviso">⚠️ ${esc(img.errore)}.</p>`
+      (!img ? '<p class="hint">Carico la piantina…</p>' : img.errore ? `<p class="comp-avviso">⚠️ ${esc(/401/.test(img.errore) ? 'il permesso di Google è scaduto' : img.errore)}.</p>
+        <div class="row"><button type="button" class="btn" data-pa="riprova">Collega di nuovo a Google</button></div>`
         : `<div class="pa-contenitore${scelta ? ' pa-attiva' : ''}" data-pa="mappa">${Piantine.disegnoHtml(img.sorgente, segni, 'Piantina: ' + (Piantine.pianoInfo(piano) || {}).nome)}</div>`);
     if (!img) immagine(piano).then(disegna);
   }
@@ -91,7 +92,9 @@ const SchedaPiantine = (() => {
     const b = e.target.closest('[data-pa]'); if (!b || b.disabled) return;
     const a = b.dataset.pa;
     if (a === 'collega') collega();
-    else if (a === 'piano') { piano = b.dataset.piano; scelta = ''; disegna(); }
+    // cambiando piano, un errore di prima (per esempio permesso di Google scaduto) si riprova
+    else if (a === 'piano') { piano = b.dataset.piano; scelta = ''; if ((indirizzi.get(piano) || {}).errore) indirizzi.delete(piano); disegna(); }
+    else if (a === 'riprova') { indirizzi.clear(); stato = 'collega'; collega(); }
     else if (a === 'aula') { scelta = scelta === b.dataset.aula ? '' : b.dataset.aula; disegna(); }
     else if (a === 'salva') salva();
     else if (a === 'togli' && scelta) { modifiche.set(scelta, { piano: datiAula(scelta).piano, x: null, y: null }); disegna(); }

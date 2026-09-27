@@ -90,7 +90,8 @@ const Piantine = (() => {
     if (!info || !info.file) return Promise.reject(new Error('per questo piano manca l\'immagine (config.js, piantine)'));
     if (!immagini.has(info.piano)) {
       const p = fetch('https://www.googleapis.com/drive/v3/files/' + encodeURIComponent(info.file) + '?alt=media&supportsAllDrives=true', { headers: { Authorization: 'Bearer ' + t } })
-        .then(r => { if (!r.ok) throw new Error(r.status === 404 || r.status === 403 ? 'l\'immagine della piantina non si apre con il tuo account' : 'errore ' + r.status); return r.blob(); })
+        .then(r => { if (!r.ok) throw new Error(r.status === 404 || r.status === 403 ? 'l\'immagine della piantina non si apre con il tuo account'
+          : r.status === 401 ? 'il permesso di Google è scaduto (errore 401): collegati di nuovo a Google' : 'errore ' + r.status); return r.blob(); })
         .then(async b => {
           // SVG: Drive lo manda come image/svg+xml (a volte come testo): lo riconosciamo anche dall'inizio del file
           if (/svg|xml|text/i.test(b.type)) {
