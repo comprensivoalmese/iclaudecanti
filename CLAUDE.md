@@ -45,11 +45,15 @@ Le parti del progetto:
   incomplete si ignorano) e dalle celle «+» di Orario Facile (`v.co`, `compresenzeOF` in dati.js). L'app le aggiunge a
   `D.lezioni` (con `compresenza: true`) solo se è spuntato il quadratino «Compresenze»; le curricolari restano in
   `D.lezioniCurricolari` (le usa modifiche.js). Sul dispositivo si salva solo una copia con i codici.
-  La pagina «Compresenze» (`app/js/compresenze-pagina.js`, `css/compresenze.css`; tasto «✎ Modifica» e voce di menu, solo
-  per i modificatori) è la maschera d'inserimento: legge e riscrive con la Sheets API il primo foglio del Foglio Compresenze
+  La gestione è STRUTTURALE e sta in Orario Facile (l'app serve al quotidiano): scheda «8 Compresenze»
+  (`orario-facile/scheda-compresenze.js` e `.css`, indirizzo `#compresenze`; nell'app solo il collegamento «✎ Modifica» per i
+  modificatori). È la maschera d'inserimento: legge e riscrive con la Sheets API il primo foglio del Foglio Compresenze
   e la scheda «Gruppi» (gruppi, ore previste e docenti previsti di QUESTA scuola: cambiano da scuola a scuola, quindi
   stanno su Drive e non nel codice; `CONFIG.gruppiCompresenze` contiene solo i gruppi proposti, senza numeri né codici).
   Un gruppo con «nelle ore di» una materia (Alternativa → Religione) conta da solo le ore previste nell'orario.
+  **Sostegno** (dato sanitario, GDPR): griglia «Sostegno» (un docente per riga, giorni × ore, in ogni cella la classe) e scheda
+  «Sostegno classi» (spunta e ore previste) nel Foglio Compresenze o in `CONFIG.fileSostegno`; nell'app solo per docenti e
+  modificatori, solo in memoria; «Scarica orario.json» di Orario Facile toglie le compresenze «SOS…». Mai su GitHub.
 - **Dati della scuola in Orario Facile**: `orario-facile/index.html` contiene i dati 2026/27
   (`CSV_SCUOLA_CLASSI`, `CSV_SCUOLA_DOCENTI` e `datiScuola()`), caricati alla prima apertura e con il pulsante
   "Dati scuola 2026/27". **Privacy**: il repo è pubblico, quindi i docenti compaiono solo con un codice
