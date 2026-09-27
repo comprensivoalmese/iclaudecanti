@@ -303,12 +303,34 @@ const SchedaCompresenze = (() => {
       elenco.map(o => `<option value="${esc(o.v)}"${String(o.v) === String(scelto) ? ' selected' : ''}>${esc(o.t)}</option>`).join('');
   }
 
+  /*
+    Solo per l'ALTERNATIVA (scelta della scuola): perché un docente NON va bene per questa riga (testo breve), oppure ''.
+    Con giorno e ora scelti deve essere libero (niente lezione, niente altra compresenza, anche di sostegno, in quell'ora)
+    e non deve essere un docente di quella classe. Negli altri gruppi la tendina mostra tutti i docenti.
+  */
+  const eAlternativa = g => !!g && semplice(g.tipo).includes('alternativa');
+  function motivoEscluso(e, r, g, classe) {
+    if (!eAlternativa(g) || !r.giorno || !r.ora) return '';
+    const ora = Number(r.ora), c = codiceDi(e);
+    if (curricolari().some(l => l.giorno === r.giorno && l.ora === ora && l.docente === e.id)) return 'occupato';
+    if (righe.some(x => x !== r && x.codice === c && x.giorno === r.giorno && Number(x.ora) === ora)) return 'occupato';
+    if ((griglia || []).some(x => x.codice === c && x.giorno === r.giorno && x.ora === ora)) return 'occupato';
+    if (classe && curricolari().some(l => l.docente === e.id && l.classe === classe.id)) return 'docente della classe';
+    return '';
+  }
+
   function rigaHtml(r, i, g) {
     const d = D();
-    const docenti = d.docente.map(e => { const c = codiceDi(e), n = nomeDoc(c); return { v: c, t: n === c ? c : `${n} (${c})` }; })
+    const classeRiga = r.classe ? d.classe.find(c => semplice(c.nome) === semplice(r.classe)) : null;
+    // nella tendina solo i docenti adatti (vedi motivoEscluso); quello già scelto resta sempre, con il motivo
+    const docenti = d.docente.map(e => {
+      const c = codiceDi(e), n = nomeDoc(c), no = motivoEscluso(e, r, g, classeRiga);
+      return { v: c, t: (n === c ? c : `${n} (${c})`) + (no ? ` (${no})` : ''), no };
+    }).filter(x => !x.no || x.v === r.codice)
       .sort((a, b) => a.t.localeCompare(b.t, 'it', { numeric: true }));
     // un docente scritto nel Foglio ma non (più) nell'orario resta scelto, così non si perde
     if (r.codice && !docenti.some(x => x.v === r.codice)) docenti.unshift({ v: r.codice, t: r.codice + ' (non nell\'orario)' });
+    const liberi = docenti.filter(x => !x.no).length;   // quanti docenti adatti ci sono (per l'etichetta)
     const classi = d.classe.map(c => ({ v: c.nome, t: c.nome }));
     if (r.classe && !classi.some(x => semplice(x.v) === semplice(r.classe))) classi.unshift({ v: r.classe, t: r.classe });
     const giorni = d.giorni.map(x => ({ v: x, t: x }));
@@ -320,7 +342,8 @@ const SchedaCompresenze = (() => {
     const sel = (nome, elenco, scelto, vuota) => `<select data-i="${i}" data-campo="${nome}">${opzioni(elenco, scelto, vuota)}</select>`;
     return `<li class="comp-riga${k.incompleta ? ' da-completare' : k.avvisi.length ? ' con-avvisi' : ''}">` +
       `<div class="comp-campi">` +
-      campo('codice', 'Docente', sel('codice', docenti, r.codice, '— scegli —')) +
+      campo('codice', eAlternativa(g) && r.giorno && r.ora ? `Docente (${liberi} liberi, non della classe)` : 'Docente',
+        sel('codice', docenti, r.codice, '— scegli —')) +
       campo('classe', 'Classe', sel('classe', classi, r.classe, '—')) +
       campo('giorno', 'Giorno', sel('giorno', giorni, r.giorno, '—')) +
       campo('ora', 'Ora', sel('ora', ore, r.ora, '—')) +
