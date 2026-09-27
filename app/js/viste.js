@@ -75,7 +75,12 @@ const Viste = (() => {
       // Docente assente o sostituito questa settimana (vedi supplenze.js): cornice colorata, etichetta e nomi
       const sost = Supplenze.di(stato.sostituzioni, l);
       let classeSost = '', etichettaSost = '', rigaSost = '';
-      if (sost && sost.copia) {
+      if (sost && sost.uscita) {
+        // la classe è fuori per un'uscita didattica (sostituzioni/js/uscite.js): la lezione non si fa
+        classeSost = ' lezione-uscita';
+        etichettaSost = '<span class="etichetta-sost">🚌 Uscita didattica</span>';
+        rigaSost = '<span class="dato-sost">la classe è fuori: lezione non svolta</span>';
+      } else if (sost && sost.copia) {
         classeSost = ' lezione-supplenza lezione-copia';
         etichettaSost = '<span class="etichetta-sost">🔄 Sostituzione</span>';
         rigaSost = `<span class="dato-sost">al posto di ${esc(Dati.nome('docente', sost.assente))}</span>`;

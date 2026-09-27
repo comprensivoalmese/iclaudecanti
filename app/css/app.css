@@ -423,6 +423,9 @@ body.modalita-monitor .modifiche, body.modalita-ingresso .modifiche { font-size:
 }
 .lezione-scoperta .etichetta-sost { background: var(--errore); color: var(--su-errore); }
 .dato-sost { font-size: .8rem; line-height: 1.25; font-weight: 600; }
+/* Classe in uscita didattica (sostituzioni/js/uscite.js): lezione non svolta, cornice e colori spenti */
+.lezione-uscita { outline: 1px dotted var(--testo-tenue, #888); outline-offset: -1px; opacity: .75; }
+.lezione-uscita .etichetta-sost { background: #4b5563; color: #fff; }
 /* «✕ Annulla» su una sostituzione (solo per chi può fare le sostituzioni, vedi viste.js): piccolo, bordo rosso */
 .annulla-sost {
   justify-self: start; margin-top: 2px; padding: 2px 8px; min-height: 28px; font: inherit; font-size: .72rem; font-weight: 700;

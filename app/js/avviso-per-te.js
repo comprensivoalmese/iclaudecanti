@@ -44,7 +44,9 @@ const AvvisoPerTe = (() => {
       const q = quando(l); if (!q.iso || q.iso < oggi) return;
       out.push({ chiave: ['A', q.iso, l.ora, l.classe, s.sostituto || '-'].join('|'), iso: q.iso, ora: l.ora, tipo: 'sostituito',
         testo: `La tua lezione in <b>${esc(nome('classe', l.classe))}</b> · ${esc(q.testo)} ` +
-          (s.sostituto ? `è coperta da <b>${esc(nome('docente', s.sostituto))}</b>` : '<b>è ancora da coprire</b>') });
+          // classe fuori per un'uscita didattica (sostituzioni/js/uscite.js): la lezione non si fa
+          (s.uscita ? '<b>non si fa: la classe è in uscita didattica</b>' :
+            s.sostituto ? `è coperta da <b>${esc(nome('docente', s.sostituto))}</b>` : '<b>è ancora da coprire</b>') });
     });
     // 3. cambi d'aula nelle mie lezioni (anche quelle in cui sostituisco un collega)
     if (sost.cambi) D.lezioni.concat(sost.extra).forEach(l => {

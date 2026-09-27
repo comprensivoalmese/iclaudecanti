@@ -20,7 +20,7 @@ const Smart = (() => {
   const esc = s => Viste.esc(s);
   // Chi il foglio «Autorizzazioni» ha già rifiutato su questo dispositivo: gli nascondiamo la voce del menu
   const CHIAVE_NEGATO = 'orariodada.sostNegato';
-  const MOTORE = ['foglio.js', 'drive.js', 'archivio.js', 'abbinamenti.js', 'registro-drive.js', 'sostituzioni.js', 'cambi-aula.js']
+  const MOTORE = ['foglio.js', 'drive.js', 'archivio.js', 'abbinamenti.js', 'registro-drive.js', 'sostituzioni.js', 'cambi-aula.js', 'uscite.js']
     .map(f => '../sostituzioni/js/' + f);
   const PROPOSTE = 3;   // quanti docenti proporre per ogni ora prima di «Mostra tutti»
   const ICONA_AULA = '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/></svg>';
@@ -237,10 +237,10 @@ const Smart = (() => {
       const visibili = aperte.has(chiave) ? tutti : tutti.slice(0, PROPOSTE);
       const proposte = visibili.length
         ? '<ul class="proposte-smart">' + visibili.map(c => `<li><button type="button" class="proposta-smart" data-azione="assegna"
-              data-chiave="${esc(chiave)}" data-docente="${esc(c.t.id)}"
+              data-chiave="${esc(chiave)}" data-docente="${esc(c.t.id)}"${c.liberato ? ' data-liberato="1"' : ''}
               aria-label="Assegna la ${l.ora}ª ora in ${esc(motore.nome('classe', l.classe))} a ${esc(motore.nomeDocente(c.t.id))}">
             <b>${esc(motore.nomeDocente(c.t.id))}</b>${etichetta(c.saldo)}
-            <span class="motivo-smart">${esc(motore.TESTI_POSIZIONE[c.posizione])}${c.stessaClasse ? ' · conosce la classe' : ''}</span>
+            <span class="motivo-smart">${c.liberato ? '🚌 libero per l\'uscita didattica: nessuna ora in più' : esc(motore.TESTI_POSIZIONE[c.posizione])}${c.stessaClasse ? ' · conosce la classe' : ''}</span>
           </button></li>`).join('') + '</ul>'
         : '<p class="vuoto-breve">Nessun docente libero e già a scuola in quest\'ora.</p>';
       const altri = tutti.length > PROPOSTE && !aperte.has(chiave)
@@ -302,7 +302,8 @@ const Smart = (() => {
     }
     if (azione === 'assegna') {
       const l = lezioneDi(b.dataset.chiave);
-      if (l) { b.disabled = true; motore.assegna(iso, l, b.dataset.docente); }
+      // un docente «liberato» da un'uscita didattica copre senza ore in più (vedi sostituzioni/js/uscite.js)
+      if (l) { b.disabled = true; motore.assegna(iso, l, b.dataset.docente, b.dataset.liberato ? { reindirizzato: true } : undefined); }
       return;
     }
     if (azione === 'annulla') {

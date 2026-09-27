@@ -108,6 +108,11 @@ Le parti del progetto:
   foglio «Autorizzazioni» (nomi ed email degli autorizzati) e foglio «Sostituzioni» (una riga per sostituzione assegnata,
   con i **nomi veri** dei docenti presi da `fileNomiDocenti` e tenuti solo in memoria). Su GitHub e in `localStorage`
   restano **solo i codici DOC01…**: i nomi veri stanno solo nei file su Drive.
+  **Uscite didattiche** (`sostituzioni/js/uscite.js`, caso «🚌 Uscita didattica» della scheda, chiave `sostituzioni.uscite`):
+  classi fuori + accompagnatori (assenze con `uscita`/`come: 'accompagna'`, senza recupero); le lezioni delle classi fuori non
+  si coprono (`oreDaCoprire`); i docenti «liberati» coprono senza +1 (`reindirizzato` nel registro, esclusi dalle ore da riportare);
+  le ore liberate all'inizio/fine giornata vanno a recupero (`come: 'recupero'`), quelle in mezzo «a disposizione»; almeno 1 ora
+  resta sempre. Pubblicate solo data/classi/ore (`uscite` nel file pubblicato); nell'app «🚌 Uscita didattica» (`sost.uscita`).
   **Sostituzioni smart** (`app/js/smart.js`, menu dell'app): versione semplice della scheda che usa lo stesso motore con
   `Sostituzioni.collega(funzioneOrario, { avvisa, ridisegna })` (restituisce le funzioni del motore). Se cambi il motore,
   controlla sia la scheda (`monta`) sia la pagina smart (`collega`); la costante `VERSIONE` in cima a sostituzioni.js

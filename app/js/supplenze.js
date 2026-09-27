@@ -23,9 +23,11 @@ const Supplenze = (() => {
   // Le sostituzioni pubblicate su Drive: { assenze: [], registro: [] } oppure null (non configurate o mai scaricate)
   let pubblicate = null;
   const elenchi = o => ({ assenze: Array.isArray(o && o.assenze) ? o.assenze : [], registro: Array.isArray(o && o.registro) ? o.registro : [],
-    cambi: Array.isArray(o && o.cambi) ? o.cambi : [], annullate: Array.isArray(o && o.annullate) ? o.annullate : [] });
+    cambi: Array.isArray(o && o.cambi) ? o.cambi : [], annullate: Array.isArray(o && o.annullate) ? o.annullate : [],
+    uscite: Array.isArray(o && o.uscite) ? o.uscite : [] });
   // Come si riconosce la stessa voce anche senza ID (pubblicata con una versione vecchia)
-  const SEGNO = { assenze: a => a.data + '|' + a.docente, registro: s => s.data + '|' + s.ora + '|' + s.classe, cambi: c => c.data + '|' + c.ora + '|' + c.classe };
+  const SEGNO = { assenze: a => a.data + '|' + a.docente, registro: s => s.data + '|' + s.ora + '|' + s.classe, cambi: c => c.data + '|' + c.ora + '|' + c.classe,
+    uscite: u => u.data + '|' + (u.classi || []).join(',') };
   /*
     Unisce le voci pubblicate (di tutti i dispositivi) con quelle di questo dispositivo: vincono quelle di qui, e
     spariscono quelle che questo dispositivo aveva pubblicato e poi annullato (ID in "sostituzioni.pubblicateDaQui").
@@ -105,14 +107,23 @@ const Supplenze = (() => {
 
     // Le voci pubblicate (di tutti) unite a quelle registrate su questo dispositivo
     const locali = { assenze: leggi('sostituzioni.assenze'), registro: leggi('sostituzioni.registro'), cambi: leggi('sostituzioni.cambiAula'),
-      annullate: leggi('sostituzioni.annullate') };
+      annullate: leggi('sostituzioni.annullate'), uscite: leggi('sostituzioni.uscite') };
     const fonte = unisci(pubblicate, locali);
 
-    // 1. le lezioni dei docenti assenti (per ora senza sostituto: "da coprire")
+    // 0. le uscite didattiche (sostituzioni/js/uscite.js): "giorno|ora|classe" delle classi fuori
+    const fuori = new Set();
+    fonte.uscite.forEach(u => {
+      const giorno = giornoDi.get(u.data);
+      if (giorno && Array.isArray(u.classi) && Array.isArray(u.ore)) u.classi.forEach(c => u.ore.forEach(h => fuori.add([giorno, h, c].join('|'))));
+    });
+    const eFuori = l => fuori.has([l.giorno, l.ora, l.classe].join('|'));
+    D.lezioni.filter(eFuori).forEach(l => segnate.set(chiave(l.giorno, l.ora, l.classe, l.docente), { uscita: true, assente: '', sostituto: '' }));
+
+    // 1. le lezioni dei docenti assenti (per ora senza sostituto: "da coprire"); non quelle delle classi fuori
     fonte.assenze.forEach(a => {
       const giorno = giornoDi.get(a.data);
       if (!giorno || !Array.isArray(a.ore)) return;
-      D.lezioni.filter(l => l.giorno === giorno && l.docente === a.docente && a.ore.includes(l.ora))
+      D.lezioni.filter(l => l.giorno === giorno && l.docente === a.docente && a.ore.includes(l.ora) && !eFuori(l))
         .forEach(l => segnate.set(chiave(giorno, l.ora, l.classe, l.docente), { assente: l.docente, sostituto: '' }));
     });
 
@@ -149,5 +160,5 @@ const Supplenze = (() => {
     return sost.segnate.get(chiave(l.giorno, l.ora, l.classe, l.docente)) || null;
   }
 
-  return { settimana, di, cambioAula, scarica, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula', 'sostituzioni.annullate'] };
+  return { settimana, di, cambioAula, scarica, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula', 'sostituzioni.annullate', 'sostituzioni.uscite'] };
 })();

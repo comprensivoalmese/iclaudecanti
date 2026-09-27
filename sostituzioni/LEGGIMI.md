@@ -69,6 +69,28 @@ Nella stessa scheda, sotto "Ore da coprire", il riquadro **"Cambi d'aula"** spos
 - Dati nella memoria del browser (chiave `sostituzioni.cambiAula`), condivisi tra Orario Facile e l'app.
   Codice: `js/cambi-aula.js`.
 
+## Uscita didattica (i casi: assenza semplice oppure uscita)
+
+In «Assenze del giorno» si sceglie il caso: **👤 Assenza di un docente** (la sostituzione semplice) oppure
+**🚌 Uscita didattica**. Per l'uscita si scelgono le **classi che escono**, le **ore** e i **docenti che accompagnano**
+(in cima quelli che insegnano nelle classi scelte). Con «Registra l'uscita» gli accompagnatori diventano assenti
+(senza recupero: stanno lavorando) e in «Ore da coprire» compare il **piano proposto**:
+
+- le lezioni delle classi fuori **non** si coprono;
+- le lezioni degli accompagnatori nelle classi rimaste si coprono prima con i docenti **«liberati»** (la loro classe è
+  fuori): sono già a scuola e l'ora è loro, quindi **nessuna ora in più** (niente +1 nel conteggio). Tra i liberati si
+  sceglie prima chi ha **lezione prima e dopo** quell'ora; chi ha l'ora liberata all'inizio o alla fine della giornata
+  si lascia libero. Se non c'è nessun liberato, si propone il primo docente libero delle proposte normali (+1);
+- le ore liberate che restano: all'inizio o alla fine della giornata → **entra dopo / esce prima**, ore **a recupero**
+  (−1 per ogni ora nel conteggio); in mezzo ad altre lezioni → **a disposizione**, **niente recupero**;
+- **almeno 1 ora** il docente la fa sempre: se tutte le sue ore sono liberate e non copre nessuno, la prima resta a disposizione.
+
+Si può cambiare chi copre con la tendina, poi **✔ Applica il piano** (assegna le sostituzioni e registra le ore a recupero).
+Anche le proposte normali delle singole ore mettono in cima i liberati (🚌), sia qui sia in «Sostituzioni smart».
+*Togli* sull'uscita toglie anche le sostituzioni del piano, le assenze degli accompagnatori e i recuperi.
+Nell'app le classi fuori si vedono «🚌 Uscita didattica» (file pubblicato: solo data, classi e ore; la descrizione resta
+sul dispositivo). Dati: chiave `sostituzioni.uscite`; codice: `js/uscite.js`.
+
 ## Come si usa
 
 1. **Carica il foglio** del conteggio ore (.ods, .xlsx oppure .csv, anche scaricato da Fogli Google).
@@ -145,6 +167,7 @@ sostituzioni/
   js/drive.js             foglio del conteggio ore su Google Drive (+1 / -1 al sostituto)
   js/registro-drive.js    Foglio Google delle sostituzioni: foglio «Autorizzazioni», registri «Sostituzioni» e «Cambi aula»
   js/cambi-aula.js        modulo «Cambi d'aula» (scheda Sostituzioni e pagina «Sostituzioni smart» dell'app)
+  js/uscite.js            modulo «Uscita didattica»: docenti liberati, piano proposto, a disposizione, a recupero
   js/sostituzioni.js      la scheda: assenze, proposte, saldi, esportazioni (Sostituzioni.monta)
   esempio/                facsimili del foglio con nomi inventati
 ```

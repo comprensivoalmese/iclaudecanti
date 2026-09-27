@@ -17,7 +17,7 @@ const Sostituzioni = (() => {
   const PROPOSTE_VISIBILI = 4;
   // Versione della scheda, mostrata in cima: serve a capire se la pagina aperta è quella aggiornata
   // (va cambiata a ogni modifica importante del modo in cui la scheda scrive nei fogli)
-  const VERSIONE = '27/09/2026 · 7 (annullare le sostituzioni anche dalla tabella, anche di altri dispositivi)';
+  const VERSIONE = '27/09/2026 · 8 (uscite didattiche: docenti liberati, a disposizione, entra dopo / esce prima)';
   const NOMI_GIORNI = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
   // Dove si trovano i facsimili del foglio, rispetto alla pagina di Orario Facile
   const CARTELLA_ESEMPI = '../sostituzioni/esempio/';
@@ -170,8 +170,9 @@ const Sostituzioni = (() => {
   const conSigla = t => !!rigaDi(t.id) && /\.|^DOC\d+$/i.test(sigla(t));
 
   // Sostituzioni fatte da una riga del foglio e non ancora riportate nel foglio
+  // (quelle dei docenti «liberati» da un'uscita didattica non contano: era già una loro ora di lezione)
   function daRiportarePer(chiave) {
-    return registro.filter(x => !x.riportata && x.sostituto && (rigaDi(x.sostituto) || {}).chiave === chiave).length;
+    return registro.filter(x => !x.riportata && !x.reindirizzato && x.sostituto && (rigaDi(x.sostituto) || {}).chiave === chiave).length;
   }
 
   // Saldo di un docente dell'orario: { foglio, extra, attuale } oppure null se non è nel foglio
@@ -197,13 +198,19 @@ const Sostituzioni = (() => {
     return D.lezioni.filter(l => l.giorno === giorno && l.docente === idDocente).sort((a, b) => a.ora - b.ora);
   }
 
+  // Uscite didattiche (js/uscite.js): la classe è fuori a quell'ora? E il docente è "liberato" (le sue classi sono fuori)?
+  const conUscite = () => typeof Uscite !== 'undefined';
+  const classeFuori = (iso, classe, ora) => conUscite() && Uscite.classeFuori(iso, classe, ora);
+  const liberato = (iso, idDocente, ora) => conUscite() && Uscite.liberato(iso, idDocente, ora);
+
   // Le lezioni dei docenti assenti in quel giorno, ciascuna con il campo "assente"
+  // (non quelle delle classi in uscita didattica: la classe non c'è, non serve nessuno)
   function oreDaCoprire(iso) {
     const giorno = giornoOrario(iso);
     if (!giorno) return [];
     const elenco = [];
     assenzeDel(iso).forEach(a => {
-      lezioniDi(a.docente, giorno).filter(l => a.ore.includes(l.ora))
+      lezioniDi(a.docente, giorno).filter(l => a.ore.includes(l.ora) && !classeFuori(iso, l.classe, l.ora))
         .forEach(l => elenco.push(Object.assign({ assente: a.docente }, l)));
     });
     return elenco.sort((x, y) => x.ora - y.ora || x.classe.localeCompare(y.classe, 'it', { numeric: true }));
@@ -221,26 +228,31 @@ const Sostituzioni = (() => {
     2. poi chi ha più ore a debito (saldo più basso);
     3. poi chi ha un'ora buca, poi chi ha lezione subito prima o dopo;
     4. poi chi conosce già la classe.
+    Con un'uscita didattica vengono prima di tutti i docenti «liberati» (la loro classe è fuori): sono già a scuola
+    e l'ora fa parte del loro orario, quindi coprono senza ore in più (vedi js/uscite.js).
   */
   function candidati(iso, l) {
     const giorno = l.giorno;
     const assenti = assentiAllOra(iso, l.ora);
-    const occupati = new Set(D.lezioni.filter(k => k.giorno === giorno && k.ora === l.ora).map(k => k.docente));
+    // occupato = ha lezione in quell'ora con una classe che c'è (non in uscita)
+    const occupati = new Set(D.lezioni.filter(k => k.giorno === giorno && k.ora === l.ora && !classeFuori(iso, k.classe, k.ora)).map(k => k.docente));
     const giaImpegnati = new Set(registro.filter(x => x.data === iso && x.ora === l.ora).map(x => x.sostituto));
 
     return D.docente
-      .filter(t => !assenti.has(t.id) && !occupati.has(t.id) && !giaImpegnati.has(t.id))
+      .filter(t => !assenti.has(t.id) && !occupati.has(t.id) && !giaImpegnati.has(t.id) && !(conUscite() && Uscite.accompagna(iso, t.id, l.ora)))
       .map(t => {
-        const oreGiorno = lezioniDi(t.id, giorno).map(k => k.ora);
+        const oreGiorno = lezioniDi(t.id, giorno).filter(k => !classeFuori(iso, k.classe, k.ora)).map(k => k.ora);
         const aScuola = oreGiorno.length > 0;
         let posizione = 3;                                  // nessuna lezione quel giorno
         if (oreGiorno.some(o => o < l.ora) && oreGiorno.some(o => o > l.ora)) posizione = 0;   // ora buca
         else if (oreGiorno.includes(l.ora - 1) || oreGiorno.includes(l.ora + 1)) posizione = 1; // subito prima/dopo
         else if (aScuola) posizione = 2;
         const stessaClasse = D.lezioni.some(k => k.docente === t.id && k.classe === l.classe);
-        return { t, aScuola, posizione, stessaClasse, saldo: saldoDi(t.id) };
+        const lib = liberato(iso, t.id, l.ora);
+        return { t, aScuola: aScuola || lib, posizione, stessaClasse, liberato: lib, saldo: saldoDi(t.id) };
       })
       .sort((a, b) =>
+        (b.liberato - a.liberato) ||
         (b.aScuola - a.aScuola) ||
         ((a.saldo ? a.saldo.attuale : Infinity) - (b.saldo ? b.saldo.attuale : Infinity)) ||
         (a.posizione - b.posizione) ||
@@ -493,24 +505,35 @@ const Sostituzioni = (() => {
   // un secondo tocco sullo stesso pulsante viene ignorato (altrimenti l'ora verrebbe tolta o aggiunta due volte)
   const inCorso = new Set();
 
-  async function assegna(iso, l, idSostituto) {
+  /*
+    Assegna una sostituzione. opzioni (facoltative):
+    - reindirizzato: true = il sostituto è «liberato» da un'uscita didattica (la sua classe è fuori): copre in un'ora
+      che è già sua, quindi NIENTE +1 nel foglio del conteggio;
+    - uscita: l'ID dell'uscita didattica che l'ha proposta (per toglierla insieme all'uscita).
+  */
+  async function assegna(iso, l, idSostituto, opzioni) {
     if (!controllaPermesso()) return;
     if (sostituzioneDi(iso, l)) return;   // quest'ora è già assegnata (per esempio doppio tocco su «Assegna»)
+    const op = opzioni || {};
     const s = {
       id: nuovoId(), data: iso, settimana: settimanaDi(iso), ora: l.ora,
       classe: l.classe, aula: l.aula, materia: l.materia,
       assente: l.assente, sostituto: idSostituto, riportata: false
     };
+    if (op.reindirizzato) s.reindirizzato = true;
+    if (op.uscita) s.uscita = op.uscita;
     registro.push(s);
     salva('registro', registro);
     inCorso.add(s.id);   // finché il +1 non è scritto, questa sostituzione non si può annullare
-    const testo = `${testoOra(l.ora)} in ${nome('classe', l.classe)}: sostituisce ${nomeDocente(idSostituto)}.`;
-    avvisa(testo);
+    const testo = `${testoOra(l.ora)} in ${nome('classe', l.classe)}: sostituisce ${nomeDocente(idSostituto)}` +
+      (s.reindirizzato ? ' (liberato dall\'uscita didattica: nessuna ora in più)' : '') + '.';
+    if (!op.silenzioso) avvisa(testo);
     disegnaTutto();
     try {
       // foglio del conteggio su Google Drive: +1 nella settimana del docente che sostituisce
+      // (non per chi è liberato da un'uscita didattica: è una sua ora di lezione)
       const fatto = [];
-      const esito = await segnaNelFoglio(s, 1);
+      const esito = s.reindirizzato ? { ok: false, motivo: '', nonServe: true } : await segnaNelFoglio(s, 1);
       if (esito.ok) {
         s.riportata = true; s.nelFoglio = true;
         fatto.push(`segnata nel foglio del conteggio (settimana ${s.settimana}${esito.cella ? ', cella ' + esito.cella : ''}: ora ${esito.nuovo})`);
@@ -522,8 +545,8 @@ const Sostituzioni = (() => {
       }
       if (fatto.length) salva('registro', registro);
       // Se il +1 non è stato scritto lo diciamo sempre, con il motivo: l'ora resta tra quelle da riportare
-      const mancato = esito.ok ? '' : ` ⚠️ Non segnata nel foglio del conteggio: ${esito.motivo}. Resta tra le ore da riportare.`;
-      avvisa(testo + (fatto.length ? ' ' + fatto.join(' e ').replace(/^./, c => c.toUpperCase()) + '.' : '') + mancato);
+      const mancato = esito.ok || esito.nonServe ? '' : ` ⚠️ Non segnata nel foglio del conteggio: ${esito.motivo}. Resta tra le ore da riportare.`;
+      if (!op.silenzioso || mancato) avvisa(testo + (fatto.length ? ' ' + fatto.join(' e ').replace(/^./, c => c.toUpperCase()) + '.' : '') + mancato);
     } finally {
       inCorso.delete(s.id);
       disegnaTutto();
@@ -699,6 +722,7 @@ const Sostituzioni = (() => {
     box.append(el('h3', {}, 'Assenti'), el('ul', { class: 'sost-assenze' }, elenco.map(a =>
       el('li', {},
         el('span', {}, el('strong', {}, nomeDocente(a.docente)), ' – ', a.ore.map(n => n + 'ª').join(', '), ' ora',
+          a.uscita ? el('span', { class: 'tag' }, a.come === 'accompagna' ? '🚌 accompagna l\'uscita' : '🚌 classe in uscita: entra dopo / esce prima') : null,
           a.permesso ? el('span', { class: 'tag' }, a.permessoSegnate ? `recupero · −${a.permessoSegnate} nel foglio` : 'recupero') : null),
         el('button', {
           type: 'button', class: 'btn ghost sm',
@@ -760,15 +784,18 @@ const Sostituzioni = (() => {
     - altriGiorni: altre date della stessa settimana ("2026-09-29"…) in cui il docente è assente TUTTO il giorno
     Restituisce true se l'ha registrata.
   */
-  function registraAssenzaDi(iso, id, oreScelte, permesso, altriGiorni) {
+  // extra (facoltativo): { uscita: ID, come: 'accompagna' | 'recupero' } per le assenze create da un'uscita didattica;
+  // con extra.silenzioso non compare il messaggio
+  function registraAssenzaDi(iso, id, oreScelte, permesso, altriGiorni, extra) {
     if (!controllaPermesso()) return false;
     const giorni = [{ iso, ore: oreScelte }].concat(altriGiorniDi(iso, id)
       .filter(g => (altriGiorni || []).includes(g.iso)).map(g => ({ iso: g.iso, ore: g.ore })));
     const segnate = giorni.map(g => segnaAssenza(g.iso, id, g.ore, permesso));
+    if (extra) segnate.forEach(a => { if (extra.uscita) a.uscita = extra.uscita; if (extra.come) a.come = extra.come; });
     salva('assenze', assenze);
     salva('registro', registro);
     const totale = giorni.reduce((n, g) => n + g.ore.length, 0);
-    avvisa(giorni.length === 1
+    if (!(extra && extra.silenzioso)) avvisa(giorni.length === 1
       ? `Assenza registrata: ${nomeDocente(id)}, ${ore(totale)}${permesso ? ' (recupero)' : ''}.`
       : `Assenza registrata: ${nomeDocente(id)} in ${giorni.length} giorni (${giorni.map(g => dataCorta(g.iso)).join(', ')}), ` +
         `${ore(totale)} in tutto${permesso ? ' (recupero)' : ''}. Con i pulsanti dei giorni in «Ore da coprire» passi da un giorno all'altro.`);
@@ -794,10 +821,11 @@ const Sostituzioni = (() => {
     $('titoloCoprire').scrollIntoView({ behavior: 'smooth' });
   }
 
-  async function togliAssenza(a) {
+  // senzaDomande: true quando la toglie il modulo delle uscite didattiche (ha già chiesto conferma lui)
+  async function togliAssenza(a, senzaDomande) {
     if (!controllaPermesso()) return;
     const collegate = registro.filter(x => x.data === a.data && x.assente === a.docente);
-    if (collegate.length && !confirm(`Togliendo l'assenza vengono annullate anche ${collegate.length} sostituzioni già assegnate. Continuare?`)) return;
+    if (collegate.length && !senzaDomande && !confirm(`Togliendo l'assenza vengono annullate anche ${collegate.length} sostituzioni già assegnate. Continuare?`)) return;
     // Se era un permesso già segnato nel foglio del conteggio, le ore tolte vengono restituite
     if (a.permessoSegnate) await aggiornaPermesso(a, 0);
     togliDalRegistro(collegate);
@@ -865,6 +893,7 @@ const Sostituzioni = (() => {
       const saldo = saldoDi(s.sostituto);
       return el('article', { class: 'sost-ora coperta' }, titolo, dettagli, compresenza,
         el('p', { class: 'sost-sostituto' }, '✔ Sostituisce ', el('strong', {}, nomeDocente(s.sostituto)), ' ', etichettaSaldo(saldo),
+          s.reindirizzato ? el('span', { class: 'tag' }, '🚌 liberato dall\'uscita: nessuna ora in più') : null,
           s.riportata ? el('span', { class: 'tag' }, 'già riportata nel foglio') : null),
         // mentre il foglio viene aggiornato il pulsante è spento, così non si preme due volte
         el('button', { type: 'button', class: 'btn ghost sm', disabled: inCorso.has(s.id), onclick: () => annulla(s) },
@@ -883,12 +912,12 @@ const Sostituzioni = (() => {
         conSigla(c.t) ? el('span', { class: 'mini' }, ` (${sigla(c.t)})`) : null,
         el('span', { class: 'sost-etichette' },
           etichettaSaldo(c.saldo),
-          el('span', { class: 'tag' }, TESTI_POSIZIONE[c.posizione]),
+          c.liberato ? el('span', { class: 'tag ok' }, '🚌 libero per l\'uscita: nessuna ora in più') : el('span', { class: 'tag' }, TESTI_POSIZIONE[c.posizione]),
           c.stessaClasse ? el('span', { class: 'tag' }, 'conosce la classe') : null)),
       el('button', {
         type: 'button', class: 'btn sm',
         'aria-label': `Assegna la ${l.ora}ª ora in ${nome('classe', l.classe)} a ${nomeDocente(c.t.id)}`,
-        onclick: () => assegna(dataScelta, l, c.t.id)
+        onclick: () => assegna(dataScelta, l, c.t.id, c.liberato ? { reindirizzato: true } : undefined)
       }, 'Assegna'));
 
     const contenuto = [];
@@ -916,6 +945,9 @@ const Sostituzioni = (() => {
     // anche i cambi d'aula del giorno finiscono nella stampa (tabella preparata da js/cambi-aula.js)
     const cambi = typeof CambiAula !== 'undefined' ? CambiAula.tabellaStampa(dataScelta) : '';
     if (cambi) { const d = el('div', { class: 'tablewrap' }); d.innerHTML = cambi; box.append(d); }
+    // e le uscite didattiche: classi fuori, docenti a disposizione, chi entra dopo o esce prima (js/uscite.js)
+    const uscite = conUscite() ? Uscite.tabellaStampa(dataScelta) : '';
+    if (uscite) { const d = el('div', { class: 'tablewrap' }); d.innerHTML = uscite; box.append(d); }
     if (!elenco.length) return;
     box.prepend(el('div', { class: 'tablewrap' }, el('table', { class: 'sost-tabella' },
       el('caption', {}, 'Sostituzioni di ' + dataLunga(dataScelta)),
@@ -966,7 +998,7 @@ const Sostituzioni = (() => {
   // Raggruppa le sostituzioni non ancora riportate per settimana e docente
   function riepilogoDaRiportare() {
     const gruppi = new Map();
-    registro.filter(x => !x.riportata).forEach(x => {
+    registro.filter(x => !x.riportata && !x.reindirizzato).forEach(x => {
       const r = rigaDi(x.sostituto);
       const k = x.settimana + '|' + (r ? r.chiave : 'orario:' + x.sostituto);
       if (!gruppi.has(k)) gruppi.set(k, { settimana: x.settimana, riga: r, id: x.sostituto, ore: 0 });
@@ -1006,6 +1038,11 @@ const Sostituzioni = (() => {
     disegnaDati();
     disegnaGiorno();
     disegnaCoprire();
+    // Uscite didattiche (modulo separato, js/uscite.js): il modulo d'inserimento e il piano proposto
+    if (conUscite()) {
+      if (!$('moduloUscita').hidden) Uscite.disegnaModulo($('moduloUscita'), dataScelta);
+      Uscite.disegnaPiano($('pianoUscita'), dataScelta);
+    }
     // Cambi d'aula dello stesso giorno (modulo separato, js/cambi-aula.js)
     if (typeof CambiAula !== 'undefined') CambiAula.disegna($('cambiAula'), dataScelta, 'scheda');
     disegnaSaldi();
@@ -1127,6 +1164,12 @@ const Sostituzioni = (() => {
         <button type="button" id="sost-oggi" class="btn ghost">Oggi</button>
       </div>
       <p id="sost-descrizioneGiorno" class="sost-giorno"></p>
+      <!-- I casi: 1. assenza di un docente (sostituzione semplice) · 2. uscita didattica (js/uscite.js) -->
+      <div class="seg sost-casi" role="group" aria-label="Che cosa succede">
+        <button type="button" id="sost-casoAssenza" aria-pressed="true">👤 Assenza di un docente</button>
+        <button type="button" id="sost-casoUscita" aria-pressed="false">🚌 Uscita didattica</button>
+      </div>
+      <div id="sost-moduloUscita" class="sost-modulo" hidden></div>
       <form id="sost-moduloAssenza" class="sost-modulo">
         <label class="fl" for="sost-docenteAssente">Docente assente</label>
         <select id="sost-docenteAssente"></select>
@@ -1149,6 +1192,7 @@ const Sostituzioni = (() => {
       <p class="hint">Per ogni ora vengono proposti prima i docenti <b>già a scuola</b> quel giorno e liberi in quell'ora,
         dal più <b>alto debito di ore</b> in giù. A parità di debito vengono prima chi ha un'ora buca e chi conosce già la classe.</p>
       <nav id="sost-settimana" class="sost-settimana" aria-label="Giorni della settimana"></nav>
+      <div id="sost-pianoUscita"></div>
       <div id="sost-oreDaCoprire"></div>
       <div id="sost-stampaGiorno" class="sost-stampabile"></div>
     </div>
@@ -1179,7 +1223,8 @@ const Sostituzioni = (() => {
 
   // Stampa solo la tabella del giorno: durante la stampa il resto della pagina viene nascosto
   function stampa() {
-    const conCambi = typeof CambiAula !== 'undefined' && CambiAula.cambiDel(dataScelta).length;
+    const conCambi = (typeof CambiAula !== 'undefined' && CambiAula.cambiDel(dataScelta).length) ||
+      (conUscite() && Uscite.usciteDel(dataScelta).length);
     if (!oreDaCoprire(dataScelta).length && !conCambi) { avvisa('Nessuna sostituzione né cambio d\'aula da stampare in questo giorno.'); return; }
     document.body.classList.add('sost-in-stampa');
     window.addEventListener('afterprint', () => document.body.classList.remove('sost-in-stampa'), { once: true });
@@ -1201,6 +1246,17 @@ const Sostituzioni = (() => {
       disegnaOreAssenza();
     });
     $('moduloAssenza').addEventListener('submit', registraAssenza);
+    // i due casi: assenza di un docente oppure uscita didattica (si vede un modulo alla volta)
+    const caso = uscita => {
+      $('casoAssenza').setAttribute('aria-pressed', String(!uscita));
+      $('casoUscita').setAttribute('aria-pressed', String(uscita));
+      $('moduloAssenza').hidden = uscita;
+      $('moduloUscita').hidden = !uscita;
+      disegnaTutto();
+    };
+    $('casoAssenza').addEventListener('click', () => caso(false));
+    $('casoUscita').addEventListener('click', () => caso(true));
+    if (!conUscite()) $('casoUscita').hidden = true;
     $('stampa').addEventListener('click', stampa);
     $('scaricaRegistro').addEventListener('click', scaricaRegistro);
     $('scaricaRiepilogo').addEventListener('click', scaricaRiepilogo);
@@ -1308,7 +1364,9 @@ const Sostituzioni = (() => {
     inCorso: id => inCorso.has(id),
     registraAssenza: registraAssenzaDi, togliAssenza, assegna, annulla, annullaVoce,
     // servono anche al modulo «Cambi d'aula» (js/cambi-aula.js)
-    avvisa, ridisegna: () => disegnaTutto(), email: emailUtente, preparaNomiVeri, nomeVero
+    avvisa, ridisegna: () => disegnaTutto(), email: emailUtente, preparaNomiVeri, nomeVero,
+    // servono al modulo «Uscite didattiche» (js/uscite.js)
+    registroDel: iso => registro.filter(x => x.data === iso), assentiAllOra, etichettaSaldo, el
   };
 
   // Le funzioni del motore senza collegare un'altra pagina (le usa il modulo «Cambi d'aula» dentro la scheda)

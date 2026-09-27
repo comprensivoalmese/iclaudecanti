@@ -44,7 +44,10 @@ const PubblicaSostituzioni = (() => {
       cambi: leggiLocale('sostituzioni.cambiAula', []).filter(recente)
         .map(c => ({ id: c.id, data: c.data, ora: c.ora, classe: c.classe, da: c.da, a: c.a, docente: c.docente })),
       // sostituzioni di altri dispositivi annullate da qui (tasto «✕ Annulla» nella tabella dell'app)
-      annullate: leggiLocale('sostituzioni.annullate', []).filter(recente)
+      annullate: leggiLocale('sostituzioni.annullate', []).filter(recente),
+      // uscite didattiche (sostituzioni/js/uscite.js): solo quali classi sono fuori e quando (niente descrizione)
+      uscite: leggiLocale('sostituzioni.uscite', []).filter(recente)
+        .map(u => ({ id: u.id, data: u.data, classi: u.classi, ore: u.ore }))
     };
   }
   const firma = L => JSON.stringify(L);
@@ -53,6 +56,7 @@ const PubblicaSostituzioni = (() => {
   const segnoA = a => 'A|' + a.data + '|' + a.docente;
   const segnoR = s => 'R|' + s.data + '|' + s.ora + '|' + s.classe;
   const segnoC = c => 'C|' + c.data + '|' + c.ora + '|' + c.classe;
+  const segnoU = u => 'U|' + u.data + '|' + (u.classi || []).join(',');
 
   /*
     Sostituzioni annullate: elenco di { id, data, ora, classe }. Una sostituzione è "colpita" se ha lo stesso ID
@@ -103,11 +107,12 @@ const PubblicaSostituzioni = (() => {
     let testo;
     try { testo = await Dati.leggiDrive(CONFIG.fileSostituzioniPubblicate); }
     catch (e) { throw new Error('non riesco a leggere le sostituzioni già pubblicate (' + (e && e.message ? e.message : e) + '): riprova tra poco'); }
-    let remoto = { assenze: [], registro: [], cambi: [], annullate: [] };
+    let remoto = { assenze: [], registro: [], cambi: [], annullate: [], uscite: [] };
     try {
       const o = JSON.parse(testo || '{}');
       remoto = { assenze: Array.isArray(o.assenze) ? o.assenze : [], registro: Array.isArray(o.registro) ? o.registro : [],
-        cambi: Array.isArray(o.cambi) ? o.cambi : [], annullate: Array.isArray(o.annullate) ? o.annullate : [] };
+        cambi: Array.isArray(o.cambi) ? o.cambi : [], annullate: Array.isArray(o.annullate) ? o.annullate : [],
+        uscite: Array.isArray(o.uscite) ? o.uscite : [] };
     } catch (e) { throw new Error('il file delle sostituzioni pubblicate non è leggibile: controllalo su Drive prima di pubblicare'); }
     // prima di unire: le sostituzioni annullate da altri spariscono anche dal registro di questo dispositivo,
     // altrimenti le ripubblicheremmo noi
@@ -115,9 +120,9 @@ const PubblicaSostituzioni = (() => {
     applicaAnnullate(annullate);
     const nonAnnullata = (colpisce => s => !colpisce(s))(colpita(annullate));
     const L = locali();
-    const idLocali = new Set(L.assenze.map(x => x.id).concat(L.registro.map(x => x.id), L.cambi.map(x => x.id)));
+    const idLocali = new Set(L.assenze.map(x => x.id).concat(L.registro.map(x => x.id), L.cambi.map(x => x.id), L.uscite.map(x => x.id)));
     const primaDaQui = new Set(leggiLocale(CHIAVE_DA_QUI, []));
-    const segniLocali = new Set(L.assenze.map(segnoA).concat(L.registro.map(segnoR), L.cambi.map(segnoC)));
+    const segniLocali = new Set(L.assenze.map(segnoA).concat(L.registro.map(segnoR), L.cambi.map(segnoC), L.uscite.map(segnoU)));
     // tengo quelle degli altri: non annullate qui, non rifatte qui, e non troppo vecchie
     const tieni = (x, segno) => recente(x) && !(x.id && (idLocali.has(x.id) || primaDaQui.has(x.id))) && !segniLocali.has(segno(x));
     const unito = {
@@ -125,6 +130,7 @@ const PubblicaSostituzioni = (() => {
       assenze: remoto.assenze.filter(x => tieni(x, segnoA)).concat(L.assenze),
       registro: remoto.registro.filter(x => tieni(x, segnoR)).concat(L.registro).filter(nonAnnullata),
       cambi: remoto.cambi.filter(x => tieni(x, segnoC)).concat(L.cambi),
+      uscite: remoto.uscite.filter(x => tieni(x, segnoU)).concat(L.uscite),
       annullate
     };
     await PubblicaDrive.pubblicaSostituzioni(JSON.stringify(unito), email);
