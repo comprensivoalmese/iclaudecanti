@@ -82,6 +82,13 @@ const Viste = (() => {
         etichettaSost = '<span class="etichetta-sost">⚠ Docente assente</span>';
         rigaSost = `<span class="dato-sost">${esc(Dati.nome('docente', sost.assente))} · sostituto da trovare</span>`;
       }
+      // Chi è autorizzato alle sostituzioni può annullarle da qui: app.js apre la pagina Sostituzioni, che chiede conferma,
+      // toglie l'ora dal foglio del conteggio e la riga dal foglio «Sostituzioni» (Sostituzioni.annullaVoce)
+      if (sost && sost.sostituto && sost.voce && stato.puoAnnullare) {
+        const v = sost.voce;
+        rigaSost += `<button type="button" class="annulla-sost" data-annulla-sost="${esc([v.id || '', v.data, v.ora, v.classe].join('|'))}"
+          aria-label="Annulla la sostituzione della ${l.ora}ª ora in ${esc(Dati.nome('classe', l.classe))} (sostituisce ${esc(Dati.nome('docente', sost.sostituto))})">✕ Annulla</button>`;
+      }
       // Cambio d'aula di questa settimana (sostituzioni/js/cambi-aula.js): etichetta e nuova aula ben visibili
       const cambio = Supplenze.cambioAula(stato.sostituzioni, l);
       const etichettaCambio = cambio ? '<span class="etichetta-cambio">⇄ Aula cambiata</span>' : '';

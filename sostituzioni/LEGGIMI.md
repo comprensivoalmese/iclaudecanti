@@ -88,6 +88,11 @@ Nella stessa scheda, sotto "Ore da coprire", il riquadro **"Cambi d'aula"** spos
    passare da un giorno all'altro e sistemare tutta la settimana.
    Le sostituzioni assegnate si vedono anche nella **tabella dell'orario** dell'app, sullo stesso dispositivo
    (vedi *Sostituzioni nella tabella* in `app/LEGGIMI.md`).
+   **Annullare**: *Annulla la sostituzione* qui, oppure il tasto **✕ Annulla** sulla sostituzione nella tabella dell'app
+   (anche da un altro dispositivo: `annullaVoce()` del motore). In tutti i casi si toglie 1 ora al sostituto nel foglio
+   del conteggio (se era stata segnata) e la riga dal foglio «Sostituzioni»; prima, se il foglio del conteggio non è
+   ancora caricato, lo si legge da Drive. Le sostituzioni di altri dispositivi annullate vanno nell'elenco `annullate`
+   (chiave `sostituzioni.annullate`), che viaggia nel file pubblicato e le fa sparire anche dal dispositivo d'origine.
 5. A fine settimana copia nel foglio le ore della tabella **"Da aggiungere nel foglio"** (+1 per ogni ora
    di sostituzione, nella colonna della settimana), poi premi **"Segna come già riportate"** e ricarica il foglio.
 

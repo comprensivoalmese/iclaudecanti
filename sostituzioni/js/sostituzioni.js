@@ -17,7 +17,7 @@ const Sostituzioni = (() => {
   const PROPOSTE_VISIBILI = 4;
   // Versione della scheda, mostrata in cima: serve a capire se la pagina aperta è quella aggiornata
   // (va cambiata a ogni modifica importante del modo in cui la scheda scrive nei fogli)
-  const VERSIONE = '26/09/2026 · 6 (assenze per più giorni e cambi d\'aula)';
+  const VERSIONE = '27/09/2026 · 7 (annullare le sostituzioni anche dalla tabella, anche di altri dispositivi)';
   const NOMI_GIORNI = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
   // Dove si trovano i facsimili del foglio, rispetto alla pagina di Orario Facile
   const CARTELLA_ESEMPI = '../sostituzioni/esempio/';
@@ -530,14 +530,19 @@ const Sostituzioni = (() => {
     }
   }
 
-  async function annulla(s) {
-    if (!controllaPermesso()) return;
-    if (inCorso.has(s.id)) return;   // c'è già un'operazione in corso su questa sostituzione (doppio tocco)
+  /*
+    Annulla una sostituzione. "esterna" = registrata su un ALTRO dispositivo (arriva dal file pubblicato):
+    non è nel registro di qui, quindi invece di toglierla dal registro la si ricorda tra le "annullate".
+    Restituisce true se la sostituzione è stata annullata.
+  */
+  async function annulla(s, esterna) {
+    if (!controllaPermesso()) return false;
+    if (inCorso.has(s.id)) return false;   // c'è già un'operazione in corso su questa sostituzione (doppio tocco)
     inCorso.add(s.id);
     disegnaTutto();                  // il pulsante diventa «Annullo…» e non si può ripremere
     try {
       if (s.nelRegistro && !(await togliDalRegistro([s])) &&
-        !confirm('Non riesco a togliere la sostituzione dal foglio «Sostituzioni». Annullarla comunque? Poi correggi il foglio a mano.')) return;
+        !confirm('Non riesco a togliere la sostituzione dal foglio «Sostituzioni». Annullarla comunque? Poi correggi il foglio a mano.')) return false;
       let dove = '';
       if (s.nelFoglio) {
         // segnata in automatico nel foglio su Drive: si toglie da lì (una sola volta)
@@ -545,15 +550,47 @@ const Sostituzioni = (() => {
         if (esito.ok) {
           s.nelFoglio = false;   // già tolta: se qualcosa va storto dopo, non si toglie una seconda volta
           dove = ` Tolta 1 ora a ${nomeDocente(s.sostituto)} nel foglio del conteggio (settimana ${s.settimana}${esito.cella ? ', cella ' + esito.cella : ''}: ora ${esito.nuovo}).`;
-        } else if (!confirm(`Non riesco a togliere l'ora dal foglio del conteggio (${esito.motivo}). Annullare comunque la sostituzione? Poi correggi il foglio a mano.`)) return;
-      } else if (s.riportata && !confirm('Questa sostituzione è già stata riportata nel foglio. Annullarla comunque? Ricordati di correggere anche il foglio.')) return;
-      registro = registro.filter(x => x.id !== s.id);
-      salva('registro', registro);
+        } else if (!confirm(`Non riesco a togliere l'ora dal foglio del conteggio (${esito.motivo}). Annullare comunque la sostituzione? Poi correggi il foglio a mano.`)) return false;
+      } else if (s.riportata && !confirm('Questa sostituzione è già stata riportata nel foglio. Annullarla comunque? Ricordati di correggere anche il foglio.')) return false;
+      if (esterna) {
+        // la ricordiamo tra le annullate: con la pubblicazione sparisce per tutti,
+        // anche dal dispositivo che l'aveva registrata (vedi app/js/pubblica-sostituzioni.js)
+        const annullate = Archivio.leggi('annullate', []);
+        annullate.push({ id: s.id || '', data: s.data, ora: s.ora, classe: s.classe });
+        Archivio.scrivi('annullate', annullate);
+      } else {
+        registro = registro.filter(x => x.id !== s.id);
+        salva('registro', registro);
+      }
       avvisa('Sostituzione annullata.' + dove);
+      return true;
     } finally {
       inCorso.delete(s.id);
       disegnaTutto();
     }
+  }
+
+  /*
+    Annulla una sostituzione vista nella tabella dell'app (tasto «✕ Annulla», app/js/viste.js).
+    "voce" = { id, data, ora, classe, assente, sostituto, nelFoglio?, nelRegistro? } del file pubblicato o di qui.
+    - registrata su questo dispositivo: la solita annulla();
+    - registrata su un altro dispositivo: si tolgono l'ora dal foglio del conteggio e la riga dal foglio «Sostituzioni»
+      (se il file pubblicato non dice il contrario, si suppone che l'altro dispositivo li avesse scritti).
+    In tutti e due i casi al docente che sostituiva si toglie 1 ora nel foglio del conteggio (settimana della sostituzione).
+  */
+  async function annullaVoce(voce) {
+    // Per togliere l'ora serve il foglio del conteggio: se su questo dispositivo non c'è ancora, lo leggo da Drive
+    // (il valore della cella poi si rilegge comunque dal vivo, vedi FoglioDrive.aggiungi)
+    if (suDrive() && (!foglio || !foglio.driveId) && FoglioDrive.pronto()) await caricaDaDrive(false);
+    const qui = registro.find(x => (voce.id && x.id === voce.id) ||
+      (x.data === voce.data && x.ora === voce.ora && x.classe === voce.classe));
+    if (qui) return annulla(qui, false);
+    const s = Object.assign({}, voce, {
+      settimana: settimanaDi(voce.data),
+      nelFoglio: voce.nelFoglio !== false,
+      nelRegistro: voce.nelRegistro !== false && !!voce.id   // nel foglio «Sostituzioni» le righe si trovano per ID
+    });
+    return annulla(s, true);
   }
 
   // ---------- Disegno della sezione 1: dati ----------
@@ -1267,7 +1304,7 @@ const Sostituzioni = (() => {
     giorniSettimana, altriGiorniDi, contaGiorno, dataCorta,
     oreDaCoprire, sostituzioneDi, candidati, saldoDi, TESTI_POSIZIONE,
     inCorso: id => inCorso.has(id),
-    registraAssenza: registraAssenzaDi, togliAssenza, assegna, annulla,
+    registraAssenza: registraAssenzaDi, togliAssenza, assegna, annulla, annullaVoce,
     // servono anche al modulo «Cambi d'aula» (js/cambi-aula.js)
     avvisa, ridisegna: () => disegnaTutto(), email: emailUtente, preparaNomiVeri, nomeVero
   };

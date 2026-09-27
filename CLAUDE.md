@@ -90,6 +90,12 @@ Le parti del progetto:
   le sostituzioni della settimana: se cambi il formato di assenze o registro, aggiorna anche quel file.
   Il foglio del conteggio può stare su Google Drive (`CONFIG.fileConteggioOre`): `sostituzioni/js/drive.js` lo legge e
   scrive +1/-1 nella settimana del sostituto quando si assegna o si annulla una sostituzione (`segnaNelFoglio()`).
+  **Annullare dalla tabella**: chi è autorizzato alle sostituzioni vede «✕ Annulla» sulle sostituzioni della tabella
+  (`app/js/viste.js`, `stato.puoAnnullare`); si apre la pagina smart che chiede conferma e chiama `annullaVoce()` del motore:
+  −1 nel foglio del conteggio e riga tolta dal foglio «Sostituzioni», anche per le sostituzioni registrate su un ALTRO dispositivo.
+  Quelle vanno nell'elenco `annullate` (chiave `sostituzioni.annullate` e campo `annullate` del file pubblicato):
+  `supplenze.js` le nasconde e `PubblicaSostituzioni.applicaAnnullate()` le toglie dal registro del dispositivo che le aveva
+  registrate (senza un secondo −1). Il file pubblicato ora ha anche `nelFoglio`/`nelRegistro`/`riportata` per ogni sostituzione.
   **Chi può fare le sostituzioni** lo decide il Foglio Google `CONFIG.fileSostituzioni` (`sostituzioni/js/registro-drive.js`):
   foglio «Autorizzazioni» (nomi ed email degli autorizzati) e foglio «Sostituzioni» (una riga per sostituzione assegnata,
   con i **nomi veri** dei docenti presi da `fileNomiDocenti` e tenuti solo in memoria). Su GitHub e in `localStorage`

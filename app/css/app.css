@@ -423,6 +423,12 @@ body.modalita-monitor .modifiche, body.modalita-ingresso .modifiche { font-size:
 }
 .lezione-scoperta .etichetta-sost { background: var(--errore); color: var(--su-errore); }
 .dato-sost { font-size: .8rem; line-height: 1.25; font-weight: 600; }
+/* «✕ Annulla» su una sostituzione (solo per chi può fare le sostituzioni, vedi viste.js): piccolo, bordo rosso */
+.annulla-sost {
+  justify-self: start; margin-top: 2px; padding: 2px 8px; min-height: 28px; font: inherit; font-size: .72rem; font-weight: 700;
+  border: 1px solid var(--errore); border-radius: 6px; background: var(--superficie, transparent); color: var(--errore); cursor: pointer;
+}
+.annulla-sost:hover, .annulla-sost:focus-visible { background: var(--errore); color: var(--su-errore); }
 /* Il nome del docente assente, nella riga del docente, viene barrato */
 .lezione-supplenza:not(.lezione-copia) .dato-docente, .lezione-scoperta .dato-docente { text-decoration: line-through; }
 /* Cambio d'aula della settimana: cornice tratteggiata blu, etichetta, e l'aula vecchia barrata nella riga dell'aula */
@@ -555,6 +561,7 @@ body.intervallo-aperto { overflow: hidden; }
 
 /* ---------- Stampa ---------- */
 @media print {
+  .annulla-sost { display: none; }
   .barra, .controlli, .adesso, .piede, .salta { display: none !important; }
   .contenitore-tabella { overflow: visible; max-height: none; border: 0; }
   .tabella-orario thead th, .tabella-orario tbody th { position: static; }

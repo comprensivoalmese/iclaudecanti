@@ -47,6 +47,11 @@ di Orario Facile in versione **semplice e rapida**, dentro l'app, con lo stile a
 - **Giorni della settimana**: sotto la tendina, un pulsante per ogni giorno con quante ore restano **da coprire**
   (bordo rosso se ne manca qualcuna): si tocca per passare a quel giorno.
 - **Ore da coprire**: una scheda per ogni ora con i primi 3 docenti proposti (prima chi ha più ore a debito); si tocca il nome per assegnare, *Mostra tutti* per gli altri, *Annulla la sostituzione* per toglierla.
+- **✕ Annulla nella tabella**: chi è autorizzato alle sostituzioni vede il tasto *✕ Annulla* su ogni sostituzione della
+  tabella dell'orario (anche se l'ha registrata un collega su un altro dispositivo). Toccandolo si apre questa pagina sul giorno
+  giusto, si conferma e la sostituzione si annulla: al docente che sostituiva si toglie 1 ora nel **foglio del conteggio**
+  (nella settimana della sostituzione), la riga sparisce dal foglio «Sostituzioni» e, con la pubblicazione automatica,
+  sparisce per tutti. Chi non è autorizzato vede la sostituzione ma non il tasto; il tasto non si stampa.
 - **🖨️ Stampa le sostituzioni del giorno**.
 
 **⇄ Cambi d'aula** ha una **voce di menu dedicata**, subito sotto: apre la stessa pagina a schede con solo il modulo dei

@@ -8,7 +8,8 @@ const Archivio = (() => {
     foglio: 'sostituzioni.foglio',             // il foglio del conteggio ore caricato
     assenze: 'sostituzioni.assenze',           // le assenze registrate
     registro: 'sostituzioni.registro',         // le sostituzioni assegnate
-    abbinamenti: 'sostituzioni.abbinamenti'    // abbinamenti scelti a mano: docente dell'orario -> riga del foglio
+    abbinamenti: 'sostituzioni.abbinamenti',   // abbinamenti scelti a mano: docente dell'orario -> riga del foglio
+    annullate: 'sostituzioni.annullate'        // sostituzioni di ALTRI dispositivi annullate da qui (vedi annullaVoce)
   };
 
   // Legge un dato; se manca o la memoria è bloccata restituisce il valore predefinito

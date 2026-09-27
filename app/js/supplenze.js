@@ -23,12 +23,14 @@ const Supplenze = (() => {
   // Le sostituzioni pubblicate su Drive: { assenze: [], registro: [] } oppure null (non configurate o mai scaricate)
   let pubblicate = null;
   const elenchi = o => ({ assenze: Array.isArray(o && o.assenze) ? o.assenze : [], registro: Array.isArray(o && o.registro) ? o.registro : [],
-    cambi: Array.isArray(o && o.cambi) ? o.cambi : [] });
+    cambi: Array.isArray(o && o.cambi) ? o.cambi : [], annullate: Array.isArray(o && o.annullate) ? o.annullate : [] });
   // Come si riconosce la stessa voce anche senza ID (pubblicata con una versione vecchia)
   const SEGNO = { assenze: a => a.data + '|' + a.docente, registro: s => s.data + '|' + s.ora + '|' + s.classe, cambi: c => c.data + '|' + c.ora + '|' + c.classe };
   /*
     Unisce le voci pubblicate (di tutti i dispositivi) con quelle di questo dispositivo: vincono quelle di qui, e
     spariscono quelle che questo dispositivo aveva pubblicato e poi annullato (ID in "sostituzioni.pubblicateDaQui").
+    Spariscono anche le sostituzioni annullate da un altro dispositivo (elenco "annullate" del file pubblicato) o da qui
+    con il tasto «✕ Annulla» della tabella (chiave "sostituzioni.annullate"), vedi app/js/pubblica-sostituzioni.js.
   */
   function unisci(pub, loc) {
     const daQui = new Set(leggi('sostituzioni.pubblicateDaQui'));
@@ -37,6 +39,11 @@ const Supplenze = (() => {
       const L = loc[k], id = new Set(L.map(x => x.id)), segni = new Set(L.map(SEGNO[k]));
       out[k] = (pub ? pub[k] : []).filter(x => !(x.id && (id.has(x.id) || daQui.has(x.id))) && !segni.has(SEGNO[k](x))).concat(L);
     });
+    const annullate = (pub ? pub.annullate : []).concat(loc.annullate || []);
+    if (annullate.length && typeof PubblicaSostituzioni !== 'undefined') {
+      const colpisce = PubblicaSostituzioni.colpita(annullate);
+      out.registro = out.registro.filter(s => !colpisce(s));
+    }
     return out;
   }
 
@@ -49,6 +56,8 @@ const Supplenze = (() => {
       const testo = await Dati.leggiDrive(CONFIG.fileSostituzioniPubblicate);
       pubblicate = elenchi(JSON.parse(testo));
       try { localStorage.setItem(CHIAVE_COPIA, testo); } catch (e) { /* spazio pieno o bloccato: pazienza */ }
+      // sostituzioni di questo dispositivo annullate da qualcun altro: spariscono anche dal registro di qui
+      if (typeof PubblicaSostituzioni !== 'undefined') PubblicaSostituzioni.applicaAnnullate(pubblicate.annullate);
     } catch (e) {
       // senza rete: l'ultima copia salvata su questo dispositivo
       if (!pubblicate) { try { const c = localStorage.getItem(CHIAVE_COPIA); if (c) pubblicate = elenchi(JSON.parse(c)); } catch (x) { /* ignorato */ } }
@@ -86,7 +95,7 @@ const Supplenze = (() => {
 
   /*
     Assenze e sostituzioni della settimana per l'orario D.
-    Restituisce { segnate: Map chiave -> { assente, sostituto }, extra: [lezioni del sostituto], date }.
+    Restituisce { segnate: Map chiave -> { assente, sostituto, voce }, extra: [lezioni del sostituto], date }.
   */
   function settimana(D) {
     const date = dateSettimana(D);
@@ -95,7 +104,8 @@ const Supplenze = (() => {
     const extra = [];
 
     // Le voci pubblicate (di tutti) unite a quelle registrate su questo dispositivo
-    const locali = { assenze: leggi('sostituzioni.assenze'), registro: leggi('sostituzioni.registro'), cambi: leggi('sostituzioni.cambiAula') };
+    const locali = { assenze: leggi('sostituzioni.assenze'), registro: leggi('sostituzioni.registro'), cambi: leggi('sostituzioni.cambiAula'),
+      annullate: leggi('sostituzioni.annullate') };
     const fonte = unisci(pubblicate, locali);
 
     // 1. le lezioni dei docenti assenti (per ora senza sostituto: "da coprire")
@@ -112,8 +122,9 @@ const Supplenze = (() => {
       if (!giorno || !D.mappa.docente.has(s.sostituto)) return;
       const l = D.lezioni.find(x => x.giorno === giorno && x.ora === s.ora && x.classe === s.classe && x.docente === s.assente);
       if (!l) return;   // l'orario è cambiato e quella lezione non c'è più
-      segnate.set(chiave(giorno, l.ora, l.classe, l.docente), { assente: s.assente, sostituto: s.sostituto });
-      extra.push(Object.assign({}, l, { docente: s.sostituto, sostituzione: true, assente: s.assente }));
+      // voce = la sostituzione così com'è registrata: serve al tasto «✕ Annulla» della tabella
+      segnate.set(chiave(giorno, l.ora, l.classe, l.docente), { assente: s.assente, sostituto: s.sostituto, voce: s });
+      extra.push(Object.assign({}, l, { docente: s.sostituto, sostituzione: true, assente: s.assente, voce: s }));
     });
 
     // 3. i cambi d'aula: Map "giorno|ora|classe" -> { da, a } (aule, per ID)
@@ -134,9 +145,9 @@ const Supplenze = (() => {
   // Le informazioni di una lezione della tabella (o null se è una lezione normale)
   function di(sost, l) {
     if (!sost) return null;
-    if (l.sostituzione) return { assente: l.assente, sostituto: l.docente, copia: true };
+    if (l.sostituzione) return { assente: l.assente, sostituto: l.docente, copia: true, voce: l.voce };
     return sost.segnate.get(chiave(l.giorno, l.ora, l.classe, l.docente)) || null;
   }
 
-  return { settimana, di, cambioAula, scarica, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula'] };
+  return { settimana, di, cambioAula, scarica, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula', 'sostituzioni.annullate'] };
 })();

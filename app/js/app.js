@@ -35,7 +35,9 @@
   // pagina: solo per lo schermo all'ingresso, quali colonne mostrare (null = tutte)
   // modificate: caselle cambiate all'ultimo minuto, da evidenziare (vedi modifiche.js)
   // sostituzioni: assenze e sostituzioni della settimana, da evidenziare (vedi supplenze.js)
-  const stato = { colonne: 'classe', giorno: '', filtri: { classe: '', docente: '', aula: '' }, pagina: null, modificate: null, sostituzioni: null };
+  // puoAnnullare: nella tabella compare «✕ Annulla» sulle sostituzioni (solo per chi può fare le sostituzioni)
+  const stato = { colonne: 'classe', giorno: '', filtri: { classe: '', docente: '', aula: '' }, pagina: null, modificate: null, sostituzioni: null,
+    puoAnnullare: false };
 
   const leggi = k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } };
   const scrivi = (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch (e) { /* ignorato */ } };
@@ -542,7 +544,8 @@
   /* ---------- pagina "Sostituzioni smart" (js/smart.js) ---------- */
   // Apre (true) o chiude (false) la pagina; sui monitor e sullo schermo all'ingresso non si apre.
   // modo: 'sostituzioni' (Sostituzioni smart) oppure 'cambi' (pagina «Cambi d'aula», stessa vista)
-  function apriSmart(apri, modo) {
+  // annulla (facoltativo): la sostituzione da annullare, scelta con «✕ Annulla» nella tabella
+  function apriSmart(apri, modo, annulla) {
     if (apri) apriBreve(false);
     smartAperta = !!apri && !aulaMonitor && !secondiIngresso;
     document.body.classList.toggle('smart-aperta', smartAperta);
@@ -551,7 +554,8 @@
     if (!smartAperta) { aggiorna(); return; }   // la tabella mostra subito le sostituzioni appena fatte
     window.scrollTo(0, 0);
     $('#vistaSmart').focus({ preventScroll: true });
-    Smart.apri($('#vistaSmart'), { orario: () => D, chiudi: () => { apriSmart(false); $('#btnUtente').focus(); }, email: utente.email, modo: modo || 'sostituzioni' });
+    Smart.apri($('#vistaSmart'), { orario: () => D, chiudi: () => { apriSmart(false); $('#btnUtente').focus(); }, email: utente.email,
+      modo: modo || 'sostituzioni', annulla: annulla || null });
   }
 
   /*
@@ -587,6 +591,9 @@
     // «Sostituzioni smart»: sparisce anche per chi il controllo delle sostituzioni ha già rifiutato su questo dispositivo
     $('#btnSostSmart').hidden = !sost || Smart.negato(utente.email);
     $('#btnCambiAula').hidden = $('#btnSostSmart').hidden;   // stessi autorizzati delle sostituzioni
+    // stessi autorizzati anche per il tasto «✕ Annulla» sulle sostituzioni della tabella (viste.js; mai su monitor e ingresso)
+    const annullare = !$('#btnSostSmart').hidden;
+    if (stato.puoAnnullare !== annullare) { stato.puoAnnullare = annullare; if (D) aggiorna(); }
     // chi fa le sostituzioni da qui le pubblica da solo per tutti (js/pubblica-sostituzioni.js)
     if (sost && !pubblicazioneAvviata && typeof PubblicaSostituzioni !== 'undefined') { pubblicazioneAvviata = true; PubblicaSostituzioni.avviaAutomatica(utente.email); }
     // il sostegno (dato delicato) lo vede anche chi ha un'autorizzazione, oltre ai docenti riconosciuti
@@ -745,6 +752,16 @@
     $('#btnEsci').addEventListener('click', () => Accesso.esci());
     // Riquadro delle modifiche: un cerchio apre le storie, "Segna tutte come viste" ingrigisce i cerchi
     // (le celle restano evidenziate), "Avvisami" chiede il permesso per le notifiche
+    // «✕ Annulla» su una sostituzione della tabella (solo per chi è autorizzato, vedi viste.js): si apre la pagina
+    // Sostituzioni, che chiede conferma e la annulla (anche nel foglio del conteggio e nel foglio «Sostituzioni»)
+    $('#contenitoreTabella').addEventListener('click', e => {
+      const b = e.target.closest('.annulla-sost');
+      if (!b || !stato.sostituzioni) return;
+      const [id, data, ora, classe] = b.dataset.annullaSost.split('|');
+      const voce = [...stato.sostituzioni.segnate.values()].map(x => x.voce).filter(Boolean)
+        .find(v => id ? v.id === id : v.data === data && String(v.ora) === ora && v.classe === classe);
+      if (voce) apriSmart(true, 'sostituzioni', voce);
+    });
     $('#modifiche').addEventListener('click', e => {
       const cerchio = e.target.closest('[data-storia]');
       if (cerchio) {

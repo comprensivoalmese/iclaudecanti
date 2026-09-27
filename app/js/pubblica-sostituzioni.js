@@ -7,6 +7,8 @@
   - le assenze/sostituzioni registrate su QUESTO dispositivo (si aggiungono o si aggiornano);
   - quelle che questo dispositivo aveva pubblicato e che poi sono state annullate qui (si tolgono).
   Per sapere cosa aveva pubblicato questo dispositivo si ricordano solo gli ID (chiave "sostituzioni.pubblicateDaQui").
+  Le sostituzioni di ALTRI dispositivi annullate da qui (tasto «✕ Annulla» nella tabella dell'app) vanno nell'elenco
+  "annullate" del file: tutti le nascondono e il dispositivo che le aveva registrate le toglie dal suo registro.
 
   Nel file pubblicato vanno SOLO i dati che l'app mostra: giorno, ore, classe, codici dei docenti (niente permessi,
   niente nomi veri). Usa PubblicaDrive (pubblica-drive.js), Dati.leggiDrive (dati.js) e NomiDocenti (nomi.js).
@@ -33,11 +35,16 @@ const PubblicaSostituzioni = (() => {
   function locali() {
     return {
       assenze: leggiLocale('sostituzioni.assenze', []).filter(recente).map(a => ({ id: a.id, data: a.data, docente: a.docente, ore: a.ore })),
+      // nelFoglio / nelRegistro: se l'ora è stata segnata nel foglio del conteggio e nel foglio «Sostituzioni»;
+      // servono a chi annulla la sostituzione da un altro dispositivo (Sostituzioni.annullaVoce)
       registro: leggiLocale('sostituzioni.registro', []).filter(recente)
-        .map(s => ({ id: s.id, data: s.data, ora: s.ora, classe: s.classe, assente: s.assente, sostituto: s.sostituto })),
+        .map(s => ({ id: s.id, data: s.data, ora: s.ora, classe: s.classe, assente: s.assente, sostituto: s.sostituto,
+          nelFoglio: !!s.nelFoglio, nelRegistro: !!s.nelRegistro, riportata: !!s.riportata })),
       // cambi d'aula (sostituzioni/js/cambi-aula.js): senza il motivo, che è testo libero
       cambi: leggiLocale('sostituzioni.cambiAula', []).filter(recente)
-        .map(c => ({ id: c.id, data: c.data, ora: c.ora, classe: c.classe, da: c.da, a: c.a, docente: c.docente }))
+        .map(c => ({ id: c.id, data: c.data, ora: c.ora, classe: c.classe, da: c.da, a: c.a, docente: c.docente })),
+      // sostituzioni di altri dispositivi annullate da qui (tasto «✕ Annulla» nella tabella dell'app)
+      annullate: leggiLocale('sostituzioni.annullate', []).filter(recente)
     };
   }
   const firma = L => JSON.stringify(L);
@@ -48,22 +55,66 @@ const PubblicaSostituzioni = (() => {
   const segnoC = c => 'C|' + c.data + '|' + c.ora + '|' + c.classe;
 
   /*
+    Sostituzioni annullate: elenco di { id, data, ora, classe }. Una sostituzione è "colpita" se ha lo stesso ID
+    (o, solo se l'annullata non ha ID, la stessa data, ora e classe): così una sostituzione NUOVA nella stessa ora
+    (con un altro ID) non viene tolta per sbaglio.
+  */
+  function colpita(annullate) {
+    const id = new Set(annullate.filter(t => t.id).map(t => t.id));
+    const segni = new Set(annullate.filter(t => !t.id).map(segnoR));
+    return s => (s.id && id.has(s.id)) || segni.has(segnoR(s));
+  }
+
+  /*
+    Toglie dal registro di QUESTO dispositivo le sostituzioni annullate da qualcun altro (senza togliere ore dal foglio
+    del conteggio: l'ha già fatto chi le ha annullate). Avvisa il motore delle sostituzioni, se è aperto in questa
+    pagina, con un evento "storage" finto (quelli veri arrivano solo dalle altre schede). Restituisce quante ne ha tolte.
+  */
+  function applicaAnnullate(annullate) {
+    if (!Array.isArray(annullate) || !annullate.length) return 0;
+    const registro = leggiLocale('sostituzioni.registro', []);
+    const colpisce = colpita(annullate);
+    const resta = registro.filter(s => !colpisce(s));
+    if (resta.length === registro.length) return 0;
+    scriviLocale('sostituzioni.registro', resta);
+    try { window.dispatchEvent(new StorageEvent('storage', { key: 'sostituzioni.registro' })); } catch (e) { /* browser vecchio */ }
+    return registro.length - resta.length;
+  }
+
+  // Unisce due elenchi di annullate senza doppioni (tiene solo quelle recenti)
+  function unisciAnnullate(a, b) {
+    const visti = new Set();
+    return a.concat(b).filter(t => {
+      const k = t && (t.id || segnoR(t));
+      if (!t || !recente(t) || visti.has(k)) return false;
+      visti.add(k);
+      return true;
+    });
+  }
+
+  /*
     Rilegge il file pubblicato, ci unisce i dati di questo dispositivo e lo riscrive.
     Restituisce { assenze, registro } = quante ce ne sono nel file pubblicato.
   */
   async function unisciEPubblica(email) {
     if (!configurato()) throw new Error('in config.js manca il file delle sostituzioni pubblicate o la cartella di Drive');
     await NomiDocenti.gettone(PERMESSI(), email);   // un solo permesso per leggere e scrivere
-    const L = locali();
     // se il file non si riesce a leggere NON si pubblica: si rischierebbe di cancellare le sostituzioni degli altri
     let testo;
     try { testo = await Dati.leggiDrive(CONFIG.fileSostituzioniPubblicate); }
     catch (e) { throw new Error('non riesco a leggere le sostituzioni già pubblicate (' + (e && e.message ? e.message : e) + '): riprova tra poco'); }
-    let remoto = { assenze: [], registro: [], cambi: [] };
+    let remoto = { assenze: [], registro: [], cambi: [], annullate: [] };
     try {
       const o = JSON.parse(testo || '{}');
-      remoto = { assenze: Array.isArray(o.assenze) ? o.assenze : [], registro: Array.isArray(o.registro) ? o.registro : [], cambi: Array.isArray(o.cambi) ? o.cambi : [] };
+      remoto = { assenze: Array.isArray(o.assenze) ? o.assenze : [], registro: Array.isArray(o.registro) ? o.registro : [],
+        cambi: Array.isArray(o.cambi) ? o.cambi : [], annullate: Array.isArray(o.annullate) ? o.annullate : [] };
     } catch (e) { throw new Error('il file delle sostituzioni pubblicate non è leggibile: controllalo su Drive prima di pubblicare'); }
+    // prima di unire: le sostituzioni annullate da altri spariscono anche dal registro di questo dispositivo,
+    // altrimenti le ripubblicheremmo noi
+    const annullate = unisciAnnullate(remoto.annullate, leggiLocale('sostituzioni.annullate', []));
+    applicaAnnullate(annullate);
+    const nonAnnullata = (colpisce => s => !colpisce(s))(colpita(annullate));
+    const L = locali();
     const idLocali = new Set(L.assenze.map(x => x.id).concat(L.registro.map(x => x.id), L.cambi.map(x => x.id)));
     const primaDaQui = new Set(leggiLocale(CHIAVE_DA_QUI, []));
     const segniLocali = new Set(L.assenze.map(segnoA).concat(L.registro.map(segnoR), L.cambi.map(segnoC)));
@@ -72,8 +123,9 @@ const PubblicaSostituzioni = (() => {
     const unito = {
       pubblicato: new Date().toISOString(),
       assenze: remoto.assenze.filter(x => tieni(x, segnoA)).concat(L.assenze),
-      registro: remoto.registro.filter(x => tieni(x, segnoR)).concat(L.registro),
-      cambi: remoto.cambi.filter(x => tieni(x, segnoC)).concat(L.cambi)
+      registro: remoto.registro.filter(x => tieni(x, segnoR)).concat(L.registro).filter(nonAnnullata),
+      cambi: remoto.cambi.filter(x => tieni(x, segnoC)).concat(L.cambi),
+      annullate
     };
     await PubblicaDrive.pubblicaSostituzioni(JSON.stringify(unito), email);
     scriviLocale(CHIAVE_DA_QUI, [...idLocali]);
@@ -135,5 +187,5 @@ const PubblicaSostituzioni = (() => {
     window.addEventListener('storage', e => { if (e.key && e.key.startsWith('sostituzioni.')) controlla(); });
   }
 
-  return { unisciEPubblica, avviaAutomatica, configurato };
+  return { unisciEPubblica, avviaAutomatica, configurato, applicaAnnullate, colpita };
 })();

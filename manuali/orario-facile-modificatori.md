@@ -141,6 +141,8 @@ Foglio Google dedicato, con due schede:
 2. Controlla gli abbinamenti (**👁 Nomi**); se dubbio, scegli dall'elenco a mano.
 3. Scegli il giorno e spunta le ore di assenza.
 4. In "Ore da coprire", per ogni ora premi **Assegna** sul docente proposto.
+   Per **annullare** una sostituzione: *Annulla la sostituzione* nella scheda, oppure **✕ Annulla** sulla sostituzione
+   nella tabella dell'app Luis@i (funziona anche se l'ha registrata un collega). Al sostituto si toglie 1 ora nel foglio del conteggio.
 5. A fine settimana copia le ore in "Da aggiungere nel foglio", premi **"Segna come già riportate"** e ricarica.
 
 Si possono stampare le sostituzioni del giorno e scaricare il registro in CSV.

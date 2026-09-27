@@ -374,6 +374,33 @@ const Smart = (() => {
     // Con il permesso di Google già dato, il motore controlla da solo l'autorizzazione e legge il foglio del conteggio
     const st = motore.stato();
     if (st.abilitazione.stato === 'da-verificare') motore.verifica();
+    // Aperta dal tasto «✕ Annulla» di una sostituzione nella tabella: si passa ad annullarla
+    if (ctx.annulla && modo === 'sostituzioni') annullaDaTabella(ctx.annulla);
+  }
+
+  /*
+    Annulla la sostituzione scelta nella tabella (voce di supplenze.js): mostra il suo giorno, aspetta il controllo
+    dell'autorizzazione, chiede conferma e poi fa tutto il motore (Sostituzioni.annullaVoce): toglie 1 ora al docente
+    che sostituiva nel foglio del conteggio e la riga dal foglio «Sostituzioni», anche se era stata registrata su un
+    altro dispositivo. La pubblicazione automatica (pubblica-sostituzioni.js) la fa poi sparire per tutti.
+  */
+  async function annullaDaTabella(voce) {
+    const D = contesto.orario();
+    if (Breve.giorniDiScuola(D).some(g => g.iso === voce.data)) { iso = voce.data; disegna(); }
+    // il foglio «Autorizzazioni» si controlla da solo: aspetto al massimo 30 secondi
+    const inAttesa = () => motore.stato().conRegistro && ['da-verificare', 'verifica'].includes(motore.stato().abilitazione.stato);
+    for (let i = 0; i < 100 && inAttesa(); i++) await new Promise(r => setTimeout(r, 300));
+    if (!motore.stato().puoFare) {
+      avvisa('Non posso annullare la sostituzione: il tuo account non risulta autorizzato alle sostituzioni (foglio «Autorizzazioni»).');
+      return;
+    }
+    const domanda = `Annullare questa sostituzione?\n\n${motore.dataCorta(voce.data)} · ${motore.testoOra(voce.ora)}\n` +
+      `Classe ${motore.nome('classe', voce.classe)} · assente ${motore.nomeDocente(voce.assente)}\n` +
+      `Sostituisce: ${motore.nomeDocente(voce.sostituto)}\n\n` +
+      `Se l'ora era stata segnata nel foglio del conteggio, a ${motore.nomeDocente(voce.sostituto)} verrà tolta 1 ora.`;
+    if (!confirm(domanda)) return;
+    await motore.annullaVoce(voce);
+    disegna();
   }
 
   // Da chiamare quando l'orario dell'app cambia o passa il minuto
