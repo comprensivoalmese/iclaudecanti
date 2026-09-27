@@ -31,7 +31,7 @@ html:not(.porta-chiusa) #porta { display: none; }
   padding: 9px 10px; color: var(--text); font: inherit;
 }
 .porta-azioni { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0 4px; }
-.porta-azioni .btn { text-decoration: none; min-height: 40px; }
+.porta-azioni .btn { text-decoration: none; }   /* stessa misura degli altri tasti (index.html, «una sola linea di stile») */
 .porta-codice { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .porta-codice code {
   font-size: 18px; letter-spacing: .08em; padding: 6px 10px; border-radius: var(--r-sm);
