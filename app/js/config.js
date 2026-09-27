@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.39',
+  versioneApp: '2026-09-27.40',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -97,8 +97,8 @@ window.CONFIG = {
     { piano: '2', nome: 'Primo piano', file: '1GU5IwGB9uAqVOeEmzhtcL6pDGEE0K7py' },
     { piano: '3', nome: 'Secondo piano', file: '1HSu6mgPunhR6zaN9qKu-gkrHonnorczn' },
     // plesso della scuola primaria (altro edificio): codici di piano PT e P1, scritti nella colonna «Piano» del Database
-    { piano: 'PT', nome: 'Primaria – piano terra', file: '' },
-    { piano: 'P1', nome: 'Primaria – primo piano', file: '' }
+    { piano: 'PT', nome: 'Primaria – piano terra', file: '18gejLSLECUcic3iDjuuvaWBUgB_ssRfR' },
+    { piano: 'P1', nome: 'Primaria – primo piano', file: '16NTQFaVrmftTlcYD1brB8GfqaCOI53z1' }
   ],
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).
