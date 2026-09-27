@@ -35,8 +35,11 @@
 /* app: la finestra «📍 Dov'è» */
 .finestra-piantina { max-width: min(96vw, 1200px); width: 96vw; }
 .finestra-piantina .corpo-piantina { max-height: 70vh; overflow: auto; text-align: center; }
-/* app: l'aula nella tabella o in «In breve» diventa un tasto che apre la piantina */
-.link-piantina { font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+/* app: l'aula nella tabella o in «In breve» diventa un tasto che apre la piantina.
+   :where() = priorità zero: il tasto perde l'aspetto da pulsante ma tiene la grandezza e il colore dell'aula
+   (per esempio l'aula grande e blu della scheda «Adesso», .aula-breve) */
+:where(.link-piantina) { font: inherit; color: inherit; background: none; border: 0; padding: 0; }
+.link-piantina { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
 .link-piantina:focus-visible { outline: 2px solid var(--primario, #1c56b8); outline-offset: 2px; }
 
 /* Orario Facile: si tocca la piantina per posizionare l'aula scelta */
