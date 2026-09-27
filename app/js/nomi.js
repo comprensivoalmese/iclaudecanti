@@ -98,7 +98,7 @@ const NomiDocenti = (() => {
     return testo.replace(/^﻿/, '');
   }
 
-  // "ROMBOLA'" → "Rombolà", "D'ALESSANDRO" → "D'Alessandro", "DI STEFANO" → "Di Stefano"
+  // (esempi inventati) "FALCO'" → "Falcò", "D'ANGELO" → "D'Angelo", "DE LUCA" → "De Luca"
   function bello(s) {
     const accento = { a: 'à', e: 'è', i: 'ì', o: 'ò', u: 'ù' };
     return String(s || '').trim().toLowerCase()

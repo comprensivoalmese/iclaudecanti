@@ -2858,8 +2858,8 @@ function leggiOrarioCompilato(righe){
   }
   return null;
 }
-// il nome del foglio (cognome, eventualmente con l'iniziale del nome: «GIORDA A») può essere il docente t?
-// 3 nome identico · 2 cognome contenuto nel nome completo · 1 iniziali compatibili («Ma. Bu.» ↔ BUNINO) · 0 no
+// il nome del foglio (cognome, eventualmente con l'iniziale del nome: «ROSSI M», esempio inventato) può essere il docente t?
+// 3 nome identico · 2 cognome contenuto nel nome completo · 1 iniziali compatibili («Ma. Ro.» ↔ ROSSI) · 0 no
 function compatibile(t, nomeFoglio){
   if(norma(t.nome) === norma(nomeFoglio)) return 3;
   const f = norma(nomeFoglio).replace(/[^a-z ]/g, '').split(' ').filter(Boolean);
