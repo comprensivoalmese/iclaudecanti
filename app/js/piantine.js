@@ -58,8 +58,11 @@ const Piantine = (() => {
   }
 
   const posizione = nome => (posizioni && posizioni.get(semplice(nome))) || null;
-  // un'aula si può mostrare se ha piano, X e Y e se di quel piano c'è l'immagine
-  const segnata = nome => { const p = posizione(nome); return !!(p && p.x != null && p.y != null && pianoInfo(p.piano) && pianoInfo(p.piano).file); };
+  // Un'aula in un altro edificio: nella colonna «Piano» c'è un testo che non è un piano delle piantine
+  // (es. «Edificio mensa», «Campo sportivo»): toccandola si legge solo dove si trova
+  const altroEdificio = nome => { const p = posizione(nome); return !!(p && p.piano && !pianoInfo(p.piano)); };
+  // un'aula si può mostrare se ha piano, X e Y e se di quel piano c'è l'immagine, oppure se è in un altro edificio
+  const segnata = nome => { const p = posizione(nome); return !!(p && ((p.x != null && p.y != null && pianoInfo(p.piano) && pianoInfo(p.piano).file) || altroEdificio(nome))); };
 
   /*
     Un disegno SVG scaricato da Drive, ripulito: niente script, niente attributi «on…» (onclick…), niente
@@ -176,6 +179,10 @@ const Piantine = (() => {
       <button type="button" class="pulsante primario" data-chiudi-piantina>Chiudi</button>`;
     if (!finestra.open) finestra.showModal();
     const corpo = finestra.querySelector('.corpo-piantina');
+    if (altroEdificio(nome)) {
+      corpo.innerHTML = `<p class="altro-edificio">📍 L'aula <b>${esc(nome)}</b> si trova in: <b>${esc(p.piano)}</b>.</p>`;
+      return;
+    }
     try {
       if (!p || !info) throw new Error('la posizione di questa aula non è ancora segnata');
       const t = NomiDocenti.gettoneDisponibile([NomiDocenti.PERMESSO_DRIVE]);

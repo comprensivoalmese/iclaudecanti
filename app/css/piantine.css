@@ -17,6 +17,8 @@
 /* i nomi scritti nel disegno non devono bloccare il tocco sulla stanza */
 .piantina-vettoriale text { pointer-events: none; user-select: none; }
 .nota-piantina { margin: 6px 0 0; font-size: .9rem; opacity: .8; }
+/* aula in un altro edificio (colonna «Piano» con un testo, es. «Edificio mensa»): solo il messaggio */
+.altro-edificio { font-size: 1.15rem; margin: 18px 0; }
 
 /* il segnaposto: un cerchio con il nome dell'aula, centrato sul punto */
 .segno-piantina {
