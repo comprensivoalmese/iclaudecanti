@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="css/campanella.css">
   <link rel="stylesheet" href="css/barra.css">
   <link rel="stylesheet" href="css/smart.css">
+  <link rel="stylesheet" href="css/compresenze.css">
   <link rel="stylesheet" href="css/menu.css">
   <link rel="stylesheet" href="css/avviso-per-te.css">
   <!-- Impostazioni e tema prima della pagina, per non vedere un lampo di colore sbagliato -->
@@ -211,6 +212,10 @@
           <button type="button" id="btnCambiAula" class="voce-menu" hidden>
             <svg class="icona-voce" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M7 7h11.2l-3.6-3.6L16 2l6 6-6 6-1.4-1.4 3.6-3.6H7V7zm10 10H5.8l3.6 3.6L8 22l-6-6 6-6 1.4 1.4L5.8 15H17v2z"/></svg>
             <span class="testo-voce">Cambi d'aula</span></button>
+          <!-- Maschera delle compresenze (js/compresenze-pagina.js): solo per chi può modificare l'orario -->
+          <button type="button" id="btnCompresenzeMenu" class="voce-menu" hidden>
+            <svg class="icona-voce" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3 0-8 1.5-8 4.5V20h11v-2.5c0-1.2.5-2.3 1.3-3.2A13 13 0 0 0 9 13zm10-3V7h-2v3h-3v2h3v3h2v-3h3v-2h-3z"/></svg>
+            <span class="testo-voce">Compresenze</span></button>
         </div>
 
         <div class="sezione-menu" role="group" aria-labelledby="titoloApp">
@@ -279,6 +284,8 @@
 
     <!-- Pagina "Sostituzioni smart": la disegna js/smart.js (stile a schede come "In breve") -->
     <section id="vistaSmart" class="vista-breve vista-smart" tabindex="-1" aria-labelledby="titoloSmart" hidden></section>
+    <!-- Pagina "Compresenze": maschera per inserire le ore di compresenza, la disegna js/compresenze-pagina.js -->
+    <section id="vistaCompresenze" class="vista-breve vista-compresenze" tabindex="-1" aria-labelledby="titoloCompresenze" hidden></section>
 
     <!-- Scelta di cosa vedere -->
     <nav class="controlli" aria-label="Scelta della visualizzazione">
@@ -298,7 +305,11 @@
           <label>Aula <select id="filtro-aula"></select></label>
           <button type="button" id="btnAzzera" class="pulsante leggero">Azzera filtri</button>
           <!-- spuntato: si vedono anche le ore di compresenza (L2, Alternativa…), vedi js/compresenze.js -->
-          <label class="spunta-compresenze"><input type="checkbox" id="mostraCompresenze"> Compresenze</label>
+          <div class="gruppo-compresenze">
+            <label class="spunta-compresenze"><input type="checkbox" id="mostraCompresenze"> Compresenze</label>
+            <!-- apre la pagina per inserire le compresenze: solo per chi può modificare l'orario -->
+            <button type="button" id="btnCompresenze" class="pulsante leggero" hidden>✎ Modifica</button>
+          </div>
         </div>
       </div>
       <div id="giorni" class="giorni" role="group" aria-label="Giorno"></div>
@@ -346,6 +357,7 @@
   <script src="js/nomi.js"></script>
   <script src="js/supplenze.js"></script>
   <script src="js/compresenze.js"></script>
+  <script src="js/compresenze-pagina.js"></script>
   <script src="js/viste.js"></script>
   <script src="js/brief.js"></script>
   <script src="js/smart.js"></script>

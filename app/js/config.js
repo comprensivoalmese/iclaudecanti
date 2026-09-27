@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.18',
+  versioneApp: '2026-09-27.19',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -53,6 +53,16 @@ window.CONFIG = {
   // quadratino «Compresenze». Sul Drive della scuola, condiviso in lettura con l'Istituto. Vuoto = solo le compresenze
   // scritte in Orario Facile.
   fileCompresenze: '1B-GJOvJoOY6NH0P5oMcYi1tRSCjBqEr54CFXHPPWkks',
+  // I gruppi della pagina «Compresenze» (js/compresenze-pagina.js): tipo = testo della colonna Tipo del Foglio (e della
+  // casella nell'orario), previste = quante ore ci devono essere, docenti = chi le deve avere e quante (solo codici:
+  // il repository è pubblico), religione = true se sono nelle ore di Religione, altriNomi = vecchi testi della colonna Tipo.
+  gruppiCompresenze: [
+    { tipo: 'Potenziamento L2', previste: 18, spiegazione: 'Italiano per alunni stranieri: completa le cattedre di lettere.' },
+    { tipo: 'Alternativa', previste: 15, religione: true, spiegazione: 'In parallelo a Religione, alla stessa ora; in qualche classe può non esserci.' },
+    { tipo: 'Italiano eccedente (prolungato)', previste: 3, docenti: [{ codice: 'DOC08', ore: 1 }, { codice: 'DOC19', ore: 2 }], spiegazione: 'Ore aggiuntive di italiano sul tempo prolungato.' },
+    { tipo: 'Matematica eccedente (prolungato)', previste: 3, docenti: [{ codice: 'DOC12', ore: 3 }], spiegazione: 'Ore aggiuntive di matematica sul tempo prolungato.' },
+    { tipo: 'Completamento tempo prolungato', previste: 2, docenti: [{ codice: 'DOC08', ore: 1 }, { codice: 'DOC12', ore: 1 }], altriNomi: ['Tempo prolungato'], spiegazione: 'Ore di cattedra che mancano nell\'orario: diventano compresenze.' }
+  ],
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).
   // Con la pubblicazione su Drive (vedi sotto) serve solo come riserva, se Drive non risponde.

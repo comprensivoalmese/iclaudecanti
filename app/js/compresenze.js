@@ -4,7 +4,8 @@
 
   Da dove arrivano:
   1. il Foglio Google «Compresenze» (CONFIG.fileCompresenze), sul Drive della scuola: una riga per ogni ora,
-     colonne Codice docente, Classe, Giorno, Ora, Tipo (le altre colonne, per esempio il nome, non si leggono).
+     colonne Codice docente, Classe, Giorno, Ora, Tipo, Aula (facoltativa: vuota = aula del titolare), Note
+     (le altre colonne, per esempio il nome, non si leggono). Si compila con la pagina «Compresenze» (compresenze-pagina.js).
      Si legge con il permesso Google di chi ha fatto l'accesso (lo stesso dei nomi veri, vedi nomi.js);
   2. le compresenze scritte in Orario Facile / nel Foglio database (celle «+2B SOS»), vedi daOrarioFacile in dati.js.
 
@@ -46,20 +47,33 @@ const Compresenze = (() => {
   // Dal testo CSV del Foglio alle righe; le colonne si trovano per titolo nella prima riga
   function interpreta(testo) {
     const tutte = testo.replace(/^﻿/, '').split(/\r?\n/).filter(r => r.trim()).map(celleCsv);
+    return righeDaTabella(tutte).filter(completa);
+  }
+
+  /*
+    Dalla tabella del Foglio (prima riga = titoli) a tutte le righe, anche quelle incomplete (servono alla pagina
+    di inserimento, vedi compresenze-pagina.js): { codice, classe, giorno, ora, tipo, aula, note }.
+    Le colonne si trovano per titolo: Codice docente, Classe, Giorno, Ora, Tipo, Aula, Note (le altre si ignorano).
+  */
+  function righeDaTabella(tutte) {
     const titoli = (tutte[0] || []).map(semplice);
     const col = inizio => titoli.findIndex(t => t.startsWith(inizio));
-    const c = { codice: col('codice'), classe: col('classe'), giorno: col('giorno'), ora: col('ora'), tipo: col('tipo') };
+    const c = { codice: col('codice'), classe: col('classe'), giorno: col('giorno'), ora: col('ora'), tipo: col('tipo'), aula: col('aula'), note: col('note'), nome: col('docente') };
     if (c.codice < 0 || c.classe < 0 || c.giorno < 0 || c.ora < 0) throw new Error('nel Foglio Compresenze servono le colonne Codice docente, Classe, Giorno, Ora');
-    const out = [];
-    tutte.slice(1).forEach(r => {
-      const codice = String(r[c.codice] || '').trim().toUpperCase();
-      const g = GIORNI.find(x => semplice(x).startsWith(semplice(r[c.giorno]).slice(0, 3)) && semplice(r[c.giorno]));
-      const ora = parseInt(r[c.ora], 10);
-      // righe incomplete (per esempio l'Alternativa senza docente) si saltano: si completano nel Foglio
-      if (!codice || !r[c.classe] || !g || !(ora > 0)) return;
-      out.push({ codice, classe: String(r[c.classe]).trim(), giorno: g, ora, tipo: c.tipo >= 0 ? String(r[c.tipo] || '').trim() : '' });
-    });
-    return out;
+    const v = (r, k) => c[k] >= 0 ? String(r[c[k]] == null ? '' : r[c[k]]).trim() : '';
+    return tutte.slice(1).map(r => {
+      const g = semplice(v(r, 'giorno')) ? GIORNI.find(x => semplice(x).startsWith(semplice(v(r, 'giorno')).slice(0, 3))) : '';
+      return { codice: v(r, 'codice').toUpperCase(), classe: v(r, 'classe'), giorno: g || '', ora: parseInt(v(r, 'ora'), 10) || '',
+        tipo: v(r, 'tipo'), aula: v(r, 'aula'), note: v(r, 'note'), nome: v(r, 'nome') };
+    }).filter(x => x.codice || x.classe || x.giorno || x.ora || x.tipo || x.note);
+  }
+  // una riga è valida per l'orario solo con docente, classe, giorno e ora (ogni compresenza è di un docente)
+  const completa = x => !!(x.codice && x.classe && x.giorno && x.ora > 0);
+
+  // La pagina di inserimento ha salvato il Foglio: si usano subito le righe nuove (solo quelle complete)
+  function imposta(tutteLeRighe) {
+    righe = tutteLeRighe.filter(completa).map(x => ({ codice: x.codice, classe: x.classe, giorno: x.giorno, ora: Number(x.ora), tipo: x.tipo, aula: x.aula || '' }));
+    scrivi(CHIAVE_COPIA, JSON.stringify(righe));
   }
 
   // Scarica il Foglio Compresenze (serve il permesso Google già ottenuto); true se è cambiato. Non lancia errori.
@@ -92,12 +106,15 @@ const Compresenze = (() => {
     const titolare = (g, o, cl) => base.find(l => l.giorno === g && l.ora === o && l.classe === cl);
     const perClasse = new Map(D.classe.map(c => [semplice(c.nome), c.id]));
     const perCodice = new Map(D.docente.map(e => [String(e.codice !== undefined ? e.codice : e.nome).trim().toUpperCase(), e.id]));
+    const perAula = new Map(D.aula.map(a => [semplice(a.nome), a.id]));
     const extra = [];
     (righe || []).forEach(x => {
       const classe = perClasse.get(semplice(x.classe)), docente = perCodice.get(x.codice);
       if (!classe || !docente) return;
       const t = titolare(x.giorno, x.ora, classe);
-      extra.push({ giorno: x.giorno, ora: x.ora, classe, docente, materia: x.tipo || 'Compresenza', aula: t ? t.aula : '', compresenza: true });
+      // aula: quella scritta nel Foglio (per esempio l'Alternativa in un'altra aula), altrimenti quella del titolare
+      const aula = (x.aula && perAula.get(semplice(x.aula))) || (t ? t.aula : '');
+      extra.push({ giorno: x.giorno, ora: x.ora, classe, docente, materia: x.tipo || 'Compresenza', aula, compresenza: true });
     });
     // quelle di Orario Facile (celle «+»), se non sono già nel Foglio Compresenze
     (D.compresenzeOF || []).forEach(l => {
@@ -106,5 +123,5 @@ const Compresenze = (() => {
     D.lezioni = base.concat(extra);
   }
 
-  return { configurato, scarica, applica, mostra, impostaMostra, interpreta };
+  return { configurato, scarica, applica, mostra, impostaMostra, interpreta, righeDaTabella, completa, imposta, semplice };
 })();
