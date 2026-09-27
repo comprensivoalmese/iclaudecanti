@@ -55,7 +55,7 @@ Serve la Google Sheets API attiva e, per chi assegna, il permesso di **modifica*
 ## Cambi d'aula
 
 Nella stessa scheda, sotto "Ore da coprire", il riquadro **"Cambi d'aula"** sposta una classe in un'altra aula
-**solo in quel giorno** (l'orario base non cambia). C'è anche nella pagina **«⚡ Sostituzioni smart»** dell'app.
+**solo in quel giorno** (l'orario base non cambia). C'è anche nella pagina **«Sostituzioni smart»** dell'app.
 
 1. Si sceglie la **classe** e si toccano le **ore** da spostare (ognuna con la sua aula prevista).
 2. Vengono proposte solo le **aule libere in tutte le ore scelte**, tenendo conto delle lezioni e degli altri cambi

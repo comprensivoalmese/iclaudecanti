@@ -13,7 +13,7 @@
   La stessa pagina ha anche la modalità «Cambi d'aula» (voce di menu dedicata): lì c'è solo il modulo
   dei cambi d'aula (sostituzioni/js/cambi-aula.js) con la sua stampa.
 
-  La pagina si apre dal menu (voce «⚡ Sostituzioni smart») e funziona solo per chi è nel foglio
+  La pagina si apre dal menu (voce «Sostituzioni smart», icona con le persone) e funziona solo per chi è nel foglio
   «Autorizzazioni». I file del motore si caricano solo quando la si apre, per non appesantire l'app.
 */
 const Smart = (() => {
@@ -122,7 +122,7 @@ const Smart = (() => {
     const mom = Breve.momento(adesso.getHours() * 60 + adesso.getMinutes());
     const giorni = elenco.map(g => `<option value="${g.iso}"${g.iso === iso ? ' selected' : ''}>${esc(g.testo.charAt(0).toUpperCase() + g.testo.slice(1))}</option>`).join('');
     return `<div class="testata-breve" data-momento="${mom}">
-      <div class="riga-testata"><span class="marchio-breve">${modo === 'cambi' ? '⇄ Cambi d\'aula' : '⚡ Sostituzioni smart'}</span>
+      <div class="riga-testata"><span class="marchio-breve">${modo === 'cambi' ? '⇄ Cambi d\'aula' : '👥 Sostituzioni smart'}</span>
         <button type="button" id="smartChiudi" class="pulsante pulsante-tabella">Tabella</button></div>
       <h2 id="titoloSmart">${modo === 'cambi' ? 'Cambi d\'aula' : 'Sostituzioni'}</h2>
       <p class="data-breve">${esc(scelto ? scelto.testo : iso)}${st.abilitazione.nome ? ' · ' + esc(st.abilitazione.nome) : ''}</p>

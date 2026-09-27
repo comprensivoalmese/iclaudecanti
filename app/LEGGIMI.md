@@ -36,9 +36,9 @@ Il tasto **In breve** nella barra in alto apre la giornata a schede, comoda sul 
 - I colori della testata cambiano con il momento della giornata (mattina, pomeriggio, sera) e seguono il tema chiaro/scuro.
 - Sui monitor di classe il tasto non c'è: lì resta la tabella a caratteri grandi.
 
-## Sostituzioni smart ⚡
+## Sostituzioni smart 👥
 
-Nel menu (tondo con le iniziali), sotto **"📋 Sostituzioni docenti"**, c'è **"⚡ Sostituzioni smart"**: la scheda Sostituzioni
+Nel menu (tondo con le iniziali), sezione Gestione, c'è **"Sostituzioni smart"** (icona con le persone): la scheda Sostituzioni
 di Orario Facile in versione **semplice e rapida**, dentro l'app, con lo stile a schede di «In breve». Contiene solo:
 
 - **Assenze del giorno**: tendina *Giorno*, scelta del docente assente, ore da toccare (tutte spuntate), casella **Permesso** (spuntata) e *Registra l'assenza*; sotto, gli assenti già registrati con *Togli*.
@@ -174,7 +174,7 @@ Ci sono due tipi di utenti, tutti con l'account della scuola:
 | Ruolo | Cosa può fare |
 |---|---|
 | **Fruitore** (tutti) | consultare l'orario nell'app Luis@i |
-| **Modificatore** | in più, usare **Orario Facile** (preparare l'orario, sostituzioni); nel menu dell'app vede "Modifica in Orario Facile" e "📋 Sostituzioni docenti" (apre direttamente la scheda Sostituzioni) |
+| **Modificatore** | in più, usare **Orario Facile** (preparare l'orario, sostituzioni); nel menu dell'app vede "Passa a Orario Facile" (si apre in una nuova scheda del browser) e "Sostituzioni smart" |
 
 - Chi apre Orario Facile deve accedere con l'account della scuola (se è già entrato nell'app non lo richiede).
   Se non è un modificatore vede "Solo consultazione", il link all'orario e il suo **codice**.
@@ -323,7 +323,7 @@ Come funziona:
 
 Le due app stanno sullo stesso sito, quindi **sullo stesso dispositivo condividono i dati**:
 
-- **Anteprima in tempo reale**: sul computer dove si prepara l'orario con Orario Facile, l'app Luis@i mostra direttamente quell'orario (la "bozza") e **si aggiorna da sola** mentre lo si modifica in un'altra scheda. In Orario Facile il pulsante **📱 Vedi nell'app** apre l'app; nell'app il menu → **Modifica in Orario Facile** fa il percorso inverso.
+- **Anteprima in tempo reale**: sul computer dove si prepara l'orario con Orario Facile, l'app Luis@i mostra direttamente quell'orario (la "bozza") e **si aggiorna da sola** mentre lo si modifica in un'altra scheda. In Orario Facile il pulsante **📱 Vedi nell'app** apre l'app; nell'app il menu → **Passa a Orario Facile** fa il percorso inverso.
 - Dal menu dell'app, **"Orario da mostrare"** permette di passare dalla bozza all'orario pubblicato e viceversa.
 - **Pubblicare per tutti** (telefoni dei docenti, monitor di classe): Orario Facile → scheda **Orario** → **📤 Pubblica orario**.
   L'orario va su Google Drive (vedi «Orario pubblicato su Google Drive» qui sotto) e tutti i dispositivi lo vedono entro pochi minuti.

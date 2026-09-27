@@ -278,15 +278,14 @@
     $('#btnUtente').textContent = utente.nome.split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
     $('#btnUtente').setAttribute('aria-label', 'Menu di ' + utente.nome);
     $('#btnMioOrario').hidden = !mioDocente;
-    // "Modifica in Orario Facile" e "Sostituzioni docenti" solo per chi può modificare l'orario (vedi ruoli.js)
+    // "Passa a Orario Facile" solo per chi può modificare l'orario (vedi ruoli.js)
     $('#linkOrarioFacile').hidden = true;
-    $('#linkSostituzioni').hidden = true;
     $('#btnSostSmart').hidden = true;
     $('#btnCambiAula').hidden = true;
     $('#btnCompresenze').hidden = true;
     Ruoli.puoModificare(utente.email).then(puo => {
       puoModificareOrario = puo; aggiornaSostegno();
-      $('#linkOrarioFacile').hidden = !puo; $('#linkSostituzioni').hidden = !puo;
+      $('#linkOrarioFacile').hidden = !puo;
       // «✎ Modifica» (scheda Compresenze di Orario Facile): per chi può modificare, se il Foglio Compresenze è indicato
       $('#btnCompresenze').hidden = !puo || !CONFIG.fileCompresenze || !!aulaMonitor || !!secondiIngresso;
       // «Sostituzioni smart»: sparisce anche per chi il foglio «Autorizzazioni» ha già rifiutato su questo dispositivo
@@ -362,7 +361,7 @@
       D.aggiornato ? 'Orario aggiornato al ' + Viste.esc(new Date(D.aggiornato).toLocaleDateString('it-IT')) : '',
       D.offline ? '<strong>Senza connessione: stai vedendo l\'ultima copia salvata.</strong>' : '',
       utente.metodo === 'demo' ? '<strong>Modalità dimostrativa: accesso non verificato.</strong>' : '',
-      D.fonte === 'bozza' ? 'Stai vedendo l’orario di <a href="../orario-facile/" target="orariofacile">Orario Facile</a> salvato su questo dispositivo: si aggiorna da solo mentre lo modifichi.' : '',
+      D.fonte === 'bozza' ? 'Stai vedendo l’orario di <a href="../orario-facile/" target="_blank" rel="noopener">Orario Facile</a> salvato su questo dispositivo: si aggiorna da solo mentre lo modifichi.' : '',
       // versione dell'app: serve a capire se il dispositivo ha l'ultima (vedi versioneApp in config.js)
       CONFIG.versioneApp ? 'Versione app ' + Viste.esc(CONFIG.versioneApp) : '',
       // copyright e licenza (vedi LICENZA.md nella radice del sito)
