@@ -85,7 +85,11 @@ In «Assenze del giorno» si sceglie il caso: **👤 Assenza di un docente** (la
   (−1 per ogni ora nel conteggio); in mezzo ad altre lezioni → **a disposizione**, **niente recupero**;
 - **almeno 1 ora** il docente la fa sempre: se tutte le sue ore sono liberate e non copre nessuno, la prima resta a disposizione.
 
-Si può cambiare chi copre con la tendina, poi **✔ Applica il piano** (assegna le sostituzioni e registra le ore a recupero).
+«🧪 Simula l'uscita» è solo una **simulazione** (niente assenze, niente fogli, nessuna autorizzazione, non si pubblica):
+si può cambiare chi copre con la tendina, poi **✔ Conferma il piano** (registra gli accompagnatori assenti, assegna le
+sostituzioni e le ore a recupero) oppure **↺ Azzera la simulazione**. **🗑 Cancella tutte le uscite didattiche** (nel modulo
+dell'uscita) toglie tutte le uscite di tutti i giorni con le loro modifiche; quello che non ha scritto nei fogli si toglie
+anche senza autorizzazione.
 Anche le proposte normali delle singole ore mettono in cima i liberati (🚌), sia qui sia in «Sostituzioni smart».
 *Togli* sull'uscita toglie anche le sostituzioni del piano, le assenze degli accompagnatori e i recuperi.
 Nell'app le classi fuori si vedono «🚌 Uscita didattica» (file pubblicato: solo data, classi e ore; la descrizione resta

@@ -119,7 +119,7 @@ const Supplenze = (() => {
 
     // Le voci pubblicate (di tutti) unite a quelle registrate su questo dispositivo
     const locali = { assenze: leggi('sostituzioni.assenze'), registro: leggi('sostituzioni.registro'), cambi: leggi('sostituzioni.cambiAula'),
-      annullate: leggi('sostituzioni.annullate'), uscite: leggi('sostituzioni.uscite'), assenzeAnnullate: leggi('sostituzioni.assenzeAnnullate') };
+      annullate: leggi('sostituzioni.annullate'), uscite: leggi('sostituzioni.uscite').filter(u => u.confermata !== false), assenzeAnnullate: leggi('sostituzioni.assenzeAnnullate') };
     const fonte = unisci(pubblicate, locali);
 
     // 0. le uscite didattiche (sostituzioni/js/uscite.js): "giorno|ora|classe" delle classi fuori

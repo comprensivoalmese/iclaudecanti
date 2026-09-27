@@ -1764,7 +1764,19 @@ const Sostituzioni = (() => {
     // servono anche al modulo «Cambi d'aula» (js/cambi-aula.js)
     avvisa, ridisegna: () => disegnaTutto(), email: emailUtente, preparaNomiVeri, nomeVero,
     // servono al modulo «Uscite didattiche» (js/uscite.js)
-    registroDel: iso => registro.filter(x => x.data === iso), assentiAllOra, etichettaSaldo, el
+    registroDel: iso => registro.filter(x => x.data === iso), assentiAllOra, etichettaSaldo, el,
+    /*
+      Toglie le assenze che non hanno lasciato tracce nei fogli (nessuna ora a recupero già tolta, nessuna sostituzione
+      collegata): serve a cancellare un'uscita didattica di prova anche senza autorizzazione. Restituisce quante ne ha tolte.
+    */
+    togliAssenzeSenzaTracce: filtro => {
+      const via = assenze.filter(a => filtro(a) && !a.permessoSegnate && !registro.some(x => x.data === a.data && x.assente === a.docente));
+      if (!via.length) return 0;
+      assenze = assenze.filter(a => !via.includes(a));
+      salva('assenze', assenze);
+      disegnaTutto();
+      return via.length;
+    }
   };
 
   // Le funzioni del motore senza collegare un'altra pagina (le usa il modulo «Cambi d'aula» dentro la scheda)

@@ -44,6 +44,8 @@ const Uscite = (() => {
 
   // ---------- Regole ----------
   const usciteDel = iso => uscite.filter(u => u.data === iso);
+  // Un'uscita è una SIMULAZIONE finché non si preme «✔ Conferma il piano» (le uscite di prima valgono come confermate)
+  const confermata = u => u.confermata !== false;
   const classeFuori = (iso, classe, ora) => uscite.some(u => u.data === iso && u.classi.includes(classe) && u.ore.includes(ora));
   const accompagna = (iso, docente, ora) => uscite.some(u => u.data === iso && u.accompagnatori.includes(docente) && u.ore.includes(ora));
   const lezioniOra = (giorno, docente, ora) => m().orario().lezioni.filter(l => l.giorno === giorno && l.docente === docente && l.ora === ora);
@@ -67,8 +69,16 @@ const Uscite = (() => {
     if (!D || !usciteDel(iso).length) return null;
     const giorno = mo.giornoOrario(iso); if (!giorno) return null;
     const registro = mo.registroDel(iso);
-    const daCoprire = mo.oreDaCoprire(iso).filter(l => !mo.sostituzioneDi(iso, l))
-      .sort((a, b) => a.ora - b.ora || numerico(a.classe, b.classe));
+    const daCoprire = mo.oreDaCoprire(iso).filter(l => !mo.sostituzioneDi(iso, l));
+    // Simulazione (uscita non ancora confermata): gli accompagnatori non sono ancora registrati assenti,
+    // quindi le loro lezioni nelle classi che restano a scuola le aggiungiamo qui
+    usciteDel(iso).filter(u => !confermata(u)).forEach(u => u.accompagnatori.forEach(a => {
+      if (!D.mappa.docente.has(a)) return;
+      mo.lezioniDi(a, giorno).filter(l => u.ore.includes(l.ora) && !classeFuori(iso, l.classe, l.ora) &&
+        !mo.assentiAllOra(iso, l.ora).has(a) && !daCoprire.some(k => k.ora === l.ora && k.classe === l.classe && k.assente === a))
+        .forEach(l => daCoprire.push(Object.assign({ assente: a }, l)));
+    }));
+    daCoprire.sort((a, b) => a.ora - b.ora || numerico(a.classe, b.classe));
 
     // Per ogni docente: F = ore liberate, R = ore in cui deve essere a scuola (lezioni con classi presenti + sostituzioni)
     const info = new Map();
@@ -155,33 +165,43 @@ const Uscite = (() => {
     return [...new Set((gia ? gia.ore : []).concat(nuove))].sort((a, b) => a - b);
   }
 
+  /*
+    «Registra l'uscita» crea solo una SIMULAZIONE: niente assenze, niente fogli, nessuna autorizzazione richiesta.
+    Il piano si vede subito in «Ore da coprire»; si registra davvero con «✔ Conferma il piano» (conferma()).
+  */
   function registra(iso) {
-    if (!permesso()) return;
     const mo = m(), giorno = mo.giornoOrario(iso);
     const classi = [...scelta.classi], ore = [...(scelta.ore || oreDelGiorno(giorno))].sort((a, b) => a - b);
     if (!classi.length) { mo.avvisa('Scegli almeno una classe che esce.'); return; }
     if (!ore.length) { mo.avvisa('Scegli almeno un\'ora dell\'uscita.'); return; }
-    const u = { id: nuovoId(), data: iso, nome: scelta.nome.trim(), classi, ore, accompagnatori: [...scelta.accompagnatori], disposizione: [] };
+    const u = { id: nuovoId(), data: iso, nome: scelta.nome.trim(), classi, ore, accompagnatori: [...scelta.accompagnatori], disposizione: [], confermata: false };
     uscite.push(u); salva();
-    // gli accompagnatori sono assenti nelle loro ore di lezione durante l'uscita (senza recupero: stanno lavorando)
-    u.accompagnatori.forEach(id => {
-      const sue = [...new Set(mo.lezioniDi(id, giorno).map(l => l.ora))].filter(h => ore.includes(h));
-      if (sue.length) mo.registraAssenza(iso, id, unisciOre(iso, id, sue), false, [], { uscita: u.id, come: 'accompagna', silenzioso: true });
-    });
     scelta.nome = ''; scelta.classi.clear(); scelta.ore = null; scelta.accompagnatori.clear();
-    mo.avvisa(`🚌 Uscita registrata: ${classi.length} ${classi.length === 1 ? 'classe' : 'classi'}, ${u.accompagnatori.length} ` +
-      `${u.accompagnatori.length === 1 ? 'accompagnatore' : 'accompagnatori'}. Il piano proposto è in «Ore da coprire».`);
+    mo.avvisa(`🧪 Simulazione dell'uscita: ${classi.length} ${classi.length === 1 ? 'classe' : 'classi'}, ${u.accompagnatori.length} ` +
+      `${u.accompagnatori.length === 1 ? 'accompagnatore' : 'accompagnatori'}. Guarda il piano in «Ore da coprire»: niente è registrato finché non premi «✔ Conferma il piano».`);
     mo.ridisegna();
     const p = document.getElementById('sost-pianoUscita'); if (p) p.scrollIntoView({ behavior: 'smooth' });
   }
 
+  // «✔ Conferma il piano»: registra gli accompagnatori assenti, le sostituzioni, le ore a recupero e chi è a disposizione
   async function applica(iso) {
     if (!permesso() || inCorso) return;
-    const p = piano(iso); if (!p) return;
-    const mo = m(), u = usciteDel(iso)[0];
+    const mo = m(), giorno = mo.giornoOrario(iso);
+    if (!piano(iso)) return;
     inCorso = true; mo.ridisegna();
     let sost = 0, rec = 0;
     try {
+      // 0. gli accompagnatori diventano assenti nelle loro ore di lezione durante l'uscita (senza recupero: lavorano)
+      usciteDel(iso).filter(u => !confermata(u)).forEach(u => {
+        u.accompagnatori.forEach(id => {
+          const sue = [...new Set(mo.lezioniDi(id, giorno).map(l => l.ora))].filter(h => u.ore.includes(h));
+          if (sue.length) mo.registraAssenza(iso, id, unisciOre(iso, id, sue), false, [], { uscita: u.id, come: 'accompagna', silenzioso: true });
+        });
+        u.confermata = true;
+      });
+      salva();
+      // il piano ricalcolato adesso che gli accompagnatori sono registrati (le scelte fatte con la tendina restano)
+      const p = piano(iso), u = usciteDel(iso)[0];
       // 1. le sostituzioni, una alla volta (il foglio del conteggio si aggiorna in fila)
       for (const c of p.coperture.filter(x => x.docente)) {
         await mo.assegna(iso, c.l, c.docente, { reindirizzato: c.tipo === 'liberato', uscita: u.id, silenzioso: true });
@@ -197,15 +217,38 @@ const Uscite = (() => {
       u.disposizione = p.disposizione.map(d => ({ docente: d.docente, ore: d.ore }));
       salva();
       forzate.clear();
-      mo.avvisa(`✔ Piano applicato: ${sost} ${sost === 1 ? 'sostituzione' : 'sostituzioni'}, ${rec} ${rec === 1 ? 'ora' : 'ore'} a recupero, ` +
+      mo.avvisa(`✔ Piano confermato: ${sost} ${sost === 1 ? 'sostituzione' : 'sostituzioni'}, ${rec} ${rec === 1 ? 'ora' : 'ore'} a recupero, ` +
         `${p.disposizione.length} ${p.disposizione.length === 1 ? 'docente' : 'docenti'} a disposizione.`);
     } finally { inCorso = false; mo.ridisegna(); }
   }
 
-  async function togli(id) {
-    if (!permesso()) return;
+  /*
+    Toglie un'uscita. Se è ancora una simulazione si cancella e basta (nessuna autorizzazione: non era scritto niente).
+    Se era confermata servono l'autorizzazione e si tolgono anche sostituzioni, assenze e recuperi collegati.
+    giaChiesto: true quando la conferma l'ha già chiesta azzera()
+  */
+  async function togli(id, giaChiesto) {
     const u = uscite.find(x => x.id === id); if (!u) return;
-    if (!confirm('Togliere l\'uscita didattica? Vengono tolte anche le sostituzioni del piano, le assenze degli accompagnatori e le ore a recupero collegate.')) return;
+    if (!confermata(u)) {
+      if (!giaChiesto && !confirm('Cancellare questa simulazione di uscita didattica?')) return;
+      uscite = uscite.filter(x => x.id !== u.id); salva(); forzate.clear();
+      m().avvisa('Simulazione cancellata.'); m().ridisegna();
+      return;
+    }
+    // Confermata ma senza tracce nei fogli (nessuna sostituzione, nessuna ora a recupero già tolta): si toglie senza autorizzazione
+    const mo0 = m();
+    const tracce = mo0.registroDel(u.data).some(s => s.uscita === u.id || s.reindirizzato ||
+        mo0.assenzeDel(u.data).some(a => a.uscita === u.id && a.docente === s.assente)) ||
+      mo0.assenzeDel(u.data).some(a => a.uscita === u.id && a.permessoSegnate);
+    if (!tracce && !mo0.stato().puoFare) {
+      if (!giaChiesto && !confirm('Togliere l\'uscita didattica? Non ha ancora scritto niente nei fogli: si toglie solo da questo dispositivo.')) return;
+      mo0.togliAssenzeSenzaTracce(a => a.uscita === u.id);
+      uscite = uscite.filter(x => x.id !== u.id); salva(); forzate.clear();
+      mo0.avvisa('Uscita didattica tolta.'); mo0.ridisegna();
+      return;
+    }
+    if (!permesso()) return;
+    if (!giaChiesto && !confirm('Togliere l\'uscita didattica già confermata? Vengono tolte anche le sostituzioni del piano, le assenze degli accompagnatori e le ore a recupero collegate.')) return;
     const mo = m(), iso = u.data;
     const assenzeU = mo.assenzeDel(iso).filter(a => a.uscita === u.id);
     const unica = usciteDel(iso).length === 1;
@@ -214,6 +257,43 @@ const Uscite = (() => {
     for (const a of assenzeU) await mo.togliAssenza(a, true);
     uscite = uscite.filter(x => x.id !== u.id); salva();
     mo.avvisa('Uscita didattica tolta.');
+    mo.ridisegna();
+  }
+
+  // «↺ Azzera»: toglie tutte le uscite del giorno (una sola domanda)
+  async function azzera(iso) {
+    const qui = usciteDel(iso); if (!qui.length) return;
+    const conf = qui.filter(confermata).length;
+    if (!confirm(conf ? `Togliere tutte le uscite di questo giorno? ${conf === 1 ? 'Una è già confermata' : conf + ' sono già confermate'}: ` +
+      'vengono tolte anche le sostituzioni, le assenze e i recuperi collegati.' : 'Cancellare la simulazione delle uscite di questo giorno?')) return;
+    for (const u of qui) await togli(u.id, true);
+  }
+
+  /*
+    «🗑 Cancella tutte le uscite didattiche»: tutte le uscite di tutti i giorni e quello che avevano creato
+    (assenze degli accompagnatori, ore a recupero, sostituzioni dei docenti liberati), anche se è rimasto «orfano».
+    Quello che non ha scritto niente nei fogli si toglie sempre; il resto solo con l'autorizzazione verificata.
+  */
+  async function azzeraTutto() {
+    const mo = m();
+    if (!confirm('Cancellare TUTTE le uscite didattiche e tutte le modifiche che hanno fatto (assenze degli accompagnatori, ore a recupero, sostituzioni dei docenti liberati)?')) return;
+    for (const u of uscite.slice()) await togli(u.id, true);
+    // avanzi: assenze e sostituzioni con il segno di un'uscita che non c'è più
+    const date = new Set(Archivio.leggi('assenze', []).filter(a => a.uscita).map(a => a.data)
+      .concat(Archivio.leggi('registro', []).filter(s => s.uscita || s.reindirizzato).map(s => s.data)));
+    let restano = 0;
+    for (const iso of date) {
+      if (mo.stato().puoFare) {
+        for (const s of mo.registroDel(iso).filter(s => s.uscita || s.reindirizzato)) await mo.annulla(s);
+        for (const a of mo.assenzeDel(iso).filter(a => a.uscita)) await mo.togliAssenza(a, true);
+      } else {
+        mo.togliAssenzeSenzaTracce(a => a.data === iso && !!a.uscita);
+        restano += mo.assenzeDel(iso).filter(a => a.uscita).length + mo.registroDel(iso).filter(s => s.uscita || s.reindirizzato).length;
+      }
+    }
+    mo.avvisa(uscite.length || restano
+      ? '⚠️ Alcune modifiche hanno già scritto nei fogli (sostituzioni o ore a recupero): per toglierle verifica prima la tua autorizzazione, poi ripremi il tasto.'
+      : '✔ Tutte le uscite didattiche e le loro modifiche sono state cancellate.');
     mo.ridisegna();
   }
 
@@ -243,7 +323,7 @@ const Uscite = (() => {
     };
     const giaQui = usciteDel(iso);
     box.innerHTML =
-      (giaQui.length ? `<h4>Uscite di questo giorno</h4><ul class="sost-assenze">${giaQui.map(u => `<li><span><strong>🚌 ${esc(u.nome || 'Uscita didattica')}</strong> – ` +
+      (giaQui.length ? `<h4>Uscite di questo giorno</h4><ul class="sost-assenze">${giaQui.map(u => `<li><span><strong>${confermata(u) ? '🚌' : '🧪 simulazione ·'} ${esc(u.nome || 'Uscita didattica')}</strong> – ` +
         `${esc(u.classi.map(c => mo.nome('classe', c)).join(', '))} · ${oreTesto(u.ore)} ora` +
         (u.accompagnatori.length ? ` · accompagnano: ${esc(u.accompagnatori.map(mo.nomeDocente).join(', '))}` : '') +
         `</span><button type="button" class="btn ghost sm" data-us="togli" data-id="${esc(u.id)}">Togli</button></li>`).join('')}</ul>` : '') +
@@ -258,7 +338,12 @@ const Uscite = (() => {
         <details${docenti.some(t => !nelleClassi.has(t.id) && scelta.accompagnatori.has(t.id)) ? ' open' : ''}><summary>Altri docenti</summary>
           ${docenti.filter(t => !nelleClassi.has(t.id)).map(casellaDoc).join('')}</details>
       </fieldset>
-      <button type="button" class="btn" data-us="registra">🚌 Registra l'uscita e proponi il piano</button>`;
+      <button type="button" class="btn" data-us="registra">🧪 Simula l'uscita e proponi il piano</button>
+      <p class="hint">È solo una prova: si registra davvero con «✔ Conferma il piano» (in «Ore da coprire»).</p>` +
+      // il tasto per cancellare tutto quello che hanno fatto le uscite (di tutti i giorni), se c'è qualcosa
+      (uscite.length || Archivio.leggi('assenze', []).some(a => a.uscita) || Archivio.leggi('registro', []).some(s => s.uscita || s.reindirizzato)
+        ? `<div class="row" style="margin-top:10px"><button type="button" class="btn danger" data-us="azzeraTutto">🗑 Cancella tutte le uscite didattiche</button>
+          <span class="hint">${uscite.length} ${uscite.length === 1 ? 'uscita' : 'uscite'} in tutto, con le loro assenze, sostituzioni e ore a recupero.</span></div>` : '');
   }
 
   function disegnaPiano(box, iso) {
@@ -270,7 +355,8 @@ const Uscite = (() => {
     const nome = id => esc(mo.nomeDocente(id));
     // chi è già stato messo a recupero dall'uscita (piano già applicato)
     const giaRecupero = mo.assenzeDel(iso).filter(a => a.come === 'recupero');
-    const inAttesa = p.coperture.some(c => c.docente) || p.recuperi.length;
+    const simulazione = qui.some(u => !confermata(u));
+    const inAttesa = simulazione || p.coperture.some(c => c.docente) || p.recuperi.length;
     const riga = c => {
       const nota = c.tipo === 'liberato' ? '🚌 liberato dall\'uscita: nessuna ora in più'
         : c.tipo === 'normale' ? '+1 nel conteggio (nessun docente liberato libero in quest\'ora)' : '⚠ nessun docente disponibile: vedi sotto';
@@ -283,7 +369,10 @@ const Uscite = (() => {
     const oraDi = h => h + 'ª';
     box.innerHTML = `<article class="sost-ora sost-piano-uscita">
       <h3>🚌 Uscita didattica: piano proposto</h3>
-      <p class="sost-dettagli">${qui.map(u => `${esc(u.nome || 'Uscita')}: ${esc(u.classi.map(c => mo.nome('classe', c)).join(', '))} fuori (${oreTesto(u.ore)} ora)` +
+      <p class="${simulazione ? 'sost-attenzione' : 'hint'}" role="status">${simulazione
+        ? '🧪 <b>Simulazione</b>: niente è ancora registrato. Controlla il piano, poi premi «✔ Conferma il piano» oppure «↺ Azzera la simulazione».'
+        : '✔ Uscita confermata: sostituzioni, assenze e recuperi sono registrati.'}</p>
+      <p class="sost-dettagli">${qui.map(u => `${confermata(u) ? '' : '🧪 '}${esc(u.nome || 'Uscita')}: ${esc(u.classi.map(c => mo.nome('classe', c)).join(', '))} fuori (${oreTesto(u.ore)} ora)` +
         (u.accompagnatori.length ? ` · accompagnano ${esc(u.accompagnatori.map(mo.nomeDocente).join(', '))}` : '')).join(' · ')}</p>
       ${p.coperture.length ? `<div class="tablewrap"><table class="sost-tabella"><caption>Ore da coprire e proposta</caption>
         <thead><tr><th scope="col">Ora</th><th scope="col">Classe</th><th scope="col">Assente</th><th scope="col">Copre</th><th scope="col">Note</th></tr></thead>
@@ -294,8 +383,9 @@ const Uscite = (() => {
       ${giaRecupero.length ? `<h4>Già registrati a recupero</h4><ul>${giaRecupero.map(a => `<li><strong>${nome(a.docente)}</strong>: ${oreTesto(a.ore)} ora</li>`).join('')}</ul>` : ''}
       ${p.disposizione.length ? `<h4>A disposizione (restano a scuola, nessun recupero)</h4><ul>${p.disposizione.map(d =>
         `<li><strong>${nome(d.docente)}</strong>: ${oreTesto(d.ore)} ora · ${esc(d.perche)}</li>`).join('')}</ul>` : ''}
-      <div class="row">${inAttesa ? `<button type="button" class="btn" data-us="applica" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${inCorso ? 'Applico…' : '✔ Applica il piano'}</button>`
-        : '<span class="tag ok">✔ Piano applicato</span>'}
+      <div class="row">${inAttesa ? `<button type="button" class="btn" data-us="applica" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${inCorso ? 'Registro…' : simulazione ? '✔ Conferma il piano' : '✔ Conferma le modifiche'}</button>`
+        : '<span class="tag ok">✔ Piano confermato</span>'}
+        <button type="button" class="btn danger" data-us="azzera" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${simulazione && !qui.some(confermata) ? '↺ Azzera la simulazione' : '↺ Togli le uscite del giorno'}</button>
         ${p.coperture.length ? '<span class="hint">Si può cambiare chi copre con la tendina (🚌 = liberato dall\'uscita) o assegnare le ore una per una qui sotto.</span>' : ''}</div>
     </article>`;
   }
@@ -321,6 +411,8 @@ const Uscite = (() => {
     if (a === 'registra') registra(scelta.data);
     else if (a === 'togli') togli(b.dataset.id);
     else if (a === 'applica') applica(b.dataset.data);
+    else if (a === 'azzera') azzera(b.dataset.data);
+    else if (a === 'azzeraTutto') azzeraTutto();
   }
   function cambio(e) {
     const c = e.target.closest('[data-us]'); if (!c) return;

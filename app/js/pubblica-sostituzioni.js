@@ -52,7 +52,8 @@ const PubblicaSostituzioni = (() => {
       assenzeAnnullate: leggiLocale('sostituzioni.assenzeAnnullate', []).filter(recente)
         .map(a => ({ id: a.id || '', data: a.data, docente: a.docente })),
       // uscite didattiche (sostituzioni/js/uscite.js): solo quali classi sono fuori e quando (niente descrizione)
-      uscite: leggiLocale('sostituzioni.uscite', []).filter(recente)
+      // (le simulazioni non ancora confermate restano sul dispositivo)
+      uscite: leggiLocale('sostituzioni.uscite', []).filter(u => recente(u) && u.confermata !== false)
         .map(u => ({ id: u.id, data: u.data, classi: u.classi, ore: u.ore }))
     };
   }
