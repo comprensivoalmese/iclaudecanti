@@ -41,7 +41,7 @@ Il tasto **In breve** nella barra in alto apre la giornata a schede, comoda sul 
 Nel menu (tondo con le iniziali), sezione Gestione, c'è **"Sostituzioni smart"** (icona con le persone): la scheda Sostituzioni
 di Orario Facile in versione **semplice e rapida**, dentro l'app, con lo stile a schede di «In breve». Contiene solo:
 
-- **Assenze del giorno**: tendina *Giorno*, scelta del docente assente, ore da toccare (tutte spuntate), casella **Permesso** (spuntata) e *Registra l'assenza*; sotto, gli assenti già registrati con *Togli*.
+- **Assenze del giorno**: tendina *Giorno*, scelta del docente assente, ore da toccare (tutte spuntate), casella **Recupero** (spuntata; prima si chiamava «Permesso») e *Registra l'assenza*; sotto, gli assenti già registrati con *Togli*.
   Se il docente manca **più giorni**, si toccano anche gli altri giorni della stessa settimana (*Assente anche in altri giorni?*):
   in quei giorni è assente per tutte le sue ore.
 - **Giorni della settimana**: sotto la tendina, un pulsante per ogni giorno con quante ore restano **da coprire**
@@ -59,7 +59,7 @@ cambi d'aula (classe, ore, aule libere, motivo, elenco dei cambi del giorno) e l
 delle sostituzioni; il modulo è `sostituzioni/js/cambi-aula.js`, lo stesso della scheda Sostituzioni di Orario Facile.
 
 Tutto il resto lo fa da solo lo **stesso motore** della scheda completa (`sostituzioni/js/sostituzioni.js`, `Sostituzioni.collega`):
-autorizzazione dal foglio «Autorizzazioni», lettura del foglio del conteggio da Drive, abbinamenti, +1 / −1, permesso e registro «Sostituzioni».
+autorizzazione dal file «Autorizzazioni», lettura del foglio del conteggio da Drive, abbinamenti, +1 / −1, recupero e registro «Sostituzioni».
 I dati sono gli stessi (memoria del browser, chiavi `sostituzioni.`): quello che si fa qui si vede anche in Orario Facile.
 
 - La voce compare solo a chi può modificare (vedi *Chi può modificare l'orario*); toccandola Google chiede il permesso, se serve, e l'app controlla il foglio «Autorizzazioni». Chi non è autorizzato vede solo un messaggio e, su quel dispositivo, la voce sparisce.
