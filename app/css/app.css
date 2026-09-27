@@ -307,7 +307,7 @@ main#contenuto { padding: 10px 16px 16px; outline: none; }
 
 /* ---------- Schermi più larghi (tablet, PC) ---------- */
 @media (min-width: 700px) {
-  .filtri { grid-template-columns: repeat(3, minmax(120px, 1fr)) auto; }
+  .filtri { grid-template-columns: repeat(3, minmax(120px, 1fr)) auto auto; }
   .giorno-lungo { display: inline; }
   .giorno-corto { display: none; }
   .giorni button { flex: 0 1 140px; }
@@ -433,6 +433,15 @@ body.modalita-monitor .modifiche, body.modalita-ingresso .modifiche { font-size:
   padding: 0 6px; border-radius: 4px; background: var(--primario); color: var(--primario-testo);
 }
 .dato-cambio { font-size: .8rem; line-height: 1.25; font-weight: 600; }
+/* Ora di compresenza (secondo docente in classe): sfondo più chiaro, cornice tratteggiata sottile ed etichetta */
+.lezione-compresenza { outline: 1px dashed hsl(var(--tinta) 45% 45%); outline-offset: -1px; opacity: .92; }
+.etichetta-compresenza {
+  justify-self: start; font-size: .68rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+  padding: 0 6px; border-radius: 4px; border: 1px solid currentColor; color: var(--testo-tenue);
+}
+/* Quadratino «Compresenze» accanto ai filtri */
+.filtri .spunta-compresenze { display: flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--testo); min-height: 44px; cursor: pointer; }
+.spunta-compresenze input { width: 20px; height: 20px; margin: 0; accent-color: var(--primario); }
 .lezione-cambio-aula .dato-aula { text-decoration: line-through; }
 /* Quando tutte le storie sono state viste il riquadro diventa discreto (restano i cerchi grigi) */
 .modifiche.tutte-viste { background: var(--superficie); border-color: var(--bordo); }

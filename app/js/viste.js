@@ -26,7 +26,10 @@ const Viste = (() => {
       [...new Set(D.lezioni.map(l => l.materia))].sort().forEach((m, i) => mappa.set(m, Math.round((i * 137.508 + 200) % 360)));
       tinte.set(D, mappa);
     }
-    return tinte.get(D).get(materia) || 0;
+    const m = tinte.get(D);
+    // materia comparsa dopo (per esempio una compresenza aggiunta con il quadratino): le si dà il colore successivo
+    if (!m.has(materia)) m.set(materia, Math.round((m.size * 137.508 + 200) % 360));
+    return m.get(materia);
   }
 
   // Lezioni che rispettano giorno (se serve) e filtri attivi.
@@ -83,8 +86,10 @@ const Viste = (() => {
       const cambio = Supplenze.cambioAula(stato.sostituzioni, l);
       const etichettaCambio = cambio ? '<span class="etichetta-cambio">⇄ Aula cambiata</span>' : '';
       const rigaCambio = cambio ? `<span class="dato-cambio">aula ${cambio.da ? esc(Dati.nome('aula', cambio.da)) + ' → ' : ''}<b>${esc(Dati.nome('aula', cambio.a))}</b></span>` : '';
-      return `<div class="lezione${cambiata ? ' lezione-modificata' : ''}${classeSost}${cambio ? ' lezione-cambio-aula' : ''}" style="--tinta:${tinta(D, l.materia)}">` +
-        (cambiata ? '<span class="etichetta-modificata">Cambiata</span>' : '') + etichettaSost + etichettaCambio +
+      // Ora di compresenza (vedi compresenze.js): etichetta e bordo tratteggiato
+      const etichettaCompresenza = l.compresenza ? '<span class="etichetta-compresenza">＋ Compresenza</span>' : '';
+      return `<div class="lezione${cambiata ? ' lezione-modificata' : ''}${classeSost}${cambio ? ' lezione-cambio-aula' : ''}${l.compresenza ? ' lezione-compresenza' : ''}" style="--tinta:${tinta(D, l.materia)}">` +
+        (cambiata ? '<span class="etichetta-modificata">Cambiata</span>' : '') + etichettaSost + etichettaCambio + etichettaCompresenza +
         `<strong class="materia">${esc(l.materia || '—')}</strong>${righe}${rigaSost}${rigaCambio}</div>`;
     }).join('');
   }

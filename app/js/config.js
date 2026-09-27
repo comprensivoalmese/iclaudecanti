@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.16',
+  versioneApp: '2026-09-27.17',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -47,6 +47,12 @@ window.CONFIG = {
   // in modifica solo a chi prepara l'orario. Vuoto = tasti non attivi.
   // (dal 27/09/2026 è il Foglio reimportato «pulito»; quello di prima era '1gawzwbqDBwqONiZdnvbEprzYAiUOPc8IxP1fu-CrO30')
   fileDatabaseOrario: '1_lN3MZR31QR6xYXj8qdJ8HtdlYaqCmO8WCHriFTJrZo',
+
+  // Foglio Google «Compresenze» (vedi js/compresenze.js): una riga per ogni ora di compresenza (potenziamento L2,
+  // tempo prolungato, Alternativa…), colonne Codice docente, Classe, Giorno, Ora, Tipo. L'app le mostra solo con il
+  // quadratino «Compresenze». Sul Drive della scuola, condiviso in lettura con l'Istituto. Vuoto = solo le compresenze
+  // scritte in Orario Facile.
+  fileCompresenze: '',
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).
   // Con la pubblicazione su Drive (vedi sotto) serve solo come riserva, se Drive non risponde.

@@ -68,7 +68,8 @@ const Modifiche = (() => {
     if (!Array.isArray(salvate.viste)) salvate.viste = [];
     let nuove = 0;
     if (D.fonte === 'pubblicato') {
-      const adesso = D.lezioni.map(compatta);
+      // solo le lezioni curricolari: spuntare o togliere «Compresenze» non è una modifica dell'orario
+      const adesso = (D.lezioniCurricolari || D.lezioni).map(compatta);
       const foto = leggi(CHIAVE_FOTO);
       // La prima volta su questo dispositivo non c'è niente con cui confrontare: si salva e basta
       if (foto && Array.isArray(foto.lezioni) && giorno) {

@@ -42,7 +42,7 @@ const Dati = (() => {
       const inizio = h * 60 + m + i * durata + (i >= oreM ? 60 : 0);
       ore.push({ n: i + 1, inizio: hhmm(inizio), fine: hhmm(inizio + durata) });
     }
-    const lezioni = [];
+    const lezioni = [], compresenze = [];
     (S.classi || []).forEach(c => (S.giorni || []).forEach(g => {
       const riga = ((S.orario || {})[c.id] || {})[g] || [];
       riga.forEach((v, s) => {
@@ -52,6 +52,12 @@ const Dati = (() => {
         if (cfg && !(s >= oreM ? (s - oreM) < (cfg.p || 0) : s < (cfg.m || 0))) return;
         const d = (S.discipline || []).find(x => x.id === v.dis);
         lezioni.push({ giorno: g, ora: s + 1, classe: c.id, materia: d ? d.nome : '', docente: v.doc, aula: v.aula || '' });
+        // compresenze (v.co): si mostrano solo con il quadratino «Compresenze», vedi compresenze.js
+        (v.co || []).forEach(x => {
+          if (!x || !x.doc) return;
+          const a = x.att && (S.discipline || []).find(y => y.sigla === x.att);
+          compresenze.push({ giorno: g, ora: s + 1, classe: c.id, materia: a ? a.nome : (x.att || 'Compresenza'), docente: x.doc, aula: v.aula || '', compresenza: true });
+        });
       });
     }));
     return {
@@ -60,7 +66,7 @@ const Dati = (() => {
       classi: (S.classi || []).map(c => ({ id: c.id, nome: c.nome })),
       docenti: (S.docenti || []).map(t => ({ id: t.id, nome: t.nome, email: t.email || '' })),
       aule: (S.aule || []).map(a => ({ id: a.id, nome: a.nome })),
-      lezioni
+      lezioni, compresenze
     };
   }
 
@@ -87,7 +93,9 @@ const Dati = (() => {
       lezioni: o.lezioni.map(l => ({
         giorno: l.giorno, ora: Number(l.ora), materia: l.materia || '',
         classe: String(l.classe || ''), docente: String(l.docente || ''), aula: String(l.aula || '')
-      }))
+      })),
+      // compresenze scritte in Orario Facile (celle «+»): le aggiunge compresenze.js solo se richieste
+      compresenzeOF: Array.isArray(o.compresenze) ? o.compresenze : []
     };
     // Se nel file mancano le ore, le ricava dalle lezioni (1ª dalle 8, un'ora ciascuna)
     if (!D.ore.length) {

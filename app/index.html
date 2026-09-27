@@ -297,6 +297,8 @@
           <label>Docente <select id="filtro-docente"></select></label>
           <label>Aula <select id="filtro-aula"></select></label>
           <button type="button" id="btnAzzera" class="pulsante leggero">Azzera filtri</button>
+          <!-- spuntato: si vedono anche le ore di compresenza (L2, Alternativa…), vedi js/compresenze.js -->
+          <label class="spunta-compresenze"><input type="checkbox" id="mostraCompresenze"> Compresenze</label>
         </div>
       </div>
       <div id="giorni" class="giorni" role="group" aria-label="Giorno"></div>
@@ -343,6 +345,7 @@
   <script src="js/ruoli.js"></script>
   <script src="js/nomi.js"></script>
   <script src="js/supplenze.js"></script>
+  <script src="js/compresenze.js"></script>
   <script src="js/viste.js"></script>
   <script src="js/brief.js"></script>
   <script src="js/smart.js"></script>

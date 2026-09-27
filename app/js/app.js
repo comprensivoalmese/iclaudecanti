@@ -224,7 +224,7 @@
     preparaControlli();
     aggiorna();
     // Adesso c'è il permesso di Google: si possono leggere orario e sostituzioni pubblicati su Drive
-    if (CONFIG.fileOrarioPubblicato || CONFIG.fileSostituzioniPubblicate) ricaricaDati(false);
+    if (CONFIG.fileOrarioPubblicato || CONFIG.fileSostituzioniPubblicate || CONFIG.fileCompresenze) ricaricaDati(false);
   }
 
   /*
@@ -236,7 +236,7 @@
   let attesaToccoDrive = false;
   async function permessoDrive() {
     if (!utente || aulaMonitor || secondiIngresso || typeof NomiDocenti === 'undefined' || !CONFIG.googleClientId) return;
-    if (!(CONFIG.fileOrarioPubblicato || CONFIG.fileSostituzioniPubblicate)) return;
+    if (!(CONFIG.fileOrarioPubblicato || CONFIG.fileSostituzioniPubblicate || CONFIG.fileCompresenze)) return;
     try {
       await NomiDocenti.gettone([NomiDocenti.PERMESSO_DRIVE], utente.email);   // se c'è già non apre niente
       ricaricaDati(false);
@@ -629,6 +629,9 @@
     $$('[data-colonne]').forEach(b => b.addEventListener('click', () => { stato.colonne = b.dataset.colonne; aggiorna(); }));
     Viste.FILTRI.forEach(k => $('#filtro-' + k).addEventListener('change', e => { stato.filtri[k] = e.target.value; aggiorna(); }));
     $('#btnAzzera').addEventListener('click', () => { stato.filtri = { classe: '', docente: '', aula: '' }; aggiorna(); });
+    // Quadratino «Compresenze»: spuntato si vedono anche le ore di compresenza, altrimenti solo le curricolari
+    $('#mostraCompresenze').checked = Compresenze.mostra();
+    $('#mostraCompresenze').addEventListener('change', e => { Compresenze.impostaMostra(e.target.checked); Compresenze.applica(D); aggiorna(); });
     $('#giorni').addEventListener('click', e => {
       const b = e.target.closest('[data-giorno]');
       if (b) { stato.giorno = b.dataset.giorno; aggiorna(); }
@@ -732,9 +735,11 @@
   async function ricaricaDati(manuale) {
     try {
       const fontePrima = D.fonte, filtri = Object.assign({}, stato.filtri);
-      await Supplenze.scarica();   // le sostituzioni pubblicate su Drive (se configurate in config.js)
+      // le sostituzioni pubblicate su Drive e il Foglio delle compresenze (se configurati in config.js)
+      await Promise.all([Supplenze.scarica(), Compresenze.scarica()]);
       D = await Dati.carica();
       applicaNomi();
+      Compresenze.applica(D);
       mioDocente = Dati.docentePerEmail(utente.email);
       preparaControlli();
       if (aulaMonitor && !D.mappa.aula.has(aulaMonitor)) aulaMonitor = '';
@@ -799,6 +804,7 @@
       return;
     }
     applicaNomi();
+    Compresenze.applica(D);   // le compresenze, se è spuntato il quadratino (dall'ultima copia; il Foglio si rilegge con il permesso di Google)
     mioDocente = Dati.docentePerEmail(utente.email);
 
     // Monitor: si attiva con ?monitor=NomeAula nell'indirizzo, oppure dal menu
