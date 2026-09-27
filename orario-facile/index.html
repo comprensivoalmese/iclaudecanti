@@ -771,7 +771,7 @@ function load(){
     o.vincoli = Object.assign(base.vincoli, o.vincoli||{});
     o.meta = Object.assign(base.meta, o.meta||{});
     // il vecchio nome predefinito diventa il nome completo della scuola (27/09/2026)
-    if(o.meta.nome === 'Istituto Comprensivo') o.meta.nome = base.meta.nome;
+    if(o.meta.nome === 'Istituto Comprensivo') o.meta.nome = statoVuoto().meta.nome;
     o.ui = Object.assign(base.ui, o.ui||{});
     o.aule = o.aule||[];
     return o;
@@ -3712,7 +3712,7 @@ function importa(txt){
     o.vincoli = Object.assign(base.vincoli, o.vincoli||{});
     o.meta = Object.assign(base.meta, o.meta||{});
     // il vecchio nome predefinito diventa il nome completo della scuola (27/09/2026)
-    if(o.meta.nome === 'Istituto Comprensivo') o.meta.nome = base.meta.nome;
+    if(o.meta.nome === 'Istituto Comprensivo') o.meta.nome = statoVuoto().meta.nome;
     o.ui = Object.assign(base.ui, o.ui||{});
     o.aule = o.aule||[];
     S = o; POOL = []; normalizza(); save(true); vai('orario');
