@@ -66,8 +66,10 @@ const Sintesi = (() => {
     righe.concat(sostegno).forEach(x => {
       const doc = perCodice.get(String(x.codice || '').toUpperCase()), c = perClasse.get(String(x.classe || '').trim().toUpperCase());
       const g = S.giorni.find(y => y === x.giorno), s = Number(x.ora) - 1;
-      if (!doc || !c || !g || !(s >= 0)) return;
       const cat = categoria(x.tipo);
+      // ore senza classe (ricevimento parenti, disponibilità supplenze): nella casella «R» o «D», come nel facsimile
+      if (!x.classe && doc && g && s >= 0 && (cat === 'ricevimento' || cat === 'disponibilita')) { metti(doc, g, s, cat === 'ricevimento' ? 'R' : 'D', cat); return; }
+      if (!doc || !c || !g || !(s >= 0)) return;
       if (cat === 'inclusiva' && !conSostegno) return;
       const d = perDoc.get(doc)[g + '|' + s];
       if (d && d.some(y => y.classe === c.nome)) return;   // già scritta in Orario Facile

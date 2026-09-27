@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.28',
+  versioneApp: '2026-09-27.29',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -79,7 +79,11 @@ window.CONFIG = {
     { tipo: 'Alternativa', nelleOreDi: 'Religione', spiegazione: 'In parallelo a Religione, alla stessa ora; in qualche classe può non esserci.' },
     { tipo: 'Italiano eccedente (prolungato)', spiegazione: 'Ore aggiuntive di italiano sul tempo prolungato.' },
     { tipo: 'Matematica eccedente (prolungato)', spiegazione: 'Ore aggiuntive di matematica sul tempo prolungato.' },
-    { tipo: 'Completamento tempo prolungato', altriNomi: ['Tempo prolungato'], spiegazione: 'Ore di cattedra che mancano nell\'orario: diventano compresenze.' }
+    { tipo: 'Completamento tempo prolungato', altriNomi: ['Tempo prolungato'], spiegazione: 'Ore di cattedra che mancano nell\'orario: diventano compresenze.' },
+    // gruppi SENZA CLASSE (senzaClasse: true): solo docente, giorno e ora; nell'orario di sintesi «R» e «D» colorate.
+    // luogo = dove si svolge (se l'aula non è indicata)
+    { tipo: 'Ricevimento parenti', senzaClasse: true, luogo: 'Atrio – accoglienza dei genitori', altriNomi: ['Ricevimento'], spiegazione: 'L\'ora in cui il docente riceve i genitori, accolti nell\'atrio: non serve la classe.' },
+    { tipo: 'Disponibilità supplenze', senzaClasse: true, altriNomi: ['Disponibilità', 'Disposizione'], spiegazione: 'Le ore in cui il docente è a disposizione per le sostituzioni: non serve la classe.' }
   ],
 
   // Dove si trova il file con l'orario (formato dell'app oppure backup di Orario Facile).
