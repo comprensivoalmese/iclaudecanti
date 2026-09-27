@@ -760,7 +760,19 @@
     // «✕ Annulla» su una sostituzione della tabella (solo per chi è autorizzato, vedi viste.js): si apre la pagina
     // Sostituzioni, che chiede conferma e la annulla (anche nel foglio del conteggio e nel foglio «Sostituzioni»)
     // «✕ Togli assenza» (stesso stile): la pagina Sostituzioni chiede conferma e toglie l'assenza per tutti
+    // Compresenza compatta (una riga «＋ docente · tipo», viste.js): toccandola si apre e si vede il testo intero
+    const apriCompatta = e => {
+      const c = e.target.closest('.lezione-compatta');
+      if (!c || e.target.closest('button')) return false;
+      const aperta = c.classList.toggle('aperta');
+      c.setAttribute('aria-expanded', aperta ? 'true' : 'false');
+      return true;
+    };
+    $('#contenitoreTabella').addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && e.target.classList.contains('lezione-compatta') && apriCompatta(e)) e.preventDefault();
+    });
     $('#contenitoreTabella').addEventListener('click', e => {
+      if (apriCompatta(e)) return;
       const b = e.target.closest('.annulla-sost');
       if (!b || !stato.sostituzioni) return;
       if (b.dataset.togliAssenza) {

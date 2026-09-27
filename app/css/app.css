@@ -448,6 +448,21 @@ body.modalita-monitor .modifiche, body.modalita-ingresso .modifiche { font-size:
   justify-self: start; font-size: .68rem; font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
   padding: 0 6px; border-radius: 4px; border: 1px solid currentColor; color: var(--testo-tenue);
 }
+/* Compresenze nella cella del titolare (viste.js): una riga sottile ciascuna, «＋ docente · tipo», invece di una scheda
+   intera. Se il testo non ci sta finisce con «…» (il testo intero è nel suggerimento e per i lettori di schermo) */
+.compresenze-compatte { display: grid; gap: 3px; margin-top: 3px; }
+.compresenze-compatte .lezione { margin-top: 0; min-width: 0; }
+.lezione-compatta { padding: 2px 6px; border-left-width: 3px; border-radius: 6px; gap: 0; }
+.riga-compatta { display: block; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: .76rem; line-height: 1.35; }
+.riga-compatta .dato { display: inline; font-size: inherit; color: var(--testo); font-weight: 600; }
+.riga-compatta .dato + .dato::before { content: " · "; content: " · " / ""; color: var(--testo-tenue); font-weight: 400; }
+.riga-compatta .dato-aula::before, .riga-compatta .dato + .dato-aula::before { content: " 📍"; content: " 📍" / ""; }
+.riga-compatta .link-piantina { padding: 0; min-height: 0; }
+.tipo-compatta { color: var(--testo-tenue); }
+.lezione-compatta { cursor: pointer; }
+.lezione-compatta:focus-visible { outline: 2px solid var(--primario); outline-offset: 1px; }
+.lezione-compatta.aperta .riga-compatta { white-space: normal; }   /* toccata: si vede il testo intero */
+@media print { .riga-compatta { white-space: normal; } }
 /* Quadratino «Compresenze» e collegamento «✎ Modifica» (scheda Compresenze di Orario Facile) sulla stessa riga */
 .gruppo-compresenze { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .gruppo-compresenze a.pulsante { display: inline-flex; align-items: center; color: var(--testo); text-decoration: none; }

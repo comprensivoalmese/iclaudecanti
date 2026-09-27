@@ -43,7 +43,8 @@ Le parti del progetto:
   tempo prolungato, Alternativa in parallelo a Religione, sostegno…). Arrivano dal Foglio Google «Compresenze»
   (`CONFIG.fileCompresenze`, primo foglio: Codice docente, Classe, Giorno, Ora, Tipo; ogni ora deve avere un docente, le righe
   incomplete si ignorano) e dalle celle «+» di Orario Facile (`v.co`, `compresenzeOF` in dati.js). L'app le aggiunge a
-  `D.lezioni` (con `compresenza: true`) solo se è spuntato il quadratino «Compresenze»; le curricolari restano in
+  `D.lezioni` (con `compresenza: true`) solo se è spuntato il quadratino «Compresenze»; nella tabella (`viste.js`), se nella cella c'è anche il
+  titolare, ogni compresenza è una riga sottile «＋ docente · tipo» (`.lezione-compatta`, si apre toccandola) per non allungare la riga su telefono; le curricolari restano in
   `D.lezioniCurricolari` (le usa modifiche.js). Sul dispositivo si salva solo una copia con i codici.
   La gestione è STRUTTURALE e sta in Orario Facile (l'app serve al quotidiano): scheda «8 Compresenze»
   (`orario-facile/scheda-compresenze.js` e `.css`, indirizzo `#compresenze`; nell'app solo il collegamento «✎ Modifica» per i
