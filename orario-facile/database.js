@@ -119,7 +119,8 @@ const DatabaseOrario = (() => {
     // Impostazioni: voce -> valore
     const imp = {}; z.impostazioni.forEach(r => { if (testo(r[0])) imp[semplice(r[0])] = testo(r[1]); });
     const valoreImp = (...chiavi) => { for (const k of chiavi) { const x = Object.keys(imp).find(v => v.startsWith(k)); if (x !== undefined) return imp[x]; } return ''; };
-    nuovo.meta.nome = valoreImp('scuola') || nuovo.meta.nome;
+    // (il vecchio nome predefinito «Istituto Comprensivo» diventa quello completo della scuola)
+    nuovo.meta.nome = (valoreImp('scuola') !== 'Istituto Comprensivo' && valoreImp('scuola')) || nuovo.meta.nome;
     nuovo.meta.anno = valoreImp('anno') || nuovo.meta.anno;
     nuovo.meta.durata = numero(valoreImp('durata'), nuovo.meta.durata);
     nuovo.meta.inizio = valoreImp('inizio') || nuovo.meta.inizio;

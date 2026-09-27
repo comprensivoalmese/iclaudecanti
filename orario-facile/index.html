@@ -616,7 +616,7 @@ let S = null;
 
 function statoVuoto(){
   return {
-    meta:{ nome:'Istituto Comprensivo', anno:'2026/2027', durata:60, inizio:'08:00' },
+    meta:{ nome:'Istituto Comprensivo di Almese', anno:'2026/2027', durata:60, inizio:'08:00' },
     giorni:['Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'],
     oreM:5, oreP:2,
     classi:[], discipline:[], aule:[], docenti:[],
@@ -770,6 +770,8 @@ function load(){
     const base = statoVuoto();
     o.vincoli = Object.assign(base.vincoli, o.vincoli||{});
     o.meta = Object.assign(base.meta, o.meta||{});
+    // il vecchio nome predefinito diventa il nome completo della scuola (27/09/2026)
+    if(o.meta.nome === 'Istituto Comprensivo') o.meta.nome = base.meta.nome;
     o.ui = Object.assign(base.ui, o.ui||{});
     o.aule = o.aule||[];
     return o;
@@ -3709,6 +3711,8 @@ function importa(txt){
     const base = statoVuoto();
     o.vincoli = Object.assign(base.vincoli, o.vincoli||{});
     o.meta = Object.assign(base.meta, o.meta||{});
+    // il vecchio nome predefinito diventa il nome completo della scuola (27/09/2026)
+    if(o.meta.nome === 'Istituto Comprensivo') o.meta.nome = base.meta.nome;
     o.ui = Object.assign(base.ui, o.ui||{});
     o.aule = o.aule||[];
     S = o; POOL = []; normalizza(); save(true); vai('orario');
