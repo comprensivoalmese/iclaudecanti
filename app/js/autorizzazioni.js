@@ -115,8 +115,14 @@ const Autorizzazioni = (() => {
       return r.json();
     };
     const baseDb = url('');
-    const info = await chiama(baseDb, '?fields=sheets.properties(title,index)');
-    if ((info.sheets || []).some(s => s.properties.title === SCHEDA)) throw new Error('nel Foglio Database la scheda «Autorizzazioni» c\'è già');
+    const info = await chiama(baseDb, '?fields=sheets.properties(title,index,sheetId)');
+    if ((info.sheets || []).some(s => s.properties.title === SCHEDA)) throw new Error('la scheda «Autorizzazioni» c\'è già: completala direttamente nel Foglio');
+    // file a parte: si usa la prima scheda (se è già compilata non si tocca niente)
+    const prima = fileDedicato() ? (info.sheets || []).map(s => s.properties).sort((a, b) => a.index - b.index)[0] : null;
+    if (prima) {
+      const g = await chiama(baseDb, '/values/' + encodeURIComponent('A1:Z5'));
+      if ((g.values || []).some(r => r.some(c => semplice(c).includes('mail')))) throw new Error('il file delle autorizzazioni è già compilato: completalo direttamente nel Foglio');
+    }
     // l'elenco di prima, dal file delle sostituzioni (se si riesce a leggerlo)
     const persone = [];
     const aggiungi = (nome, cognome, mail, of, sost) => {
@@ -142,7 +148,10 @@ const Autorizzazioni = (() => {
       } catch (e) { /* file delle sostituzioni non leggibile: si parte da chi crea la scheda */ }
     }
     aggiungi('', '', String(email).toLowerCase(), true, true);
-    await chiama(baseDb, ':batchUpdate', { method: 'POST', body: JSON.stringify({ requests: [{ addSheet: { properties: { title: SCHEDA, index: (info.sheets || []).length } } }] }) });
+    // nel file a parte si rinomina la prima scheda, altrimenti se ne aggiunge una in fondo
+    const richiesta = prima ? { updateSheetProperties: { properties: { sheetId: prima.sheetId, title: SCHEDA }, fields: 'title' } }
+      : { addSheet: { properties: { title: SCHEDA, index: (info.sheets || []).length } } };
+    await chiama(baseDb, ':batchUpdate', { method: 'POST', body: JSON.stringify({ requests: [richiesta] }) });
     const valori = [TITOLI].concat(persone);
     await chiama(baseDb, '/values/' + encodeURIComponent(`'${SCHEDA}'!A1:F${valori.length}`) + '?valueInputOption=RAW', { method: 'PUT', body: JSON.stringify({ values: valori }) });
     letta = null;

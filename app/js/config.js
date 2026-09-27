@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-09-27.26',
+  versioneApp: '2026-09-27.27',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -51,9 +51,10 @@ window.CONFIG = {
   // «Autorizzazioni» del Foglio Database (Nome, Cognome, Email, Orario Facile SI/NO, Sostituzioni SI/NO). Vuoto = Foglio
   // Database; si può indicare un Foglio a parte. Finché la scheda non c'è valgono «editori» qui sopra e il foglio
   // «Autorizzazioni» del file delle sostituzioni.
-  // Dal 27/09/2026 sta nel file «Corrispondenza-docenti-RISERVATO» (lo stesso di fileNomiDocenti: i dati sulle persone
-  // insieme). La scheda dei nomi deve restare la PRIMA del file: l'app legge i nomi dalla prima scheda.
-  fileAutorizzazioni: '1NcknVOHvTXHB2ue94FjFs-iY-vT54tq3tHc7CArTEmI',
+  // Dal 27/09/2026 è un FILE A PARTE «Autorizzazioni» (prima scheda: Nome, Cognome, Email, Orario Facile, Sostituzioni,
+  // Note), condiviso in lettura SOLO con le persone autorizzate e in modifica solo con chi gestisce l'app:
+  // chi non può aprirlo non ha nessuna autorizzazione.
+  fileAutorizzazioni: '1NLJzaz2cus3ZrVC4u2RkBUJRbIeuyBqzqWyTttsQfuU',
 
   // Foglio Google «Compresenze» (vedi js/compresenze.js): una riga per ogni ora di compresenza (potenziamento L2,
   // tempo prolungato, Alternativa…), colonne Codice docente, Classe, Giorno, Ora, Tipo. L'app le mostra solo con il

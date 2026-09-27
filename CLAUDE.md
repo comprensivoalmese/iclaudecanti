@@ -66,8 +66,8 @@ Le parti del progetto:
   una Map codice → {cognome, nome}; i nomi stanno
   solo in memoria (in Orario Facile: pulsante «👁 Nomi», `NOMI`, `nomeDoc()`; nell'app: pulsante «👁 Nomi» nella barra (da 960 px in su) e voce nel menu utente,
   `applicaNomi()` in app.js, che cambia solo `D.docente[].nome` e tiene il codice in `.codice`), mai in localStorage, backup o CSV.
-- **Autorizzazioni** (dal 27/09/2026, `app/js/autorizzazioni.js`): scheda «Autorizzazioni» del file dei nomi veri
-  «Corrispondenza-docenti-RISERVATO» (`CONFIG.fileAutorizzazioni`, se vuoto il Foglio Database; la scheda dei nomi resta la prima): Nome, Cognome, Email, **Orario Facile** (SI/NO), **Sostituzioni** (SI/NO).
+- **Autorizzazioni** (dal 27/09/2026, `app/js/autorizzazioni.js`): file a parte «Autorizzazioni» (`CONFIG.fileAutorizzazioni`,
+  prima scheda), condiviso in lettura SOLO con gli autorizzati: chi non può aprirlo non ha autorizzazioni. Colonne: Nome, Cognome, Email, **Orario Facile** (SI/NO), **Sostituzioni** (SI/NO).
   Orario Facile: la porta (`porta.js`) fa entrare solo chi ha SI in «Orario Facile» (esito ricordato fino a sera sul dispositivo);
   sostituzioni: `RegistroDrive.abilitazione` usa la colonna «Sostituzioni»; app: le voci di Gestione si vedono solo con
   l'autorizzazione giusta (`controllaAutorizzazioni` in app.js). Finché la scheda non c'è valgono le regole di prima (qui sotto).
