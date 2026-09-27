@@ -39,6 +39,12 @@ Le parti del progetto:
   solo le colonne «dati» in posizioni fisse (le formule e i colori li crea una volta `strumenti/crea-database.ps1`);
   la griglia «Orario» è docente × ora con la scrittura breve `1A`, `1A STO`, `1A ITA @MENSA`, `+2B SOS`, `… *`.
   Se cambi il formato, aggiorna insieme database.js, DATABASE.md e lo script. I nomi veri del Foglio restano solo in memoria.
+- **Compresenze** (`app/js/compresenze.js`): ore in cui un secondo docente è in classe con il titolare (potenziamento L2,
+  tempo prolungato, Alternativa in parallelo a Religione, sostegno…). Arrivano dal Foglio Google «Compresenze»
+  (`CONFIG.fileCompresenze`, primo foglio: Codice docente, Classe, Giorno, Ora, Tipo; ogni ora deve avere un docente, le righe
+  incomplete si ignorano) e dalle celle «+» di Orario Facile (`v.co`, `compresenzeOF` in dati.js). L'app le aggiunge a
+  `D.lezioni` (con `compresenza: true`) solo se è spuntato il quadratino «Compresenze»; le curricolari restano in
+  `D.lezioniCurricolari` (le usa modifiche.js). Sul dispositivo si salva solo una copia con i codici.
 - **Dati della scuola in Orario Facile**: `orario-facile/index.html` contiene i dati 2026/27
   (`CSV_SCUOLA_CLASSI`, `CSV_SCUOLA_DOCENTI` e `datiScuola()`), caricati alla prima apertura e con il pulsante
   "Dati scuola 2026/27". **Privacy**: il repo è pubblico, quindi i docenti compaiono solo con un codice
