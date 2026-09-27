@@ -4,6 +4,20 @@
 */
 .piantina { position: relative; display: inline-block; max-width: 100%; line-height: 0; background: #fff; border-radius: 8px; overflow: hidden; }
 .piantina img { display: block; max-width: 100%; height: auto; user-select: none; }
+/* disegno SVG a rettangoli: occupa tutta la larghezza (su telefono si scorre di lato) */
+.piantina-vettoriale { display: block; width: 100%; min-width: 640px; }
+.piantina-vettoriale svg { display: block; width: 100%; height: auto; }
+/* le stanze che si possono toccare: superfici in un solo colore, contorni semplici */
+.piantina-vettoriale .stanza { fill: #e3e8ef; stroke: #1f2937; cursor: pointer; transition: fill .15s; }
+.piantina-vettoriale .stanza.assegnata { fill: #b9cbe6; }
+.piantina-vettoriale .stanza:hover, .piantina-vettoriale .stanza:focus { fill: #93b0dc; outline: none; }
+.piantina-vettoriale .stanza:focus-visible { stroke: #1c56b8; stroke-width: 5; }
+.piantina-vettoriale .stanza.scelta { fill: #ffd23f; }
+.piantina-vettoriale .servizio { fill: #f3f4f6; stroke: #9ca3af; }
+/* i nomi scritti nel disegno non devono bloccare il tocco sulla stanza */
+.piantina-vettoriale text { pointer-events: none; user-select: none; }
+.nota-piantina { margin: 6px 0 0; font-size: .9rem; opacity: .8; }
+
 /* il segnaposto: un cerchio con il nome dell'aula, centrato sul punto */
 .segno-piantina {
   position: absolute; transform: translate(-50%, -50%); line-height: 1.1; pointer-events: none;

@@ -1,6 +1,7 @@
 /*
   scheda-piantine.js – in Orario Facile (scheda 3 Aule, riquadro «Aule sulla piantina»): si segna dove si trova ogni aula.
-  Si sceglie il piano, si tocca un'aula nell'elenco e poi il punto della piantina: il segnaposto si sposta lì.
+  Si sceglie il piano, si tocca un'aula nell'elenco e poi la stanza sulla piantina (disegno SVG a rettangoli: l'aula
+  va al centro della stanza) oppure il punto dell'immagine (PNG/JPG): il segnaposto si sposta lì.
   «Salva sul Foglio» scrive piano e posizione nella scheda «Aule» del Foglio Database (vedi app/js/piantine.js);
   nell'app, toccando un'aula, compare la piantina con l'aula segnata.
   Le aule compaiono sotto il piano indicato dalla prima lettera del codice (S…, 1…, 2…, 3…); le altre (per esempio
@@ -38,7 +39,7 @@ const SchedaPiantine = (() => {
   }
   async function immagine(pn, t) {
     if (indirizzi.has(pn)) return;
-    try { indirizzi.set(pn, { url: await Piantine.immagine(pn, t || NomiDocenti.gettoneDisponibile([NomiDocenti.PERMESSO_DRIVE])) }); }
+    try { indirizzi.set(pn, { sorgente: await Piantine.immagine(pn, t || NomiDocenti.gettoneDisponibile([NomiDocenti.PERMESSO_DRIVE])) }); }
     catch (e) { indirizzi.set(pn, { errore: e.message }); }
   }
 
@@ -73,7 +74,7 @@ const SchedaPiantine = (() => {
     const fatte = aule.filter(n => datiAula(n).x != null).length;
     box.innerHTML =
       `<div class="seg" role="group" aria-label="Piano">${infoPiani.map(p => `<button type="button" data-pa="piano" data-piano="${esc(p.piano)}" aria-pressed="${p.piano === piano}">${esc(p.nome)}</button>`).join('')}</div>` +
-      `<p class="hint" style="margin:8px 0">1) Tocca un'aula qui sotto · 2) tocca il punto della piantina dove si trova. ${fatte} di ${aule.length} aule segnate su questo piano.</p>` +
+      `<p class="hint" style="margin:8px 0">1) Tocca un'aula qui sotto · 2) tocca ${img && img.sorgente && img.sorgente.svg ? 'la stanza della piantina (le superfici colorate)' : 'il punto della piantina'} dove si trova. ${fatte} di ${aule.length} aule segnate su questo piano.</p>` +
       `<div class="row pa-aule">${aule.map(n => `<button type="button" class="btn" data-pa="aula" data-aula="${esc(n)}" aria-pressed="${n === scelta}">${datiAula(n).x != null ? '✓ ' : ''}${esc(n)}</button>`).join('') || '<span class="hint">Nessuna aula su questo piano.</span>'}
         ${altre.length ? `<label class="fl" style="flex-direction:row;align-items:center;gap:6px">Un'altra aula su questo piano
           <select data-pa="altra"><option value="">—</option>${altre.map(n => `<option>${esc(n)}</option>`).join('')}</select></label>` : ''}</div>` +
@@ -82,7 +83,7 @@ const SchedaPiantine = (() => {
         ${scelta ? `<button type="button" class="btn" data-pa="togli">Togli ${esc(scelta)} dalla piantina</button>` : ''}</div>` +
       (messaggio ? `<p class="comp-messaggio" role="status">${esc(messaggio)}</p>` : '') +
       (!img ? '<p class="hint">Carico la piantina…</p>' : img.errore ? `<p class="comp-avviso">⚠️ ${esc(img.errore)}.</p>`
-        : `<div class="pa-contenitore${scelta ? ' pa-attiva' : ''}" data-pa="mappa">${Piantine.disegnoHtml(img.url, segni, 'Piantina: ' + (Piantine.pianoInfo(piano) || {}).nome)}</div>`);
+        : `<div class="pa-contenitore${scelta ? ' pa-attiva' : ''}" data-pa="mappa">${Piantine.disegnoHtml(img.sorgente, segni, 'Piantina: ' + (Piantine.pianoInfo(piano) || {}).nome)}</div>`);
     if (!img) immagine(piano).then(disegna);
   }
 
@@ -95,11 +96,17 @@ const SchedaPiantine = (() => {
     else if (a === 'salva') salva();
     else if (a === 'togli' && scelta) { modifiche.set(scelta, { piano: datiAula(scelta).piano, x: null, y: null }); disegna(); }
     else if (a === 'mappa' && scelta) {
-      // la posizione in percentuale dell'immagine, così vale a qualsiasi grandezza
-      const img = b.querySelector('img'); if (!img) return;
-      const r = img.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width * 100, y = (e.clientY - r.top) / r.height * 100;
-      if (x < 0 || y < 0 || x > 100 || y > 100) return;
+      // Disegno SVG: toccando una stanza l'aula va al suo centro (data-cx / data-cy, in %)
+      const st = e.target.closest('.stanza[data-cx][data-cy]');
+      let x, y;
+      if (st) { x = parseFloat(st.getAttribute('data-cx')); y = parseFloat(st.getAttribute('data-cy')); }
+      else {
+        // altrimenti la posizione in percentuale dell'immagine, così vale a qualsiasi grandezza
+        const img = b.querySelector('.piantina img, .piantina svg'); if (!img || !e.clientX) return;
+        const r = img.getBoundingClientRect();
+        x = (e.clientX - r.left) / r.width * 100; y = (e.clientY - r.top) / r.height * 100;
+      }
+      if (isNaN(x) || isNaN(y) || x < 0 || y < 0 || x > 100 || y > 100) return;
       modifiche.set(scelta, { piano, x, y }); messaggio = '';
       disegna();
     }
@@ -113,7 +120,7 @@ const SchedaPiantine = (() => {
 
   function monta(el, contesto) {
     ctx = contesto;
-    if (box !== el) { box = el; box.addEventListener('click', clic); box.addEventListener('change', cambio); }
+    if (box !== el) { box = el; box.addEventListener('click', clic); box.addEventListener('change', cambio); box.addEventListener('keydown', e => Piantine.tastiera(e)); }
     if (typeof Piantine === 'undefined' || typeof NomiDocenti === 'undefined') { box.innerHTML = '<p class="hint">Mancano i file app/js/piantine.js o app/js/nomi.js.</p>'; return; }
     if (stato === 'collega' && Piantine.configurato() && NomiDocenti.gettoneDisponibile(PERMESSI())) { collega(); return; }
     disegna();

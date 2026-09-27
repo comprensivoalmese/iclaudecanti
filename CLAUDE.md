@@ -58,6 +58,10 @@ Le parti del progetto:
   un'immagine per piano su Drive (`CONFIG.piantine`: piano = lettera/cifra iniziale dei codici delle aule, nome, file = ID),
   MAI su GitHub (tavole tecniche); la posizione di ogni aula (Piano, X %, Y %) nelle colonne D-F della scheda «Aule» del
   Foglio Database. Nell'app un'aula segnata diventa un tasto (`data-piantina`) che apre «📍 Dov'è».
+  Le immagini possono essere PNG/JPG (segnaposto sul punto) o, meglio, SVG semplificati a rettangoli: `<rect class="stanza"
+  data-nome data-cx data-cy>` (centro in %) si toccano (in Orario Facile l'aula va al centro della stanza; nell'app la stanza
+  dell'aula è gialla e le altre aule del piano si toccano), `class="servizio"` = scale, bagni… non si toccano. L'SVG viene
+  ripulito (`svgPulito`: niente script né attributi on…) prima di entrare nella pagina.
 - **Dati della scuola in Orario Facile**: `orario-facile/index.html` contiene i dati 2026/27
   (`CSV_SCUOLA_CLASSI`, `CSV_SCUOLA_DOCENTI` e `datiScuola()`), caricati alla prima apertura e con il pulsante
   "Dati scuola 2026/27". **Privacy**: il repo è pubblico, quindi i docenti compaiono solo con un codice
