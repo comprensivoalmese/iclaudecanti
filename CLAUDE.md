@@ -66,7 +66,13 @@ Le parti del progetto:
   una Map codice → {cognome, nome}; i nomi stanno
   solo in memoria (in Orario Facile: pulsante «👁 Nomi», `NOMI`, `nomeDoc()`; nell'app: pulsante «👁 Nomi» nella barra (da 960 px in su) e voce nel menu utente,
   `applicaNomi()` in app.js, che cambia solo `D.docente[].nome` e tiene il codice in `.codice`), mai in localStorage, backup o CSV.
-- **Ruoli**: *modificatori* (possono usare Orario Facile) e *fruitori* (solo l'app). `app/js/ruoli.js` +
+- **Autorizzazioni** (dal 27/09/2026, `app/js/autorizzazioni.js`): scheda «Autorizzazioni» del Foglio Database
+  (`CONFIG.fileAutorizzazioni` o `fileDatabaseOrario`): Nome, Cognome, Email, **Orario Facile** (SI/NO), **Sostituzioni** (SI/NO).
+  Orario Facile: la porta (`porta.js`) fa entrare solo chi ha SI in «Orario Facile» (esito ricordato fino a sera sul dispositivo);
+  sostituzioni: `RegistroDrive.abilitazione` usa la colonna «Sostituzioni»; app: le voci di Gestione si vedono solo con
+  l'autorizzazione giusta (`controllaAutorizzazioni` in app.js). Finché la scheda non c'è valgono le regole di prima (qui sotto).
+  Si crea con «Crea la scheda Autorizzazioni» (Orario Facile → Esporta), che ci sposta l'elenco del file delle sostituzioni.
+- **Ruoli** (regole di prima, ancora usate finché manca la scheda Autorizzazioni): *modificatori* (possono usare Orario Facile) e *fruitori* (solo l'app). `app/js/ruoli.js` +
   `CONFIG.editori` in `app/js/config.js` (codici SHA-256 di 16 caratteri, **mai email in chiaro**: repo pubblico;
   lista vuota = tutti modificatori). Orario Facile è protetto da `orario-facile/porta.js`/`porta.css`, che riusano
   `app/js/accesso.js` (stessa sessione `orariodada.sessione`). È un controllo lato browser: la vera protezione

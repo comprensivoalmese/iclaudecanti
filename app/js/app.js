@@ -278,22 +278,8 @@
     $('#btnUtente').textContent = utente.nome.split(/\s+/).map(p => p[0]).slice(0, 2).join('').toUpperCase();
     $('#btnUtente').setAttribute('aria-label', 'Menu di ' + utente.nome);
     $('#btnMioOrario').hidden = !mioDocente;
-    // "Passa a Orario Facile" solo per chi può modificare l'orario (vedi ruoli.js)
-    $('#linkOrarioFacile').hidden = true;
-    $('#btnSostSmart').hidden = true;
-    $('#btnCambiAula').hidden = true;
-    $('#btnCompresenze').hidden = true;
-    Ruoli.puoModificare(utente.email).then(puo => {
-      puoModificareOrario = puo; aggiornaSostegno();
-      $('#linkOrarioFacile').hidden = !puo;
-      // «✎ Modifica» (scheda Compresenze di Orario Facile): per chi può modificare, se il Foglio Compresenze è indicato
-      $('#btnCompresenze').hidden = !puo || !CONFIG.fileCompresenze || !!aulaMonitor || !!secondiIngresso;
-      // «Sostituzioni smart»: sparisce anche per chi il foglio «Autorizzazioni» ha già rifiutato su questo dispositivo
-      $('#btnSostSmart').hidden = !puo || Smart.negato(utente.email);
-      $('#btnCambiAula').hidden = $('#btnSostSmart').hidden;   // stessi autorizzati delle sostituzioni
-      // chi fa le sostituzioni da qui le pubblica da solo per tutti (js/pubblica-sostituzioni.js)
-      if (puo && !aulaMonitor && !secondiIngresso && typeof PubblicaSostituzioni !== 'undefined') PubblicaSostituzioni.avviaAutomatica(utente.email);
-    });
+    // Le voci di Gestione si vedono solo con l'autorizzazione giusta (scheda «Autorizzazioni», vedi autorizzazioni.js)
+    controllaAutorizzazioni();
     $('#btnSchermoIntero').hidden = !document.fullscreenEnabled;
     // Tema: la voce "secondo l'ora" mostra gli orari impostati in config.js
     $('#sceltaTema').value = Tema.scelta();
@@ -574,6 +560,41 @@
     ridisegno (i nomi veri, e quindi il docente, possono arrivare dopo): se cambia, si rilegge la griglia del sostegno.
   */
   let puoModificareOrario = false;
+
+  /*
+    AUTORIZZAZIONI (js/autorizzazioni.js, scheda «Autorizzazioni» del Foglio Database):
+    - «Orario Facile» → voce «Passa a Orario Facile» e tasto «✎ Modifica» delle compresenze;
+    - «Sostituzioni»  → voci «Sostituzioni smart» e «Cambi d'aula» (e pubblicazione automatica delle sostituzioni).
+    Il Foglio si legge con il permesso di Google: finché manca (fonte 'attesa') le voci restano nascoste e si riprova
+    a ogni preparaControlli (per esempio appena arrivano i nomi veri, che portano il permesso). Poi la risposta si ricorda.
+  */
+  let autorizz = null, autorizzInCorso = false, pubblicazioneAvviata = false;
+  function controllaAutorizzazioni() {
+    if (!utente) return;
+    applicaAutorizzazioni();
+    if (autorizzInCorso || (autorizz && autorizz.fonte !== 'attesa')) return;
+    autorizzInCorso = true;
+    Autorizzazioni.di(utente.email)
+      .then(a => { autorizz = a; })
+      .catch(() => { /* resta com'era: si riprova al prossimo giro */ })
+      .finally(() => { autorizzInCorso = false; applicaAutorizzazioni(); });
+  }
+  function applicaAutorizzazioni() {
+    const a = autorizz || {}, pubblico = !!aulaMonitor || !!secondiIngresso;
+    const of = !!a.orarioFacile && !pubblico, sost = !!a.sostituzioni && !pubblico;
+    $('#linkOrarioFacile').hidden = !of;
+    $('#btnCompresenze').hidden = !of || !CONFIG.fileCompresenze;
+    // «Sostituzioni smart»: sparisce anche per chi il controllo delle sostituzioni ha già rifiutato su questo dispositivo
+    $('#btnSostSmart').hidden = !sost || Smart.negato(utente.email);
+    $('#btnCambiAula').hidden = $('#btnSostSmart').hidden;   // stessi autorizzati delle sostituzioni
+    // chi fa le sostituzioni da qui le pubblica da solo per tutti (js/pubblica-sostituzioni.js)
+    if (sost && !pubblicazioneAvviata && typeof PubblicaSostituzioni !== 'undefined') { pubblicazioneAvviata = true; PubblicaSostituzioni.avviaAutomatica(utente.email); }
+    // il sostegno (dato delicato) lo vede anche chi ha un'autorizzazione, oltre ai docenti riconosciuti
+    const prima = puoModificareOrario;
+    puoModificareOrario = !!(a.orarioFacile || a.sostituzioni);
+    if (prima !== puoModificareOrario) aggiornaSostegno();
+  }
+
   function aggiornaSostegno() {
     const vede = !!utente && !aulaMonitor && !secondiIngresso && (puoModificareOrario || !!mioDocente);
     if (Compresenze.vedeSostegno() === vede) return;

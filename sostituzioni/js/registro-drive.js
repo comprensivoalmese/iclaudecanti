@@ -97,11 +97,23 @@ const RegistroDrive = (() => {
   }
 
   /*
-    Controlla se l'email è nel foglio "Autorizzazioni".
-    Restituisce { abilitato: true/false, nome } oppure lancia un errore con la spiegazione.
-    Se l'account non può aprire il file (403/404), vuol dire che non è abilitato.
+    Chi può fare le sostituzioni. Dal 27/09/2026 lo decide la colonna «Sostituzioni» della scheda «Autorizzazioni» del
+    Foglio Database (app/js/autorizzazioni.js); finché quella scheda non c'è, vale il foglio «Autorizzazioni» di questo file
+    (abilitazioneVecchia, qui sotto). Restituisce { abilitato: true/false, nome } oppure lancia un errore con la spiegazione.
   */
   async function abilitazione(email) {
+    if (typeof Autorizzazioni !== 'undefined') {
+      const a = await Autorizzazioni.di(email, true);
+      if (a.fonte === 'foglio') return { abilitato: a.sostituzioni, nome: a.nome, motivo: a.sostituzioni ? '' : 'nella scheda Autorizzazioni del Foglio Database non hai l\'autorizzazione «Sostituzioni»' };
+    }
+    return abilitazioneVecchia(email);
+  }
+
+  /*
+    Il controllo di prima: l'email è nel foglio "Autorizzazioni" di questo file?
+    Se l'account non può aprire il file (403/404), vuol dire che non è abilitato.
+  */
+  async function abilitazioneVecchia(email) {
     const mia = semplice(email);
     if (!mia) return { abilitato: false, nome: '' };
     let righe;
@@ -171,5 +183,5 @@ const RegistroDrive = (() => {
     return true;
   }
 
-  return { configurato, pronto, abilitazione, aggiungi, togli, permessi };
+  return { configurato, pronto, abilitazione, abilitazioneVecchia, aggiungi, togli, permessi };
 })();
