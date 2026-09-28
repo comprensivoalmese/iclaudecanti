@@ -426,6 +426,12 @@ body.modalita-monitor .modifiche, body.modalita-ingresso .modifiche { font-size:
 /* Classe in uscita didattica (sostituzioni/js/uscite.js): lezione non svolta, cornice e colori spenti */
 .lezione-uscita { outline: 1px dotted var(--testo-tenue, #888); outline-offset: -1px; opacity: .75; }
 .lezione-uscita .etichetta-sost { background: #4b5563; color: #fff; }
+/* Sciopero / assemblea (sostituzioni/js/scioperi.js, solo quello che pubblica Orario Facile):
+   entrata posticipata / uscita anticipata = lezione che non si fa (spenta); vigilanza = classe «cerchiata» */
+.lezione-sciopero-fuori { outline: 1px dashed var(--testo-tenue, #888); outline-offset: -1px; opacity: .7; }
+.lezione-sciopero-fuori .etichetta-sost { background: #6b7280; color: #fff; }
+.lezione-vigilanza { outline: 2px solid #b45309; outline-offset: -2px; border-radius: 999px / 40%; }
+.lezione-vigilanza .etichetta-sost { background: #b45309; color: #fff; }
 /* «✕ Annulla» su una sostituzione (solo per chi può fare le sostituzioni, vedi viste.js): piccolo, bordo rosso */
 .annulla-sost {
   justify-self: start; margin-top: 2px; padding: 2px 8px; min-height: 28px; font: inherit; font-size: .72rem; font-weight: 700;

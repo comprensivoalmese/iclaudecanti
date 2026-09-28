@@ -69,6 +69,25 @@ Nella stessa scheda, sotto "Ore da coprire", il riquadro **"Cambi d'aula"** spos
 - Dati nella memoria del browser (chiave `sostituzioni.cambiAula`), condivisi tra Orario Facile e l'app.
   Codice: `js/cambi-aula.js`.
 
+## Sciopero / assemblea sindacale (solo in Orario Facile)
+
+Terzo caso di «Assenze del giorno»: **✊ Sciopero / assemblea**. Si sceglie il tipo (sciopero = tutta la giornata; assemblea =
+le ore indicate) e si carica il **file delle adesioni** (.xlsx / .ods / .csv con le colonne Docente, data_presa_visione,
+adesione). Il file si legge **solo sul computer**: i nomi servono a trovare i codici DOC… e non si salvano.
+- **Potenziali scioperanti**: hanno la data di presa visione e come adesione «Adesione confermata», «Non ha ancora maturato
+  una decisione» o niente. Non contano chi non ha la presa visione e chi ha «Adesione negata».
+- **Il piano** (anche con le compresenze: sostegno, potenziamento, alternativa): le prime ore scoperte di una classe diventano
+  **entrata posticipata** (all'orario della campanella: 3ª ora = 10:05, dopo l'intervallo), le ultime **uscita anticipata**,
+  quelle in mezzo **vigilanza** (niente lezione). Chi vigila, in quest'ordine: il docente curricolare di una classe con
+  compresenza (il compresente resta con la sua classe), un docente la cui classe non c'è, poi, se serve, si accorcia di 1-3 ore
+  l'orario di **tutta la scuola** e chi perde le ultime ore copre le ore scoperte; infine un docente libero **a debito** (+1).
+  Chi non viene usato resta **a disposizione**.
+- Si può cambiare tutto: potenziali scioperanti, riduzione dell'orario, chi vigila. Poi **✔ Conferma il piano**,
+  **🖨️ Stampa il piano**, **📄 Scarica la comunicazione alle famiglie** (documento Word da controllare) o **↺ Azzera**.
+- **Privacy**: l'adesione a uno sciopero è un dato sindacale. Nel file pubblicato e nell'app **non c'è mai chi sciopera**:
+  solo, per classe, «Entrata posticipata», «Uscita anticipata», «Vigilanza» (classe cerchiata) e chi vigila.
+  Dati: chiave `sostituzioni.scioperi`, solo codici; codice: `js/scioperi.js`.
+
 ## Uscita didattica (i casi: assenza semplice oppure uscita)
 
 In «Assenze del giorno» si sceglie il caso: **👤 Assenza di un docente** (la sostituzione semplice) oppure
@@ -187,6 +206,7 @@ sostituzioni/
   js/registro-drive.js    Foglio Google delle sostituzioni: foglio «Autorizzazioni», registri «Sostituzioni» e «Cambi aula»
   js/cambi-aula.js        modulo «Cambi d'aula» (scheda Sostituzioni e pagina «Sostituzioni smart» dell'app)
   js/uscite.js            modulo «Uscita didattica»: docenti liberati, piano proposto, a disposizione, a recupero
+  js/scioperi.js          modulo «Sciopero / assemblea»: file delle adesioni, entrate/uscite, vigilanze, comunicazione
   js/sostituzioni.js      la scheda: assenze, proposte, saldi, esportazioni (Sostituzioni.monta)
   esempio/                facsimili del foglio con nomi inventati
 ```

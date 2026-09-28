@@ -24,10 +24,14 @@ const Supplenze = (() => {
   let pubblicate = null;
   const elenchi = o => ({ assenze: Array.isArray(o && o.assenze) ? o.assenze : [], registro: Array.isArray(o && o.registro) ? o.registro : [],
     cambi: Array.isArray(o && o.cambi) ? o.cambi : [], annullate: Array.isArray(o && o.annullate) ? o.annullate : [],
-    uscite: Array.isArray(o && o.uscite) ? o.uscite : [], assenzeAnnullate: Array.isArray(o && o.assenzeAnnullate) ? o.assenzeAnnullate : [] });
+    uscite: Array.isArray(o && o.uscite) ? o.uscite : [], scioperi: Array.isArray(o && o.scioperi) ? o.scioperi : [],
+    assenzeAnnullate: Array.isArray(o && o.assenzeAnnullate) ? o.assenzeAnnullate : [] });
   // Come si riconosce la stessa voce anche senza ID (pubblicata con una versione vecchia)
   const SEGNO = { assenze: a => a.data + '|' + a.docente, registro: s => s.data + '|' + s.ora + '|' + s.classe, cambi: c => c.data + '|' + c.ora + '|' + c.classe,
-    uscite: u => u.data + '|' + (u.classi || []).join(',') };
+    uscite: u => u.data + '|' + (u.classi || []).join(','), scioperi: e => e.data };
+  // Gli scioperi di questo dispositivo nella stessa forma di quelli pubblicati (solo i confermati, solo gli effetti sulle classi)
+  const scioperiLocali = () => leggi('sostituzioni.scioperi').filter(e => e.confermato && e.esito)
+    .map(e => ({ id: e.id, data: e.data, tipo: e.tipo, riduzione: e.esito.riduzione, classi: e.esito.classi }));
   /*
     Unisce le voci pubblicate (di tutti i dispositivi) con quelle di questo dispositivo: vincono quelle di qui, e
     spariscono quelle che questo dispositivo aveva pubblicato e poi annullato (ID in "sostituzioni.pubblicateDaQui").
@@ -119,7 +123,7 @@ const Supplenze = (() => {
 
     // Le voci pubblicate (di tutti) unite a quelle registrate su questo dispositivo
     const locali = { assenze: leggi('sostituzioni.assenze'), registro: leggi('sostituzioni.registro'), cambi: leggi('sostituzioni.cambiAula'),
-      annullate: leggi('sostituzioni.annullate'), uscite: leggi('sostituzioni.uscite').filter(u => u.confermata !== false), assenzeAnnullate: leggi('sostituzioni.assenzeAnnullate') };
+      annullate: leggi('sostituzioni.annullate'), uscite: leggi('sostituzioni.uscite').filter(u => u.confermata !== false), scioperi: scioperiLocali(), assenzeAnnullate: leggi('sostituzioni.assenzeAnnullate') };
     const fonte = unisci(pubblicate, locali);
 
     // 0. le uscite didattiche (sostituzioni/js/uscite.js): "giorno|ora|classe" delle classi fuori
@@ -142,9 +146,10 @@ const Supplenze = (() => {
     });
 
     // 2. le sostituzioni assegnate: chi sostituisce, e la lezione in più nel suo orario
+    //    (non le vigilanze di uno sciopero: si mostrano al punto 4, senza dire chi sciopera)
     fonte.registro.forEach(s => {
       const giorno = giornoDi.get(s.data);
-      if (!giorno || !D.mappa.docente.has(s.sostituto)) return;
+      if (s.sciopero || !giorno || !D.mappa.docente.has(s.sostituto)) return;
       const l = D.lezioni.find(x => x.giorno === giorno && x.ora === s.ora && x.classe === s.classe && x.docente === s.assente);
       if (!l) return;   // l'orario è cambiato e quella lezione non c'è più
       // voce = la sostituzione così com'è registrata: serve al tasto «✕ Annulla» della tabella
@@ -159,6 +164,31 @@ const Supplenze = (() => {
       if (giorno && c.a) cambi.set([giorno, c.ora, c.classe].join('|'), { da: c.da || '', a: c.a });
     });
 
+    // 4. scioperi e assemblee sindacali (sostituzioni/js/scioperi.js): per ogni classe entrata posticipata, uscita
+    //    anticipata e vigilanza (con chi vigila, che la vede anche nel suo orario). Mai chi sciopera.
+    fonte.scioperi.forEach(e => {
+      const giorno = giornoDi.get(e.data);
+      if (!giorno || !Array.isArray(e.classi)) return;
+      e.classi.forEach(c => {
+        const lezC = D.lezioni.filter(l => l.giorno === giorno && l.classe === c.classe);
+        lezC.forEach(l => {
+          const k = chiave(giorno, l.ora, l.classe, l.docente);
+          if (c.nonEntra) segnate.set(k, { sciopero: 'nonEntra', assente: '', sostituto: '' });
+          else if (c.entra && l.ora < c.entra) segnate.set(k, { sciopero: 'entrata', entra: c.entra, assente: '', sostituto: '' });
+          else if (c.esce && l.ora > c.esce) segnate.set(k, { sciopero: 'uscita', esce: c.esce, assente: '', sostituto: '' });
+        });
+        (c.vigilanza || []).forEach(v => {
+          lezC.filter(l => l.ora === v.ora).forEach(l => segnate.set(chiave(giorno, l.ora, l.classe, l.docente), { sciopero: 'vigilanza', vigila: v.docente, assente: '', sostituto: '' }));
+          const l = lezC.find(x => x.ora === v.ora && !x.compresenza);
+          if (l && v.docente && D.mappa.docente.has(v.docente))
+            extra.push(Object.assign({}, l, { docente: v.docente, materia: 'Vigilanza', vigilanzaSciopero: true }));
+          // il docente spostato da una classe in compresenza: sulla sua lezione di là si legge dove va
+          if (v.da) D.lezioni.filter(x => x.giorno === giorno && x.ora === v.ora && x.classe === v.da && x.docente === v.docente)
+            .forEach(x => segnate.set(chiave(giorno, x.ora, x.classe, x.docente), { sciopero: 'spostato', verso: c.classe, assente: '', sostituto: '' }));
+        });
+      });
+    });
+
     return { segnate, extra, date, cambi };
   }
 
@@ -171,8 +201,22 @@ const Supplenze = (() => {
   function di(sost, l) {
     if (!sost) return null;
     if (l.sostituzione) return { assente: l.assente, sostituto: l.docente, copia: true, voce: l.voce };
+    if (l.vigilanzaSciopero) return { sciopero: 'vigilanza', vigila: l.docente, copia: true, assente: '', sostituto: '' };
     return sost.segnate.get(chiave(l.giorno, l.ora, l.classe, l.docente)) || null;
   }
 
-  return { settimana, di, cambioAula, scarica, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula', 'sostituzioni.annullate', 'sostituzioni.uscite', 'sostituzioni.assenzeAnnullate'] };
+  /*
+    I testi di una lezione toccata da uno sciopero / assemblea (s = quello che restituisce di(), con s.sciopero):
+    { etichetta, riga, classe } per la tabella, «In breve» e il riquadro «per te». Mai chi sciopera.
+  */
+  function testoSciopero(s, nomeDocente) {
+    if (!s || !s.sciopero) return null;
+    if (s.sciopero === 'nonEntra') return { etichetta: '✊ Sciopero', riga: 'servizio non garantito: la classe non entra', classe: 'lezione-sciopero-fuori' };
+    if (s.sciopero === 'entrata') return { etichetta: '⏰ Entrata posticipata', riga: `la classe entra alla ${s.entra}ª ora`, classe: 'lezione-sciopero-fuori' };
+    if (s.sciopero === 'uscita') return { etichetta: '⏰ Uscita anticipata', riga: `la classe esce dopo la ${s.esce}ª ora`, classe: 'lezione-sciopero-fuori' };
+    if (s.sciopero === 'spostato') return { etichetta: '👁 In vigilanza altrove', riga: `va in vigilanza in ${typeof Dati !== 'undefined' ? Dati.nome('classe', s.verso) : s.verso}; qui resta il compresente`, classe: 'lezione-sciopero-fuori' };
+    return { etichetta: '👁 Vigilanza', riga: 'solo vigilanza, niente lezione' + (s.vigila ? ': ' + nomeDocente(s.vigila) : ''), classe: 'lezione-vigilanza' };
+  }
+
+  return { settimana, di, cambioAula, scarica, testoSciopero, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula', 'sostituzioni.annullate', 'sostituzioni.uscite', 'sostituzioni.scioperi', 'sostituzioni.assenzeAnnullate'] };
 })();

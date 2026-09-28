@@ -126,6 +126,15 @@ Le parti del progetto:
   si coprono (`oreDaCoprire`); i docenti «liberati» coprono senza +1 (`reindirizzato` nel registro, esclusi dalle ore da riportare);
   le ore liberate all'inizio/fine giornata vanno a recupero (`come: 'recupero'`), quelle in mezzo «a disposizione»; almeno 1 ora
   resta sempre. Pubblicate solo data/classi/ore (`uscite` nel file pubblicato); nell'app «🚌 Uscita didattica» (`sost.uscita`).
+  **Scioperi e assemblee sindacali** (`sostituzioni/js/scioperi.js`, caso «✊ Sciopero / assemblea», SOLO in Orario Facile; chiave
+  `sostituzioni.scioperi`, solo codici): si carica il file delle adesioni (Docente, data_presa_visione, adesione; letto solo nel
+  browser con `Foglio.leggiTabelle`, nomi solo in memoria); potenziali scioperanti = presa visione + adesione confermata / «non ha
+  ancora maturato una decisione» / vuota. `calcola()` guarda anche le compresenze (`Compresenze.lezioni(D)`, sostegno compreso):
+  ore iniziali scoperte = entrata posticipata (orari da `dati/campanella.json`), finali = uscita anticipata, intermedie = vigilanza
+  (priorità: curricolare di una classe in compresenza, liberati, orario di tutta la scuola ridotto di 1-3 ore con chi perde le
+  ultime ore, liberi a debito con +1). Conferma = sostituzioni con `sciopero`/`vigilanza` nel registro, NON pubblicate; nel file
+  pubblicato solo `scioperi` con gli effetti sulle classi (entra/esce/vigilanza e chi vigila, `da` se spostato). **Mai pubblicare
+  chi sciopera** (dato sindacale, GDPR art. 9). L'app legge soltanto: `Supplenze.testoSciopero()` per tabella, In breve e avviso.
   **Sostituzioni smart** (`app/js/smart.js`, menu dell'app): versione semplice della scheda che usa lo stesso motore con
   `Sostituzioni.collega(funzioneOrario, { avvisa, ridisegna })` (restituisce le funzioni del motore). Se cambi il motore,
   controlla sia la scheda (`monta`) sia la pagina smart (`collega`); la costante `VERSIONE` in cima a sostituzioni.js

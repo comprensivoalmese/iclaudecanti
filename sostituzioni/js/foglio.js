@@ -284,6 +284,11 @@ const Foglio = (() => {
 
   // ---------- 6. Punto d'ingresso: riceve il file scelto dall'utente ----------
   async function leggiFile(file) {
+    return interpreta(await leggiTabelle(file), file.name);
+  }
+  // Legge un file .ods / .xlsx / .csv e restituisce i fogli così come sono: [{ nome, righe: [[celle…]…] }]
+  // (lo usa anche il modulo «Sciopero / assemblea» per il file delle adesioni, js/scioperi.js)
+  async function leggiTabelle(file) {
     const estensione = (file.name.split('.').pop() || '').toLowerCase();
     const buffer = await file.arrayBuffer();
     let fogli;
@@ -301,8 +306,8 @@ const Foglio = (() => {
       else if (zip.contiene('xl/workbook.xml')) fogli = await leggiXlsx(zip);
       else throw new Error('Formato non riconosciuto: usa un file .ods, .xlsx oppure .csv.');
     }
-    return interpreta(fogli, file.name);
+    return fogli;
   }
 
-  return { leggiFile, interpreta, semplifica };
+  return { leggiFile, leggiTabelle, interpreta, semplifica };
 })();

@@ -92,7 +92,13 @@ const Viste = (() => {
     // Docente assente o sostituito questa settimana (vedi supplenze.js): cornice colorata, etichetta e nomi
     const sost = Supplenze.di(stato.sostituzioni, l);
     let classeSost = '', etichettaSost = '', rigaSost = '';
-    if (sost && sost.uscita) {
+    const sc = Supplenze.testoSciopero && Supplenze.testoSciopero(sost, id => Dati.nome('docente', id));
+    if (sc) {
+      // sciopero / assemblea (sostituzioni/js/scioperi.js): entrata posticipata, uscita anticipata o vigilanza (classe cerchiata)
+      classeSost = ' ' + sc.classe;
+      etichettaSost = `<span class="etichetta-sost">${esc(sc.etichetta)}</span>`;
+      rigaSost = `<span class="dato-sost">${esc(sc.riga)}</span>`;
+    } else if (sost && sost.uscita) {
       // la classe è fuori per un'uscita didattica (sostituzioni/js/uscite.js): la lezione non si fa
       classeSost = ' lezione-uscita';
       etichettaSost = '<span class="etichetta-sost">🚌 Uscita didattica</span>';
@@ -118,7 +124,7 @@ const Viste = (() => {
         aria-label="Annulla la sostituzione della ${l.ora}ª ora in ${esc(Dati.nome('classe', l.classe))} (sostituisce ${esc(Dati.nome('docente', sost.sostituto))})">✕ Annulla</button>`;
     }
     // Allo stesso modo si può togliere l'assenza (tutte le sue ore di quel giorno): Sostituzioni.togliAssenzaPerTutti
-    if (sost && !sost.sostituto && !sost.uscita && sost.assenza && stato.puoAnnullare) {
+    if (sost && !sost.sostituto && !sost.uscita && !sost.sciopero && sost.assenza && stato.puoAnnullare) {
       const a = sost.assenza;
       rigaSost += `<button type="button" class="annulla-sost" data-togli-assenza="${esc([a.id || '', a.data, a.docente].join('|'))}"
         aria-label="Togli l'assenza di ${esc(Dati.nome('docente', sost.assente))} in questo giorno">✕ Togli assenza</button>`;

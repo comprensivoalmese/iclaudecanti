@@ -13,7 +13,8 @@ const Archivio = (() => {
     assenzeAnnullate: 'sostituzioni.assenzeAnnullate', // assenze di ALTRI dispositivi tolte da qui (vedi togliAssenzaPerTutti)
     daSistemare: 'sostituzioni.daSistemare',   // correzioni del foglio del conteggio ancora da fare (assenze tolte da altri)
     cambiAula: 'sostituzioni.cambiAula',       // i cambi d'aula di un giorno (js/cambi-aula.js)
-    uscite: 'sostituzioni.uscite'              // le uscite didattiche (js/uscite.js)
+    uscite: 'sostituzioni.uscite',             // le uscite didattiche (js/uscite.js)
+    scioperi: 'sostituzioni.scioperi'          // scioperi e assemblee sindacali (js/scioperi.js): solo codici, mai nomi
   };
 
   // Fino al 27/09/2026 la chiave dei cambi d'aula mancava e i cambi finivano sotto la chiave "undefined":

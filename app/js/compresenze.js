@@ -149,6 +149,17 @@ const Compresenze = (() => {
     if (!D.lezioniCurricolari) D.lezioniCurricolari = D.lezioni;
     const base = D.lezioniCurricolari;
     if (!mostra()) { D.lezioni = base; return; }
+    D.lezioni = base.concat(lezioni(D));
+  }
+
+  /*
+    Tutte le compresenze come lezioni (compresenza: true), SENZA toccare D e senza guardare il quadratino:
+    le usa anche il modulo «Sciopero / assemblea» (sostituzioni/js/scioperi.js) per sapere chi è in classe.
+    Il sostegno c'è solo se chi usa la pagina lo può vedere (impostaSostegno).
+  */
+  function lezioni(D) {
+    if (!D) return [];
+    const base = D.lezioniCurricolari || D.lezioni;
     const titolare = (g, o, cl) => base.find(l => l.giorno === g && l.ora === o && l.classe === cl);
     const perClasse = new Map(D.classe.map(c => [semplice(c.nome), c.id]));
     const perCodice = new Map(D.docente.map(e => [String(e.codice !== undefined ? e.codice : e.nome).trim().toUpperCase(), e.id]));
@@ -168,10 +179,10 @@ const Compresenze = (() => {
     (D.compresenzeOF || []).forEach(l => {
       if (!extra.some(x => x.giorno === l.giorno && x.ora === l.ora && x.classe === l.classe && x.docente === l.docente)) extra.push(l);
     });
-    D.lezioni = base.concat(extra);
+    return extra;
   }
 
-  return { configurato, scarica, applica, mostra, impostaMostra, interpreta, righeDaTabella, righeDaGriglia, completa, imposta, semplice,
+  return { configurato, scarica, applica, lezioni, mostra, impostaMostra, interpreta, righeDaTabella, righeDaGriglia, completa, imposta, semplice,
     impostaSostegno, vedeSostegno: () => vedeSostegno, fileSostegno,
     // le righe complete del Foglio Compresenze (ultima copia letta), per l'«Orario di sintesi» di Orario Facile
     elenco: () => (righe || []).slice() };

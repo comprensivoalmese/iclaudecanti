@@ -17,7 +17,7 @@ const Sostituzioni = (() => {
   const PROPOSTE_VISIBILI = 4;
   // Versione della scheda, mostrata in cima: serve a capire se la pagina aperta è quella aggiornata
   // (va cambiata a ogni modifica importante del modo in cui la scheda scrive nei fogli)
-  const VERSIONE = '27/09/2026 · 10 (assenze e sostituzioni annullabili per tutti, con il foglio del conteggio aggiornato)';
+  const VERSIONE = '28/09/2026 · 11 (sciopero / assemblea sindacale: entrate posticipate, uscite anticipate, vigilanze)';
   const NOMI_GIORNI = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
   // Dove si trovano i facsimili del foglio, rispetto alla pagina di Orario Facile
   const CARTELLA_ESEMPI = '../sostituzioni/esempio/';
@@ -577,6 +577,9 @@ const Sostituzioni = (() => {
     };
     if (op.reindirizzato) s.reindirizzato = true;
     if (op.uscita) s.uscita = op.uscita;
+    // sciopero / assemblea (js/scioperi.js): la sostituzione è una VIGILANZA e non si pubblica con l'assente
+    // (chi sciopera è un dato sindacale: nell'app si vede solo «Vigilanza» sulla classe)
+    if (op.sciopero) { s.sciopero = op.sciopero; s.vigilanza = true; }
     registro.push(s);
     salva('registro', registro);
     inCorso.add(s.id);   // finché il +1 non è scritto, questa sostituzione non si può annullare
@@ -1417,6 +1420,11 @@ const Sostituzioni = (() => {
       if (!$('moduloUscita').hidden) Uscite.disegnaModulo($('moduloUscita'), dataScelta);
       Uscite.disegnaPiano($('pianoUscita'), dataScelta);
     }
+    // Scioperi e assemblee sindacali (modulo separato, js/scioperi.js)
+    if (typeof Scioperi !== 'undefined') {
+      if (!$('moduloSciopero').hidden) Scioperi.disegnaModulo($('moduloSciopero'), dataScelta);
+      Scioperi.disegnaPiano($('pianoSciopero'), dataScelta);
+    }
     disegnaTutte();
     // Cambi d'aula dello stesso giorno (modulo separato, js/cambi-aula.js)
     if (typeof CambiAula !== 'undefined') CambiAula.disegna($('cambiAula'), dataScelta, 'scheda');
@@ -1543,8 +1551,10 @@ const Sostituzioni = (() => {
       <div class="seg sost-casi" role="group" aria-label="Che cosa succede">
         <button type="button" id="sost-casoAssenza" aria-pressed="true">👤 Assenza di un docente</button>
         <button type="button" id="sost-casoUscita" aria-pressed="false">🚌 Uscita didattica</button>
+        <button type="button" id="sost-casoSciopero" aria-pressed="false">✊ Sciopero / assemblea</button>
       </div>
       <div id="sost-moduloUscita" class="sost-modulo" hidden></div>
+      <div id="sost-moduloSciopero" class="sost-modulo" hidden></div>
       <form id="sost-moduloAssenza" class="sost-modulo">
         <label class="fl" for="sost-docenteAssente">Docente assente</label>
         <select id="sost-docenteAssente"></select>
@@ -1568,6 +1578,7 @@ const Sostituzioni = (() => {
         dal più <b>alto debito di ore</b> in giù. A parità di debito vengono prima chi ha un'ora buca e chi conosce già la classe.</p>
       <nav id="sost-settimana" class="sost-settimana" aria-label="Giorni della settimana"></nav>
       <div id="sost-pianoUscita"></div>
+      <div id="sost-pianoSciopero"></div>
       <div id="sost-oreDaCoprire"></div>
       <div id="sost-stampaGiorno" class="sost-stampabile"></div>
     </div>
@@ -1633,16 +1644,19 @@ const Sostituzioni = (() => {
     });
     $('moduloAssenza').addEventListener('submit', registraAssenza);
     // i due casi: assenza di un docente oppure uscita didattica (si vede un modulo alla volta)
-    const caso = uscita => {
-      $('casoAssenza').setAttribute('aria-pressed', String(!uscita));
-      $('casoUscita').setAttribute('aria-pressed', String(uscita));
-      $('moduloAssenza').hidden = uscita;
-      $('moduloUscita').hidden = !uscita;
+    // i tre casi: 'assenza' (sostituzione semplice), 'uscita' (uscita didattica), 'sciopero' (sciopero / assemblea)
+    const caso = quale => {
+      [['Assenza', 'assenza'], ['Uscita', 'uscita'], ['Sciopero', 'sciopero']].forEach(([nome, k]) => {
+        $('caso' + nome).setAttribute('aria-pressed', String(quale === k));
+        $('modulo' + nome).hidden = quale !== k;
+      });
       disegnaTutto();
     };
-    $('casoAssenza').addEventListener('click', () => caso(false));
-    $('casoUscita').addEventListener('click', () => caso(true));
+    $('casoAssenza').addEventListener('click', () => caso('assenza'));
+    $('casoUscita').addEventListener('click', () => caso('uscita'));
+    $('casoSciopero').addEventListener('click', () => caso('sciopero'));
     if (!conUscite()) $('casoUscita').hidden = true;
+    if (typeof Scioperi === 'undefined') $('casoSciopero').hidden = true;
     $('stampa').addEventListener('click', stampa);
     $('scaricaRegistro').addEventListener('click', scaricaRegistro);
     $('scaricaRiepilogo').addEventListener('click', scaricaRiepilogo);

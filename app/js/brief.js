@@ -89,11 +89,13 @@ const Breve = (() => {
     const c = cambio(l);
     const nome = id => esc(Dati.nome('docente', id));
     let nota = '';
-    if (s && s.uscita) nota = '🚌 Uscita didattica: la classe è fuori, lezione non svolta';
+    const sc = s && Supplenze.testoSciopero && Supplenze.testoSciopero(s, id => Dati.nome('docente', id));
+    if (sc) nota = `${esc(sc.etichetta)}: ${esc(sc.riga)}`;
+    else if (s && s.uscita) nota = '🚌 Uscita didattica: la classe è fuori, lezione non svolta';
     else if (s && s.copia) nota = `🔄 Sostituisci ${nome(s.assente)}`;
     else if (s && s.sostituto) nota = `🔄 ${nome(s.assente)} assente → sostituisce <b>${nome(s.sostituto)}</b>`;
     else if (s) nota = `⚠ ${nome(s.assente)} assente · sostituto da trovare`;
-    const tipo = s && s.uscita ? ' uscita' : s && !s.sostituto && !s.copia ? ' scoperta' : '';
+    const tipo = s && (s.uscita || s.sciopero) ? ' uscita' : s && !s.sostituto && !s.copia ? ' scoperta' : '';
     return (nota ? `<p class="nota-sost-breve${tipo}">${nota}</p>` : '') +
       (c ? `<p class="nota-sost-breve cambio">⇄ Aula cambiata${c.da ? ` (era ${esc(Dati.nome('aula', c.da))})` : ''}</p>` : '');
   }

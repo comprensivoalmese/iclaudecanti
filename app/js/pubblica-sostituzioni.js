@@ -40,7 +40,8 @@ const PubblicaSostituzioni = (() => {
       assenze: leggiLocale('sostituzioni.assenze', []).filter(recente).map(a => ({ id: a.id, data: a.data, docente: a.docente, ore: a.ore })),
       // nelFoglio / nelRegistro: se l'ora è stata segnata nel foglio del conteggio e nel foglio «Sostituzioni»;
       // servono a chi annulla la sostituzione da un altro dispositivo (Sostituzioni.annullaVoce)
-      registro: leggiLocale('sostituzioni.registro', []).filter(recente)
+      // (le vigilanze di uno sciopero NON si pubblicano come sostituzioni: direbbero chi sciopera, vedi «scioperi» qui sotto)
+      registro: leggiLocale('sostituzioni.registro', []).filter(s => recente(s) && !s.sciopero)
         .map(s => ({ id: s.id, data: s.data, ora: s.ora, classe: s.classe, assente: s.assente, sostituto: s.sostituto,
           nelFoglio: !!s.nelFoglio, nelRegistro: !!s.nelRegistro, riportata: !!s.riportata })),
       // cambi d'aula (sostituzioni/js/cambi-aula.js): senza il motivo, che è testo libero
@@ -53,6 +54,11 @@ const PubblicaSostituzioni = (() => {
         .map(a => ({ id: a.id || '', data: a.data, docente: a.docente })),
       // uscite didattiche (sostituzioni/js/uscite.js): solo quali classi sono fuori e quando (niente descrizione)
       // (le simulazioni non ancora confermate restano sul dispositivo)
+      // scioperi e assemblee confermati (sostituzioni/js/scioperi.js): SOLO gli effetti sulle classi (entrata posticipata,
+      // uscita anticipata, vigilanza e chi vigila). Mai chi sciopera: è un dato sindacale.
+      scioperi: leggiLocale('sostituzioni.scioperi', []).filter(e => recente(e) && e.confermato && e.esito)
+        .map(e => ({ id: e.id, data: e.data, tipo: e.tipo, riduzione: e.esito.riduzione, classi: e.esito.classi.map(c => ({ classe: c.classe,
+          nonEntra: !!c.nonEntra, entra: c.entra, esce: c.esce, vigilanza: (c.vigilanza || []).map(v => Object.assign({ ora: v.ora, docente: v.docente }, v.da ? { da: v.da } : {})) })) })),
       uscite: leggiLocale('sostituzioni.uscite', []).filter(u => recente(u) && u.confermata !== false)
         .map(u => ({ id: u.id, data: u.data, classi: u.classi, ore: u.ore }))
     };
@@ -64,6 +70,7 @@ const PubblicaSostituzioni = (() => {
   const segnoR = s => 'R|' + s.data + '|' + s.ora + '|' + s.classe;
   const segnoC = c => 'C|' + c.data + '|' + c.ora + '|' + c.classe;
   const segnoU = u => 'U|' + u.data + '|' + (u.classi || []).join(',');
+  const segnoS = e => 'S|' + e.data;   // uno sciopero / assemblea per giorno
 
   /*
     Sostituzioni annullate: elenco di { id, data, ora, classe }. Una sostituzione è "colpita" se ha lo stesso ID
@@ -156,12 +163,13 @@ const PubblicaSostituzioni = (() => {
     let testo;
     try { testo = await Dati.leggiDrive(CONFIG.fileSostituzioniPubblicate); }
     catch (e) { throw new Error('non riesco a leggere le sostituzioni già pubblicate (' + (e && e.message ? e.message : e) + '): riprova tra poco'); }
-    let remoto = { assenze: [], registro: [], cambi: [], annullate: [], uscite: [], assenzeAnnullate: [] };
+    let remoto = { assenze: [], registro: [], cambi: [], annullate: [], uscite: [], scioperi: [], assenzeAnnullate: [] };
     try {
       const o = JSON.parse(testo || '{}');
       remoto = { assenze: Array.isArray(o.assenze) ? o.assenze : [], registro: Array.isArray(o.registro) ? o.registro : [],
         cambi: Array.isArray(o.cambi) ? o.cambi : [], annullate: Array.isArray(o.annullate) ? o.annullate : [],
-        uscite: Array.isArray(o.uscite) ? o.uscite : [], assenzeAnnullate: Array.isArray(o.assenzeAnnullate) ? o.assenzeAnnullate : [] };
+        uscite: Array.isArray(o.uscite) ? o.uscite : [], scioperi: Array.isArray(o.scioperi) ? o.scioperi : [],
+        assenzeAnnullate: Array.isArray(o.assenzeAnnullate) ? o.assenzeAnnullate : [] };
     } catch (e) { throw new Error('il file delle sostituzioni pubblicate non è leggibile: controllalo su Drive prima di pubblicare'); }
     // prima di unire: le sostituzioni annullate da altri spariscono anche dal registro di questo dispositivo,
     // altrimenti le ripubblicheremmo noi
@@ -172,9 +180,9 @@ const PubblicaSostituzioni = (() => {
     const nonAnnullata = (colpisce => s => !colpisce(s))(colpita(annullate));
     const assenzaValida = (colpisce => a => !colpisce(a))(assenzaColpita(assenzeAnnullate));
     const L = locali();
-    const idLocali = new Set(L.assenze.map(x => x.id).concat(L.registro.map(x => x.id), L.cambi.map(x => x.id), L.uscite.map(x => x.id)));
+    const idLocali = new Set(L.assenze.map(x => x.id).concat(L.registro.map(x => x.id), L.cambi.map(x => x.id), L.uscite.map(x => x.id), L.scioperi.map(x => x.id)));
     const primaDaQui = new Set(leggiLocale(CHIAVE_DA_QUI, []));
-    const segniLocali = new Set(L.assenze.map(segnoA).concat(L.registro.map(segnoR), L.cambi.map(segnoC), L.uscite.map(segnoU)));
+    const segniLocali = new Set(L.assenze.map(segnoA).concat(L.registro.map(segnoR), L.cambi.map(segnoC), L.uscite.map(segnoU), L.scioperi.map(segnoS)));
     // tengo quelle degli altri: non annullate qui, non rifatte qui, e non troppo vecchie
     const tieni = (x, segno) => recente(x) && !(x.id && (idLocali.has(x.id) || primaDaQui.has(x.id))) && !segniLocali.has(segno(x));
     const unito = {
@@ -183,6 +191,7 @@ const PubblicaSostituzioni = (() => {
       registro: remoto.registro.filter(x => tieni(x, segnoR)).concat(L.registro).filter(nonAnnullata),
       cambi: remoto.cambi.filter(x => tieni(x, segnoC)).concat(L.cambi),
       uscite: remoto.uscite.filter(x => tieni(x, segnoU)).concat(L.uscite),
+      scioperi: remoto.scioperi.filter(x => tieni(x, segnoS)).concat(L.scioperi),
       annullate,
       assenzeAnnullate
     };
