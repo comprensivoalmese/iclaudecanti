@@ -14,8 +14,7 @@
      - ore scoperte alla fine → USCITA ANTICIPATA;
      - ore scoperte in mezzo → VIGILANZA (non si fa lezione), scegliendo in quest'ordine:
        a. il docente CURRICOLARE di una classe con compresenza (il compresente resta con la sua classe);
-       b. un docente «liberato»: la sua classe in quell'ora non c'è (entra dopo / esce prima);
-       c. se serve, si ACCORCIA l'orario di tutta la scuola di 1, 2 o 3 ore: chi perde le ultime ore copre le ore
+       b. se serve, si ACCORCIA l'orario di tutta la scuola di 1, 2 o 3 ore: chi perde le ultime ore copre le ore
           scoperte della giornata in cui è libero (tante quante le ore perse), gli altri restano a disposizione.
        MAI ore in più (docenti liberi o «a debito»): durante uno sciopero si usano solo le ore di chi è già in servizio.
   3. Tutto si può cambiare (potenziali, riduzione, chi vigila); poi «✔ Conferma il piano» registra le vigilanze
@@ -109,7 +108,7 @@ const Scioperi = (() => {
     Calcola il piano di un evento. Restituisce { k (ore tolte alla giornata), limite (ultima ora che si fa),
     classi: Map id -> { nonEntra, entra, esce, fuori: Set(ore), scoperte: [ore] }, coperture: [{ classe, ora, docente,
     tipo, da, alternative }], nonCoperte, disposizione: [{ docente, ore }] }.
-    tipo: 'spostato' (curricolare da una classe in compresenza) | 'liberato' | 'recuperato' | '' (nessuno).
+    tipo: 'spostato' (curricolare da una classe in compresenza) | 'recuperato' | '' (nessuno).
   */
   function calcola(ev) {
     const mo = m(), D = mo.orario(); if (!D) return null;
@@ -163,9 +162,7 @@ const Scioperi = (() => {
           if (pres.length - (presiDa.get(h + '|' + c2) || 0) < 2) return;
           pres.filter(l => !l.compresenza).forEach(l => aggiungi(l.docente, 'spostato', c2));
         });
-        // b. liberati: in quell'ora avevano lezione con una classe che non c'è (entra dopo / esce prima)
-        tutte.filter(l => l.ora === h && !presente(l.classe, h) && l.ora <= limite && !occupato(l.docente, h)).forEach(l => aggiungi(l.docente, 'liberato'));
-        // c. recuperati dalla giornata accorciata
+        // b. recuperati dalla giornata accorciata (chi è presente ha la sua classe in aula: non è mai «libero»)
         tagliate.forEach((s, t) => { if ((credito.get(t) || 0) > 0 && !occupato(t, h)) aggiungi(t, 'recuperato'); });
         // NIENTE docenti liberi né «a debito»: durante uno sciopero non si coprono gli scioperanti con ore in più,
         // si usano solo le ore di chi è già in servizio (se non bastano, si riduce l'orario di tutta la scuola)
@@ -472,7 +469,7 @@ const Scioperi = (() => {
     const ev = eventoDel(iso), r = ev && calcola(ev);
     if (!r) { box.innerHTML = ''; return; }
     const mo = m(), nome = id => esc(mo.nomeDocente(id)), cl = id => esc(mo.nome('classe', id));
-    const TIPO = { spostato: 'curricolare spostato da', liberato: 'liberato (la sua classe non c\'è)', recuperato: 'ora recuperata dal fondo',
+    const TIPO = { spostato: 'curricolare spostato da', recuperato: 'ora recuperata dal fondo',
     };
     const nota = c => c.tipo === 'spostato' ? `${TIPO.spostato} ${cl(c.da)} (resta il compresente)` : TIPO[c.tipo] || '⚠ nessuno disponibile';
     const opz = c => `<option value="">— nessuno —</option>` + c.alternative.map(a =>
