@@ -579,7 +579,7 @@ const Sostituzioni = (() => {
     if (op.uscita) s.uscita = op.uscita;
     // sciopero / assemblea (js/scioperi.js): la sostituzione è una VIGILANZA e non si pubblica con l'assente
     // (chi sciopera è un dato sindacale: nell'app si vede solo «Vigilanza» sulla classe)
-    if (op.sciopero) { s.sciopero = op.sciopero; s.vigilanza = true; }
+    if (op.sciopero) { s.sciopero = op.sciopero; s.vigilanza = !op.lezione; }   // assemblea: si fa lezione (lezione: true)
     registro.push(s);
     salva('registro', registro);
     inCorso.add(s.id);   // finché il +1 non è scritto, questa sostituzione non si può annullare

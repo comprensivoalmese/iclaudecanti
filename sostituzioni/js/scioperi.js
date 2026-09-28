@@ -83,14 +83,12 @@ const Scioperi = (() => {
     const chiave = n => semplice(n).split(' ').filter(Boolean).sort().join(' ');
     const perNome = new Map();
     mo.orario().docente.forEach(d => { perNome.set(chiave(mo.nomeVero(d.id)), d.id); });
-    const esito = { potenziali: [], nonInformati: 0, negati: 0, nonTrovati: [] };
+    // ogni riga del file: { nome, id (o '' se non trovato nell'orario), presa, ades }; la scelta di chi conta la fa classifica()
+    const voci = [];
     righe.slice(testa + 1).forEach(r => {
       const nome = String(r[cDoc] == null ? '' : r[cDoc]).trim(); if (!nome) return;
       const presa = String(r[cPresa] == null ? '' : r[cPresa]).trim() !== '';
       const ades = semplice(r[cAdes]);
-      if (!presa) { esito.nonInformati++; return; }        // non informato: non conta
-      if (ades.includes('negat')) { esito.negati++; return; }  // «Adesione negata»: sicuramente non sciopera
-      // confermata, «non ha ancora maturato una decisione» o vuota: potenziale scioperante
       let id = perNome.get(chiave(nome));
       if (!id) {
         // se nel file c'è anche un secondo nome: basta che tutte le parole del nome dell'orario ci siano
@@ -98,7 +96,28 @@ const Scioperi = (() => {
         const trovati = [...perNome].filter(([k]) => k && k.split(' ').every(p => parole.has(p)));
         if (trovati.length === 1) id = trovati[0][1];
       }
-      if (id) { if (!esito.potenziali.includes(id)) esito.potenziali.push(id); } else esito.nonTrovati.push(nome);
+      voci.push({ nome, id: id || '', presa, ades });
+    });
+    return voci;
+  }
+
+  /*
+    Chi conta, secondo il tipo di evento. Restituisce { potenziali: [id], nonInformati, negati, inServizio, nonTrovati: [nomi] }.
+    - SCIOPERO: potenziali = presa visione + adesione confermata / «non ha ancora maturato una decisione» / vuota;
+      non contano chi non ha la presa visione e chi ha «Adesione negata».
+    - ASSEMBLEA (CCNL Istruzione e Ricerca 18/01/2024, art. 31 c. 8-9): conta SOLO chi ha dichiarato la partecipazione
+      («Adesione confermata»: la dichiarazione è irrevocabile); tutti gli altri sono regolarmente in servizio.
+  */
+  function classifica(voci, tipo) {
+    const esito = { potenziali: [], nonInformati: 0, negati: 0, inServizio: 0, nonTrovati: [] };
+    voci.forEach(v => {
+      let conta;
+      if (tipo === 'assemblea') { conta = v.ades.includes('confermat'); if (!conta) esito.inServizio++; }
+      else if (!v.presa) { esito.nonInformati++; conta = false; }
+      else if (v.ades.includes('negat')) { esito.negati++; conta = false; }
+      else conta = true;
+      if (!conta) return;
+      if (v.id) { if (!esito.potenziali.includes(v.id)) esito.potenziali.push(v.id); } else esito.nonTrovati.push(v.nome);
     });
     return esito;
   }
@@ -164,8 +183,17 @@ const Scioperi = (() => {
         });
         // b. recuperati dalla giornata accorciata (chi è presente ha la sua classe in aula: non è mai «libero»)
         tagliate.forEach((s, t) => { if ((credito.get(t) || 0) > 0 && !occupato(t, h)) aggiungi(t, 'recuperato'); });
-        // NIENTE docenti liberi né «a debito»: durante uno sciopero non si coprono gli scioperanti con ore in più,
-        // si usano solo le ore di chi è già in servizio (se non bastano, si riduce l'orario di tutta la scuola)
+        // SCIOPERO: NIENTE docenti liberi né «a recupero»: non si coprono gli scioperanti con ore in più, si usano solo
+        // le ore di chi è già in servizio (se non bastano, si riduce l'orario di tutta la scuola).
+        // ASSEMBLEA (opzione «usa i docenti a recupero»): si possono chiamare i docenti liberi con ore da recuperare
+        // (saldo negativo nel foglio del conteggio), prima chi ne deve di più e chi è già a scuola: +1 nel conteggio.
+        if (ev.tipo === 'assemblea' && ev.usaRecupero !== false) {
+          D.docente.filter(t => !occupato(t.id, h)).map(t => ({ id: t.id, saldo: mo.saldoDi(t.id),
+            aScuola: tutte.some(l => l.docente === t.id && presente(l.classe, l.ora)) }))
+            .filter(x => x.saldo && x.saldo.attuale < 0)
+            .sort((a, b) => (b.aScuola - a.aScuola) || (a.saldo.attuale - b.saldo.attuale))
+            .forEach(x => aggiungi(x.id, 'recupero'));
+        }
         return out;
       }
 
@@ -271,12 +299,12 @@ const Scioperi = (() => {
     const gia = eventoDel(iso);
     if (gia && gia.confermato) { mo.avvisa('In questo giorno c\'è già uno sciopero confermato: prima toglilo.'); return; }
     eventi = eventi.filter(e => e.data !== iso);
-    const L = scelta.letto;
+    const L = classifica(scelta.letto, scelta.tipo);
     eventi.push({ id: nuovoId(), data: iso, tipo: scelta.tipo, ore, potenziali: L.potenziali.slice(), esclusi: [], riduzione: null, forzate: {},
-      confermato: false, esito: null, conteggi: { potenziali: L.potenziali.length, nonInformati: L.nonInformati, negati: L.negati, nonTrovati: L.nonTrovati.length } });
+      confermato: false, esito: null, conteggi: { potenziali: L.potenziali.length, nonInformati: L.nonInformati, negati: L.negati, inServizio: L.inServizio, nonTrovati: L.nonTrovati.length } });
     salva();
     scelta.letto = null; scelta.nomeFile = ''; scelta.ore.clear();
-    mo.avvisa(`🧪 Simulazione: ${L.potenziali.length} potenziali scioperanti. Il piano è in «Ore da coprire»: niente è registrato finché non premi «✔ Conferma il piano».`);
+    mo.avvisa(`🧪 Simulazione: ${L.potenziali.length} ${scelta.tipo === 'assemblea' ? 'partecipanti all\'assemblea' : 'potenziali scioperanti'}. Il piano è in «Ore da coprire»: niente è registrato finché non premi «✔ Conferma il piano».`);
     mo.ridisegna();
     const p = document.getElementById('sost-pianoSciopero'); if (p) p.scrollIntoView({ behavior: 'smooth' });
   }
@@ -289,12 +317,12 @@ const Scioperi = (() => {
     try {
       for (const c of r.coperture.filter(x => x.docente)) {
         const l = lezioneDaCoprire(ev, c.classe, c.ora); if (!l) continue;
-        // chi vigila è sempre nella sua ora di servizio: nessun +1 nel conteggio
-        await mo.assegna(ev.data, l, c.docente, { reindirizzato: true, sciopero: ev.id, silenzioso: true });
+        // chi copre è nella sua ora di servizio (nessun +1), tranne chi è chiamato «a recupero» (assemblea): +1 per recuperare
+        await mo.assegna(ev.data, l, c.docente, { reindirizzato: c.tipo !== 'recupero', sciopero: ev.id, lezione: ev.tipo === 'assemblea', silenzioso: true });
         n++;
       }
       ev.esito = esitoDa(r); ev.confermato = true; salva();
-      mo.avvisa(`✔ Piano confermato: ${n} ${n === 1 ? 'vigilanza registrata' : 'vigilanze registrate'}` + (r.k ? `, orario di tutta la scuola ridotto di ${r.k} ${r.k === 1 ? 'ora' : 'ore'}` : '') + '.');
+      mo.avvisa(`✔ Piano confermato: ${n} ${n === 1 ? (ev.tipo === 'assemblea' ? 'sostituzione registrata' : 'vigilanza registrata') : (ev.tipo === 'assemblea' ? 'sostituzioni registrate' : 'vigilanze registrate')}` + (r.k ? `, orario di tutta la scuola ridotto di ${r.k} ${r.k === 1 ? 'ora' : 'ore'}` : '') + '.');
     } finally { inCorso = false; mo.ridisegna(); }
   }
 
@@ -352,7 +380,7 @@ const Scioperi = (() => {
       ${ev.confermato ? '' : '<p><b>SIMULAZIONE – non ancora confermata</b></p>'}
       <p>Potenziali scioperanti: ${r.scioperanti.length}${r.k ? ` · orario di tutta la scuola ridotto di ${r.k} ${r.k === 1 ? 'ora' : 'ore'} (ultima ora: ${oraTesto(r.limite)})` : ''}.</p>
       <table class="sost-tabella"><caption>Classi con variazioni</caption>
-        <thead><tr><th scope="col">Classe</th><th scope="col">Entrata posticipata</th><th scope="col">Uscita anticipata</th><th scope="col">Vigilanza</th></tr></thead>
+        <thead><tr><th scope="col">Classe</th><th scope="col">Entrata posticipata</th><th scope="col">Uscita anticipata</th><th scope="col">${ev.tipo === 'assemblea' ? 'Sostituzioni' : 'Vigilanza'}</th></tr></thead>
         <tbody>${righe.map(x => `<tr><th scope="row">${esc(x.classe)}</th><td>${esc(x.entrata)}</td><td>${esc(x.uscita)}</td>
           <td>${x.vigilanza.map(v => oraTesto(v.ora) + ': ' + (v.docente ? nome(v.docente) : '<b>DA COPRIRE</b>')).join('<br>')}</td></tr>`).join('')}</tbody></table>
       ${r.disposizione.length ? `<p><b>A disposizione:</b> ${r.disposizione.map(d => nome(d.docente)).join(', ')}.</p>` : ''}
@@ -363,30 +391,35 @@ const Scioperi = (() => {
     window.print();
   }
 
-  // La comunicazione alle famiglie: un documento Word (.doc) da controllare e inviare (senza nomi di docenti)
+  // La comunicazione alle famiglie: un documento Word VERO (.docx, js/docx.js) che si apre anche sul telefono
+  // (da controllare prima di inviarlo; nessun nome di docente)
   function scaricaComunicazione(iso) {
     const ev = eventoDel(iso), r = ev && calcola(ev); if (!r) return;
-    const mo = m(), righe = righeClassi(r);
+    const mo = m(), righe = righeClassi(r), assemblea = ev.tipo === 'assemblea';
     const scuola = (typeof S !== 'undefined' && S.meta && S.meta.nome) || 'Istituto Comprensivo di Almese';
-    const cosa = ev.tipo === 'sciopero' ? 'dello sciopero' : 'dell\'assemblea sindacale';
-    const html = `<html><head><meta charset="utf-8"><title>Comunicazione alle famiglie</title>
-      <style>body{font-family:Arial,sans-serif;font-size:11pt} table{border-collapse:collapse;width:100%} th,td{border:1px solid #444;padding:4px 6px;text-align:left;vertical-align:top}</style></head><body>
-      <p><b>${esc(scuola)}</b></p>
-      <p>Alle famiglie degli alunni</p>
-      <p><b>Oggetto: ${esc(TIPI[ev.tipo])} del ${esc(dataLunga(iso))} – variazioni dell'orario delle lezioni</b></p>
-      <p>Si comunica che, in occasione ${cosa} del ${esc(dataLunga(iso))}, sulla base delle comunicazioni volontarie del personale
-        non è possibile garantire il regolare svolgimento delle lezioni. Per le classi indicate sono previste le seguenti variazioni:</p>
-      <table><thead><tr><th>Classe</th><th>Entrata</th><th>Uscita</th><th>Note</th></tr></thead><tbody>
-      ${righe.map(x => `<tr><td>${esc(x.classe)}</td><td>${esc(x.entrata || 'regolare')}</td><td>${esc(x.uscita || (x.entrata === 'non è garantito il servizio' ? '' : 'regolare'))}</td>
-        <td>${x.vigilanza.length ? esc('Nella ' + elencoOre(x.vigilanza.map(v => v.ora)) + ' sarà garantita solo la vigilanza: non sarà possibile svolgere la lezione.') : ''}</td></tr>`).join('')}
-      </tbody></table>
-      <p>Per le classi non indicate l'orario è regolare${r.k ? `, tranne l'uscita di tutte le classi alle ${esc(fineOra(r.limite))} (dopo la ${oraTesto(r.limite)})` : ''}.
-        Le variazioni potrebbero cambiare il giorno stesso, in base all'effettiva adesione del personale.</p>
-      <p>Cordiali saluti.</p><p style="text-align:right">Il Dirigente Scolastico</p></body></html>`;
-    const url = URL.createObjectURL(new Blob(['﻿' + html], { type: 'application/msword' }));
-    const a = document.createElement('a'); a.href = url; a.download = `Comunicazione-${ev.tipo}-${iso}.doc`;
+    const giorno = dataLunga(iso);
+    const blocchi = [
+      { tipo: 'p', testo: scuola, grassetto: true },
+      { tipo: 'p', testo: 'Alle famiglie degli alunni' },
+      { tipo: 'p', testo: `Oggetto: ${TIPI[ev.tipo]} del ${giorno} – variazioni dell'orario delle lezioni`, grassetto: true },
+      { tipo: 'p', testo: assemblea
+        ? `Si comunica che ${giorno} è convocata un'assemblea sindacale in orario di servizio (${elencoOre(ev.ore)}). Sulla base delle dichiarazioni di partecipazione del personale, per le classi indicate sono previste le seguenti variazioni:`
+        : `Si comunica che, in occasione dello sciopero del ${giorno}, sulla base delle comunicazioni volontarie del personale non è possibile garantire il regolare svolgimento delle lezioni. Per le classi indicate sono previste le seguenti variazioni:` },
+      { tipo: 'tabella', righe: [['Classe', 'Entrata', 'Uscita'].concat(assemblea ? [] : ['Note'])].concat(righe.map(x => {
+        const nonEntra = x.entrata === 'non è garantito il servizio';
+        const riga = [x.classe, x.entrata || 'regolare', x.uscita || (nonEntra ? '' : 'regolare')];
+        if (!assemblea) riga.push(x.vigilanza.length ? `Nella ${elencoOre(x.vigilanza.map(v => v.ora))} sarà garantita solo la vigilanza: non sarà possibile svolgere la lezione.` : '');
+        return riga;
+      })) },
+      { tipo: 'p', testo: `Per le classi non indicate l'orario è regolare${r.k ? `, tranne l'uscita di tutte le classi alle ${fineOra(r.limite)} (dopo la ${oraTesto(r.limite)})` : ''}.` +
+        (assemblea ? '' : ' Le variazioni potrebbero cambiare il giorno stesso, in base all\'effettiva adesione del personale.') },
+      { tipo: 'p', testo: 'Cordiali saluti.' },
+      { tipo: 'p', testo: 'Il Dirigente Scolastico', allinea: 'destra' }
+    ];
+    const url = URL.createObjectURL(Docx.crea(blocchi));
+    const a = document.createElement('a'); a.href = url; a.download = `Comunicazione-${ev.tipo}-${iso}.docx`;
     document.body.append(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 5000);
-    mo.avvisa('📄 Comunicazione scaricata: aprila con Word, controllala e inviala alle famiglie.');
+    mo.avvisa('📄 Comunicazione scaricata (.docx): aprila con Word o Google Documenti, controllala e inviala alle famiglie.');
   }
 
   // ---------- Disegno ----------
@@ -400,10 +433,12 @@ const Scioperi = (() => {
     const giorno = mo.giornoOrario(iso);
     if (!giorno) { box.innerHTML = '<p class="hint">In questo giorno non c\'è lezione.</p>'; return; }
     const oreGiorno = [...new Set(D.lezioni.filter(l => l.giorno === giorno).map(l => l.ora))].sort((a, b) => a - b);
-    const L = scelta.letto, ev = eventoDel(iso);
+    const L = scelta.letto ? classifica(scelta.letto, scelta.tipo) : null, ev = eventoDel(iso);
     box.innerHTML = (ev ? `<p class="hint">In questo giorno c'è già: <b>${esc(TIPI[ev.tipo])}</b> (${ev.confermato ? '✔ confermato' : '🧪 simulazione'}). Il piano è in «Ore da coprire».</p>` : '') +
-      `<p class="hint">Carica il file delle adesioni: sono potenziali scioperanti quelli con la presa visione e con adesione confermata,
-        «non ha ancora maturato una decisione» o vuota. Il file si legge solo su questo computer: i nomi non vengono salvati.</p>
+      `<p class="hint">${scelta.tipo === 'assemblea'
+        ? 'Assemblea: contano SOLO i docenti con «Adesione confermata» (la dichiarazione di partecipazione è irrevocabile, CCNL art. 31); tutti gli altri sono regolarmente in servizio.'
+        : 'Sciopero: sono potenziali scioperanti quelli con la presa visione e con adesione confermata, «non ha ancora maturato una decisione» o vuota.'}
+        Il file si legge solo su questo computer: i nomi non vengono salvati.</p>
       <fieldset class="sost-ore"><legend>Che cosa</legend>
         ${Object.entries(TIPI).map(([k, n]) => `<label class="sost-casella"><input type="radio" name="sc-tipo" data-sc="tipo" value="${k}"${scelta.tipo === k ? ' checked' : ''}> ${n}</label>`).join('')}</fieldset>
       ${scelta.tipo === 'assemblea' ? `<fieldset class="sost-ore"><legend>Ore dell'assemblea</legend>${oreGiorno.map(h =>
@@ -412,7 +447,9 @@ const Scioperi = (() => {
         <input type="file" data-sc="file" accept=".xlsx,.ods,.csv"></label>
       ${scelta.errore ? `<p class="sost-attenzione">⚠️ ${esc(scelta.errore)}.</p>` : ''}
       ${scelta.nomeFile && !L && !scelta.errore ? '<p class="hint">Leggo il file…</p>' : ''}
-      ${L ? `<p>📄 ${esc(scelta.nomeFile)}: <b>${L.potenziali.length} potenziali scioperanti</b> · ${L.nonInformati} senza presa visione · ${L.negati} «adesione negata» (non contano)</p>
+      ${L ? `<p>📄 ${esc(scelta.nomeFile)}: ${scelta.tipo === 'assemblea'
+          ? `<b>${L.potenziali.length} partecipanti all'assemblea</b> · ${L.inServizio} in servizio regolare`
+          : `<b>${L.potenziali.length} potenziali scioperanti</b> · ${L.nonInformati} senza presa visione · ${L.negati} «adesione negata» (non contano)`}</p>
         ${L.nonTrovati.length ? `<p class="sost-attenzione">⚠️ Non trovati nell'orario (controlla il nome): ${esc(L.nonTrovati.join(', '))}</p>` : ''}` : ''}
       <button type="button" class="btn" data-sc="prepara"${L ? '' : ' disabled'}>🧪 Prepara il piano (simulazione)</button>`;
   }
@@ -430,7 +467,7 @@ const Scioperi = (() => {
     const esclusi = ev.potenziali.filter(id => tolti.has(id)).sort(perNome);
     const altri = mo.orario().docente.filter(t => !ev.potenziali.includes(t.id)).map(t => t.id).sort(perNome);
     return `<section class="sc-potenziali" aria-label="Potenziali scioperanti">
-      <h4>Potenziali scioperanti: ${attivi.length}</h4>
+      <h4>${ev.tipo === 'assemblea' ? 'Partecipanti all\'assemblea' : 'Potenziali scioperanti'}: ${attivi.length}</h4>
       ${ev.confermato ? '<p class="hint">Il piano è confermato: per cambiare l\'elenco premi «✎ Riapri il piano».</p>'
         : '<p class="hint">Se un docente comunica che non sciopera, premi «✕ Non sciopera»: il piano si ricalcola da solo.</p>'}
       <ul class="sost-assenze">${attivi.map(id => `<li><span><strong>${nome(id)}</strong></span>
@@ -469,7 +506,7 @@ const Scioperi = (() => {
     const ev = eventoDel(iso), r = ev && calcola(ev);
     if (!r) { box.innerHTML = ''; return; }
     const mo = m(), nome = id => esc(mo.nomeDocente(id)), cl = id => esc(mo.nome('classe', id));
-    const TIPO = { spostato: 'curricolare spostato da', recuperato: 'ora recuperata dal fondo',
+    const TIPO = { spostato: 'curricolare spostato da', recuperato: 'ora recuperata dal fondo', recupero: 'ore da recuperare: +1 nel conteggio',
     };
     const nota = c => c.tipo === 'spostato' ? `${TIPO.spostato} ${cl(c.da)} (resta il compresente)` : TIPO[c.tipo] || '⚠ nessuno disponibile';
     const opz = c => `<option value="">— nessuno —</option>` + c.alternative.map(a =>
@@ -479,21 +516,23 @@ const Scioperi = (() => {
     box.innerHTML = `<article class="sost-ora sost-piano-uscita">
       <h3>✊ ${esc(TIPI[ev.tipo])}: piano proposto</h3>
       <p class="${ev.confermato ? 'hint' : 'sost-attenzione'}" role="status">${ev.confermato
-        ? '✔ Piano confermato: le vigilanze sono registrate.' : '🧪 <b>Simulazione</b>: niente è ancora registrato. Controlla, cambia se serve, poi «✔ Conferma il piano».'}</p>
+        ? '✔ Piano confermato e registrato. Per farlo vedere nell\'app premi «📤 Pubblica sostituzioni». Se lo sciopero o l\'assemblea vengono revocati: «↺ Revoca: togli il piano», poi di nuovo «📤 Pubblica sostituzioni».' : '🧪 <b>Simulazione</b>: niente è ancora registrato. Controlla, cambia se serve, poi «✔ Conferma il piano».'}</p>
       <p class="sost-dettagli">${ev.tipo === 'assemblea' ? 'Ore dell\'assemblea: ' + esc(ev.ore.map(oraTesto).join(', ')) + ' · ' : ''}
         ${r.scioperanti.length} potenziali scioperanti su ${ev.potenziali.length}${ev.conteggi ? ` (dal file: ${ev.conteggi.nonInformati} senza presa visione, ${ev.conteggi.negati} negati${ev.conteggi.nonTrovati ? `, ${ev.conteggi.nonTrovati} non trovati` : ''})` : ''}</p>
       ${elencoPotenzialiHtml(ev, iso)}
+      ${ev.tipo === 'assemblea' ? `<label class="sost-casella"><input type="checkbox" data-sc="usaRecupero" value="si"${ev.usaRecupero !== false ? ' checked' : ''}${ev.confermato ? ' disabled' : ''}>
+        Per coprire usa anche i docenti con <b>ore da recuperare</b> (saldo negativo nel conteggio: +1 a chi copre)</label>` : ''}
       <label class="fl">Orario di tutta la scuola
         <select data-sc="riduzione"${ev.confermato ? ' disabled' : ''}>
           <option value="auto"${ev.riduzione == null ? ' selected' : ''}>automatico (proposta: ${r.k ? '−' + r.k + (r.k === 1 ? ' ora' : ' ore') : 'normale'})</option>
           ${[0, 1, 2, 3].filter(k => k < r.maxOra).map(k => `<option value="${k}"${ev.riduzione === k ? ' selected' : ''}>${k ? `ridotto di ${k} ${k === 1 ? 'ora' : 'ore'} (tutti escono alle ${esc(fineOra(r.maxOra - k))})` : 'normale'}</option>`).join('')}
         </select></label>
       ${righe.length ? `<div class="tablewrap"><table class="sost-tabella"><caption>Classi con variazioni</caption>
-        <thead><tr><th scope="col">Classe</th><th scope="col">Entrata posticipata</th><th scope="col">Uscita anticipata</th><th scope="col">Vigilanza</th></tr></thead>
+        <thead><tr><th scope="col">Classe</th><th scope="col">Entrata posticipata</th><th scope="col">Uscita anticipata</th><th scope="col">${ev.tipo === 'assemblea' ? 'Sostituzioni' : 'Vigilanza'}</th></tr></thead>
         <tbody>${righe.map(x => `<tr><th scope="row">${esc(x.classe)}</th><td>${esc(x.entrata)}</td><td>${esc(x.uscita)}</td>
           <td>${x.vigilanza.map(v => esc(oraTesto(v.ora))).join(', ')}</td></tr>`).join('')}</tbody></table></div>` : '<p class="hint">✔ Nessuna classe con variazioni.</p>'}
-      ${r.coperture.length ? `<div class="tablewrap"><table class="sost-tabella"><caption>Ore in mezzo alla giornata: chi fa la vigilanza</caption>
-        <thead><tr><th scope="col">Ora</th><th scope="col">Classe</th><th scope="col">Vigila</th><th scope="col">Note</th></tr></thead>
+      ${r.coperture.length ? `<div class="tablewrap"><table class="sost-tabella"><caption>Ore in mezzo alla giornata: ${ev.tipo === 'assemblea' ? 'chi sostituisce (si fa lezione)' : 'chi fa la vigilanza'}</caption>
+        <thead><tr><th scope="col">Ora</th><th scope="col">Classe</th><th scope="col">${ev.tipo === 'assemblea' ? 'Sostituisce' : 'Vigila'}</th><th scope="col">Note</th></tr></thead>
         <tbody>${r.coperture.map(c => `<tr><th scope="row">${esc(oraTesto(c.ora))}</th><td>${cl(c.classe)}</td>
           <td><label class="sost-solo-lettori" for="sc-${esc(c.chiave)}">Chi vigila</label><select id="sc-${esc(c.chiave)}" data-sc="scegli" data-chiave="${esc(c.chiave)}"${ev.confermato ? ' disabled' : ''}>${opz(c)}</select></td>
           <td class="${c.docente ? '' : 'sost-attenzione'}">${nota(c)}</td></tr>`).join('')}</tbody></table></div>` : ''}
@@ -505,7 +544,7 @@ const Scioperi = (() => {
           <button type="button" class="btn" data-sc="riapri" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>✎ Riapri il piano</button>` : `<button type="button" class="btn" data-sc="conferma" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${inCorso ? 'Registro…' : '✔ Conferma il piano'}</button>`}
         <button type="button" class="btn" data-sc="stampa" data-data="${esc(iso)}">🖨️ Stampa il piano</button>
         <button type="button" class="btn" data-sc="comunicazione" data-data="${esc(iso)}">📄 Scarica la comunicazione alle famiglie</button>
-        <button type="button" class="btn danger" data-sc="azzera" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${ev.confermato ? '↺ Togli il piano' : '↺ Azzera la simulazione'}</button>
+        <button type="button" class="btn danger" data-sc="azzera" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${ev.confermato ? '↺ Revoca: togli il piano' : '↺ Azzera la simulazione'}</button>
       </div></article>`;
   }
 
@@ -545,6 +584,7 @@ const Scioperi = (() => {
     else if (ev && !ev.confermato) {
       if (a === 'potenziale') { ev.esclusi = (ev.esclusi || []).filter(x => x !== c.value); if (!c.checked) ev.esclusi.push(c.value); }
       else if (a === 'riduzione') ev.riduzione = c.value === 'auto' ? null : Number(c.value);
+      else if (a === 'usaRecupero') ev.usaRecupero = c.checked;
       else if (a === 'scegli') { ev.forzate = ev.forzate || {}; ev.forzate[c.dataset.chiave] = c.value || '__nessuno'; }
       salva();
     }

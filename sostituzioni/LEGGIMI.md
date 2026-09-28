@@ -84,7 +84,14 @@ adesione). Il file si legge **solo sul computer**: i nomi servono a trovare i co
   si usano solo le ore di chi è già in servizio, e nessuno prende +1.
   Chi non viene usato resta **a disposizione**.
 - Si può cambiare tutto: l'elenco dei **potenziali scioperanti** è sempre visibile («✕ Non sciopera», «↩ Rimetti», «+ Aggiungi»: il piano si ricalcola da solo; «🔄 Rigenera il piano» ricalcola senza le scelte fatte a mano), la riduzione dell'orario, chi vigila. Un piano confermato si cambia con «✎ Riapri il piano» (annulla le vigilanze registrate). Poi **✔ Conferma il piano**,
-  **🖨️ Stampa il piano**, **📄 Scarica la comunicazione alle famiglie** (documento Word da controllare) o **↺ Azzera**.
+  **🖨️ Stampa il piano**, **📄 Scarica la comunicazione alle famiglie** (vero .docx fatto da `js/docx.js`: si apre anche sul
+  telefono; da controllare) o **↺ Azzera**. Se lo sciopero o l'assemblea vengono revocati: **↺ Revoca: togli il piano**
+  (annulla le coperture registrate) e poi di nuovo «📤 Pubblica sostituzioni».
+- **Assemblea sindacale** (CCNL Istruzione e Ricerca 18/01/2024, art. 31 c. 8-9): contano **solo** i docenti con «Adesione
+  confermata» (la dichiarazione di partecipazione è irrevocabile); tutti gli altri sono **regolarmente in servizio**. Si
+  sospendono le attività delle sole classi i cui docenti partecipano (entrata posticipata / uscita anticipata) e si fanno gli
+  adattamenti di orario di chi è in servizio. Nelle ore coperte **si fa lezione** (sostituzione, non solo vigilanza) e, con
+  l'opzione «usa anche i docenti con ore da recuperare», si possono chiamare i docenti a recupero (saldo negativo: +1).
 - **Privacy**: l'adesione a uno sciopero è un dato sindacale. Nel file pubblicato e nell'app **non c'è mai chi sciopera**:
   solo, per classe, «Entrata posticipata», «Uscita anticipata», «Vigilanza» (classe cerchiata) e chi vigila.
   Dati: chiave `sostituzioni.scioperi`, solo codici; codice: `js/scioperi.js`.
@@ -208,6 +215,7 @@ sostituzioni/
   js/cambi-aula.js        modulo «Cambi d'aula» (scheda Sostituzioni e pagina «Sostituzioni smart» dell'app)
   js/uscite.js            modulo «Uscita didattica»: docenti liberati, piano proposto, a disposizione, a recupero
   js/scioperi.js          modulo «Sciopero / assemblea»: file delle adesioni, entrate/uscite, vigilanze, comunicazione
+  js/docx.js              crea un vero documento Word (.docx) senza librerie (comunicazione alle famiglie)
   js/sostituzioni.js      la scheda: assenze, proposte, saldi, esportazioni (Sostituzioni.monta)
   esempio/                facsimili del foglio con nomi inventati
 ```

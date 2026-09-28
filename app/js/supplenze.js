@@ -169,19 +169,20 @@ const Supplenze = (() => {
     fonte.scioperi.forEach(e => {
       const giorno = giornoDi.get(e.data);
       if (!giorno || !Array.isArray(e.classi)) return;
+      const assemblea = e.tipo === 'assemblea';   // assemblea sindacale: chi copre fa lezione (sostituzione), non vigilanza
       e.classi.forEach(c => {
         const lezC = D.lezioni.filter(l => l.giorno === giorno && l.classe === c.classe);
         lezC.forEach(l => {
           const k = chiave(giorno, l.ora, l.classe, l.docente);
-          if (c.nonEntra) segnate.set(k, { sciopero: 'nonEntra', assente: '', sostituto: '' });
-          else if (c.entra && l.ora < c.entra) segnate.set(k, { sciopero: 'entrata', entra: c.entra, assente: '', sostituto: '' });
-          else if (c.esce && l.ora > c.esce) segnate.set(k, { sciopero: 'uscita', esce: c.esce, assente: '', sostituto: '' });
+          if (c.nonEntra) segnate.set(k, { sciopero: 'nonEntra', assemblea, assente: '', sostituto: '' });
+          else if (c.entra && l.ora < c.entra) segnate.set(k, { sciopero: 'entrata', entra: c.entra, assemblea, assente: '', sostituto: '' });
+          else if (c.esce && l.ora > c.esce) segnate.set(k, { sciopero: 'uscita', esce: c.esce, assemblea, assente: '', sostituto: '' });
         });
         (c.vigilanza || []).forEach(v => {
-          lezC.filter(l => l.ora === v.ora).forEach(l => segnate.set(chiave(giorno, l.ora, l.classe, l.docente), { sciopero: 'vigilanza', vigila: v.docente, assente: '', sostituto: '' }));
+          lezC.filter(l => l.ora === v.ora).forEach(l => segnate.set(chiave(giorno, l.ora, l.classe, l.docente), { sciopero: 'vigilanza', vigila: v.docente, assemblea, assente: '', sostituto: '' }));
           const l = lezC.find(x => x.ora === v.ora && !x.compresenza);
           if (l && v.docente && D.mappa.docente.has(v.docente))
-            extra.push(Object.assign({}, l, { docente: v.docente, materia: 'Vigilanza', vigilanzaSciopero: true }));
+            extra.push(Object.assign({}, l, { docente: v.docente, materia: assemblea ? 'Sostituzione' : 'Vigilanza', vigilanzaSciopero: true, assemblea }));
           // il docente spostato da una classe in compresenza: sulla sua lezione di là si legge dove va
           if (v.da) D.lezioni.filter(x => x.giorno === giorno && x.ora === v.ora && x.classe === v.da && x.docente === v.docente)
             .forEach(x => segnate.set(chiave(giorno, x.ora, x.classe, x.docente), { sciopero: 'spostato', verso: c.classe, assente: '', sostituto: '' }));
@@ -201,7 +202,7 @@ const Supplenze = (() => {
   function di(sost, l) {
     if (!sost) return null;
     if (l.sostituzione) return { assente: l.assente, sostituto: l.docente, copia: true, voce: l.voce };
-    if (l.vigilanzaSciopero) return { sciopero: 'vigilanza', vigila: l.docente, copia: true, assente: '', sostituto: '' };
+    if (l.vigilanzaSciopero) return { sciopero: 'vigilanza', vigila: l.docente, assemblea: !!l.assemblea, copia: true, assente: '', sostituto: '' };
     return sost.segnate.get(chiave(l.giorno, l.ora, l.classe, l.docente)) || null;
   }
 
@@ -211,7 +212,9 @@ const Supplenze = (() => {
   */
   function testoSciopero(s, nomeDocente) {
     if (!s || !s.sciopero) return null;
-    if (s.sciopero === 'nonEntra') return { etichetta: '✊ Sciopero', riga: 'servizio non garantito: la classe non entra', classe: 'lezione-sciopero-fuori' };
+    if (s.sciopero === 'nonEntra') return { etichetta: s.assemblea ? '✊ Assemblea sindacale' : '✊ Sciopero', riga: 'servizio non garantito: la classe non entra', classe: 'lezione-sciopero-fuori' };
+    // assemblea: nelle ore coperte si fa lezione normalmente (sostituzione), non solo vigilanza
+    if (s.sciopero === 'vigilanza' && s.assemblea) return { etichetta: '🔄 Sostituzione', riga: 'assemblea sindacale' + (s.vigila ? ': lezione con ' + nomeDocente(s.vigila) : ''), classe: 'lezione-supplenza' };
     if (s.sciopero === 'entrata') return { etichetta: '⏰ Entrata posticipata', riga: `la classe entra alla ${s.entra}ª ora`, classe: 'lezione-sciopero-fuori' };
     if (s.sciopero === 'uscita') return { etichetta: '⏰ Uscita anticipata', riga: `la classe esce dopo la ${s.esce}ª ora`, classe: 'lezione-sciopero-fuori' };
     if (s.sciopero === 'spostato') return { etichetta: '👁 In vigilanza altrove', riga: `va in vigilanza in ${typeof Dati !== 'undefined' ? Dati.nome('classe', s.verso) : s.verso}; qui resta il compresente`, classe: 'lezione-sciopero-fuori' };

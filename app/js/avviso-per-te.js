@@ -36,8 +36,8 @@ const AvvisoPerTe = (() => {
       out.push({ chiave: ['S', q.iso, l.ora, l.classe].join('|'), iso: q.iso, ora: l.ora, tipo: 'sostituisci',
         // vigilanza per uno sciopero (sostituzioni/js/scioperi.js): niente «al posto di» (non si dice chi sciopera)
         testo: l.vigilanzaSciopero
-          ? `<b>Vigilanza</b> in <b>${esc(nome('classe', l.classe))}</b> · ${esc(q.testo)}` + (l.aula ? ` · aula <b>${esc(nome('aula', l.aula))}</b>` : '') +
-            ' <span class="per-te-mini">(sciopero: solo vigilanza, niente lezione)</span>'
+          ? `<b>${l.assemblea ? 'Sostituisci' : 'Vigilanza'}</b> in <b>${esc(nome('classe', l.classe))}</b> · ${esc(q.testo)}` + (l.aula ? ` · aula <b>${esc(nome('aula', l.aula))}</b>` : '') +
+            ` <span class="per-te-mini">(${l.assemblea ? 'assemblea sindacale: lezione normale' : 'sciopero: solo vigilanza, niente lezione'})</span>`
           : `<b>Sostituisci</b> in <b>${esc(nome('classe', l.classe))}</b> · ${esc(q.testo)}` +
           (l.aula ? ` · aula <b>${esc(nome('aula', l.aula))}</b>` : '') + (l.materia ? ` · ${esc(l.materia)}` : '') +
           ` <span class="per-te-mini">(al posto di ${esc(nome('docente', l.assente))})</span>` });

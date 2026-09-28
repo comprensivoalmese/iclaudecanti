@@ -128,7 +128,8 @@ Le parti del progetto:
   resta sempre. Pubblicate solo data/classi/ore (`uscite` nel file pubblicato); nell'app «🚌 Uscita didattica» (`sost.uscita`).
   **Scioperi e assemblee sindacali** (`sostituzioni/js/scioperi.js`, caso «✊ Sciopero / assemblea», SOLO in Orario Facile; chiave
   `sostituzioni.scioperi`, solo codici): si carica il file delle adesioni (Docente, data_presa_visione, adesione; letto solo nel
-  browser con `Foglio.leggiTabelle`, nomi solo in memoria); potenziali scioperanti = presa visione + adesione confermata / «non ha
+  browser con `Foglio.leggiTabelle`, nomi solo in memoria; `classifica()`: per l'ASSEMBLEA solo «Adesione confermata», CCNL art. 31,
+  gli altri in servizio, coperture = sostituzioni con lezione e opzione docenti a recupero +1); sciopero: potenziali = presa visione + adesione confermata / «non ha
   ancora maturato una decisione» / vuota. `calcola()` guarda anche le compresenze (`Compresenze.lezioni(D)`, sostegno compreso):
   ore iniziali scoperte = entrata posticipata (orari da `dati/campanella.json`), finali = uscita anticipata, intermedie = vigilanza
   (priorità: curricolare di una classe in compresenza, poi orario di tutta la scuola ridotto di 1-3 ore con chi perde le
