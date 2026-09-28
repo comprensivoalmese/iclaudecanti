@@ -1721,8 +1721,8 @@ const Sostituzioni = (() => {
       collegaPulsanti();
       rileggiMemoria();
       aggiorna();
-      // Se ci sono abbinamenti da controllare, apriamo il riquadro
-      if (foglio && D && D.docente.some(t => !(abbinati.get(t.id) || {}).chiave)) $('boxAbbinamenti').open = true;
+      // Il riquadro «Abbinamenti tra orario e foglio» resta CHIUSO: se qualcosa manca lo dice il suo titolo
+      // («… da controllare»). Prima si apriva da solo, anche quando poi, arrivati i nomi, erano tutti abbinati.
       return;
     }
     aggiorna();
