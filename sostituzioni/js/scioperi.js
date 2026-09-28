@@ -195,7 +195,21 @@ const Scioperi = (() => {
       });
       const disposizione = [...tagliate].filter(([t]) => (credito.get(t) || 0) > 0 && !coperture.some(c => c.docente === t))
         .map(([t, s]) => ({ docente: t, ore: [...s].sort((a, b) => a - b) }));
-      return { k, limite, maxOra, classi, coperture, nonCoperte: coperture.filter(c => !c.docente).length, disposizione, scioperanti: [...scioperanti] };
+      // Da controllare il giorno stesso: classi in cui un potenziale scioperante è in compresenza con qualcuno che resta
+      // (la classe è coperta solo da chi rimane). Solo per il piano interno: MAI nella comunicazione alle famiglie.
+      const soloCompresente = [];
+      classi.forEach(i => i.ore.forEach(h => {
+        if (i.fuori.has(h) || i.scoperte.includes(h)) return;
+        const qui = tutte.filter(l => l.classe === i.id && l.ora === h);
+        const via = qui.filter(l => assente(l.docente, h)).map(l => l.docente);
+        if (!via.length) return;
+        // chi resta: i presenti, tranne chi è stato spostato a vigilare in un'altra classe
+        const spostati = new Set(coperture.filter(c => c.ora === h && c.tipo === 'spostato' && c.da === i.id).map(c => c.docente));
+        const restano = qui.filter(l => !assente(l.docente, h) && !spostati.has(l.docente)).map(l => l.docente);
+        soloCompresente.push({ classe: i.id, ora: h, assenti: [...new Set(via)], restano: [...new Set(restano)] });
+      }));
+      soloCompresente.sort((a, b) => a.ora - b.ora || numerico(a.classe, b.classe));
+      return { k, limite, maxOra, classi, coperture, nonCoperte: coperture.filter(c => !c.docente).length, disposizione, soloCompresente, scioperanti: [...scioperanti] };
     }
 
     if (ev.riduzione !== null && ev.riduzione !== undefined) return Object.assign(prova(ev.riduzione), { automatica: false });
@@ -325,6 +339,17 @@ const Scioperi = (() => {
     return out;
   }
 
+  // Tabella «Classi coperte solo dal compresente» (piano a schermo e stampa interna; mai nella comunicazione alle famiglie)
+  function tabellaCompresenteHtml(r) {
+    if (!r.soloCompresente || !r.soloCompresente.length) return '';
+    const mo = m(), nomi = elenco => elenco.map(id => esc(mo.nomeDocente(id))).join(', ');
+    return `<div class="tablewrap"><table class="sost-tabella"><caption>Classi coperte solo dal compresente: da controllare il giorno stesso
+      (documento interno, non per le famiglie)</caption>
+      <thead><tr><th scope="col">Ora</th><th scope="col">Classe</th><th scope="col">Potenzialmente assente</th><th scope="col">Resta in classe</th></tr></thead>
+      <tbody>${r.soloCompresente.map(x => `<tr><th scope="row">${esc(oraTesto(x.ora))}</th><td>${esc(mo.nome('classe', x.classe))}</td>
+        <td>${nomi(x.assenti)}</td><td><b>${nomi(x.restano)}</b></td></tr>`).join('')}</tbody></table></div>`;
+  }
+
   function stampa(iso) {
     const ev = eventoDel(iso), r = ev && calcola(ev); if (!r) return;
     const mo = m(), nome = id => esc(mo.nomeDocente(id)), righe = righeClassi(r);
@@ -337,7 +362,8 @@ const Scioperi = (() => {
         <thead><tr><th scope="col">Classe</th><th scope="col">Entrata posticipata</th><th scope="col">Uscita anticipata</th><th scope="col">Vigilanza</th></tr></thead>
         <tbody>${righe.map(x => `<tr><th scope="row">${esc(x.classe)}</th><td>${esc(x.entrata)}</td><td>${esc(x.uscita)}</td>
           <td>${x.vigilanza.map(v => oraTesto(v.ora) + ': ' + (v.docente ? nome(v.docente) : '<b>DA COPRIRE</b>')).join('<br>')}</td></tr>`).join('')}</tbody></table>
-      ${r.disposizione.length ? `<p><b>A disposizione:</b> ${r.disposizione.map(d => nome(d.docente)).join(', ')}.</p>` : ''}`;
+      ${r.disposizione.length ? `<p><b>A disposizione:</b> ${r.disposizione.map(d => nome(d.docente)).join(', ')}.</p>` : ''}
+      ${tabellaCompresenteHtml(r)}`;
     document.body.append(box);
     document.body.classList.add('sost-in-stampa', 'us-stampa-piano');
     window.addEventListener('afterprint', () => { document.body.classList.remove('sost-in-stampa', 'us-stampa-piano'); box.remove(); }, { once: true });
@@ -480,6 +506,7 @@ const Scioperi = (() => {
           <td class="${c.docente ? '' : 'sost-attenzione'}">${nota(c)}</td></tr>`).join('')}</tbody></table></div>` : ''}
       ${r.nonCoperte ? `<p class="sost-attenzione">⚠️ ${r.nonCoperte} ${r.nonCoperte === 1 ? 'ora resta scoperta' : 'ore restano scoperte'} anche riducendo l'orario: scegli a mano chi vigila.</p>` : ''}
       ${r.disposizione.length ? `<p><b>A disposizione</b> (ore recuperate dal fondo e non usate): ${r.disposizione.map(d => nome(d.docente)).join(', ')}.</p>` : ''}
+      ${tabellaCompresenteHtml(r)}
       <div class="row">
         ${ev.confermato ? `<span class="tag ok">✔ Piano confermato</span>
           <button type="button" class="btn" data-sc="riapri" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>✎ Riapri il piano</button>` : `<button type="button" class="btn" data-sc="conferma" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${inCorso ? 'Registro…' : '✔ Conferma il piano'}</button>`}
