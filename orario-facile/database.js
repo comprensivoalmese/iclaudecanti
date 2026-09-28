@@ -348,7 +348,14 @@ const DatabaseOrario = (() => {
     const attuale = await leggiZone();
     const prima = impronta(attuale);
     const nota = leggiImpronta();
-    if (!forza && nota && nota !== prima) return { modificatoDaAltri: true };
+    // Scheda Aule: le colonne D-F (piano e posizione sulla piantina, vedi app/js/piantine.js) le scrive la scheda Aule,
+    // non questo salvataggio. Le leggiamo per NOME, così restano attaccate alla loro aula anche se l'ordine o il numero
+    // delle aule cambia; e ci segniamo le aule del Foglio che in questo Orario Facile non ci sono (andrebbero perse).
+    const righeAule = ((await chiama('/values/' + encodeURIComponent(`Aule!A2:F${NAULE + 1}`), 'GET')).values || []);
+    const posizioni = new Map(righeAule.filter(r => testo(r[0])).map(r => [semplice(r[0]), [r[3] || '', r[4] || '', r[5] || '']]));
+    const qui = new Set(S.aule.map(a => semplice(a.nome)));
+    const auleMancanti = righeAule.map(r => testo(r[0])).filter(n => n && !qui.has(semplice(n)));
+    if (!forza && nota && nota !== prima) return { modificatoDaAltri: true, auleMancanti };
     // la scheda Docenti si riscrive nelle colonne A-H del modello: se ha colonne in posizioni diverse (inserite o
     // spostate a mano) non si salva, per non mescolare i dati
     const COL = colonneDocenti(attuale.docentiTitoli[0]);
@@ -357,6 +364,9 @@ const DatabaseOrario = (() => {
       'sistemala così, oppure reimporta il modello «Database.xlsx», poi salva di nuovo');
     ricordaNomiDelFoglio(attuale);
     const { dati, avvisi } = aFoglio(S);
+    // D-F riallineate: ogni aula riprende piano e posizione che aveva nel Foglio (per nome)
+    dati.push({ range: `Aule!D2:F${NAULE + 1}`, values: piena(S.aule.map(a => posizioni.get(semplice(a.nome)) || ['', '', '']), NAULE, 3) });
+    if (auleMancanti.length) avvisi.push(`dal Foglio sono state tolte le aule che qui non ci sono: ${auleMancanti.join(', ')}`);
     await chiama('/values:batchUpdate', 'POST', { valueInputOption: 'RAW', data: dati });
     salvaImpronta(impronta(await leggiZone()));
     return { avvisi, docenti: S.docenti.length, lezioni: Object.values(S.orario).reduce((n, gg) => n + Object.values(gg).reduce((m, x) => m + (x || []).filter(Boolean).length, 0), 0) };
@@ -390,7 +400,9 @@ const DatabaseOrario = (() => {
         const r = await salva(forza);
         if (r.modificatoDaAltri) {
           chiedi('Il Foglio è stato modificato (a mano o da un altro computer) dopo l\'ultima volta che l\'hai caricato o salvato da qui. ' +
-            'Se salvi ora, quelle modifiche vanno perse. Conviene prima «Carica dal Foglio». Salvare comunque?', () => esegui(true), 'Salva comunque', true);
+            'Se salvi ora, quelle modifiche vanno perse. Conviene prima «Carica dal Foglio».' +
+            (r.auleMancanti.length ? ` In particolare nel Foglio ci sono aule che qui non ci sono e verrebbero tolte: ${r.auleMancanti.join(', ')}.` : '') +
+            ' Salvare comunque?', () => esegui(true), 'Salva comunque', true);
           return;
         }
         stato.textContent = `✔ Salvato sul Foglio alle ${ora()} (${r.docenti} docenti, ${r.lezioni} lezioni).`;
