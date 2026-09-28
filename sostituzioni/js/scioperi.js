@@ -398,6 +398,52 @@ const Scioperi = (() => {
       <button type="button" class="btn" data-sc="prepara"${L ? '' : ' disabled'}>🧪 Prepara il piano (simulazione)</button>`;
   }
 
+  /*
+    L'elenco dei potenziali scioperanti, sempre visibile e modificabile (per esempio dopo l'email di un docente che non sciopera):
+    «✕ Non sciopera» lo toglie, «↩ Rimetti» lo riporta, «+ Aggiungi» mette un docente che non era nel file.
+    Ogni modifica ricalcola subito il piano. Con il piano confermato si modifica solo dopo «✎ Riapri il piano».
+  */
+  function elencoPotenzialiHtml(ev, iso) {
+    const mo = m(), nome = id => esc(mo.nomeDocente(id)), fermo = ev.confermato ? ' disabled' : '';
+    const perNome = (a, b) => mo.nomeDocente(a).localeCompare(mo.nomeDocente(b), 'it');
+    const tolti = new Set(ev.esclusi || []);
+    const attivi = ev.potenziali.filter(id => !tolti.has(id)).sort(perNome);
+    const esclusi = ev.potenziali.filter(id => tolti.has(id)).sort(perNome);
+    const altri = mo.orario().docente.filter(t => !ev.potenziali.includes(t.id)).map(t => t.id).sort(perNome);
+    return `<section class="sc-potenziali" aria-label="Potenziali scioperanti">
+      <h4>Potenziali scioperanti: ${attivi.length}</h4>
+      ${ev.confermato ? '<p class="hint">Il piano è confermato: per cambiare l\'elenco premi «✎ Riapri il piano».</p>'
+        : '<p class="hint">Se un docente comunica che non sciopera, premi «✕ Non sciopera»: il piano si ricalcola da solo.</p>'}
+      <ul class="sost-assenze">${attivi.map(id => `<li><span><strong>${nome(id)}</strong></span>
+        <button type="button" class="btn ghost sm" data-sc="togliPot" data-id="${esc(id)}"${fermo} aria-label="${nome(id)} non sciopera: toglilo dall'elenco">✕ Non sciopera</button></li>`).join('')
+        || '<li><span class="hint">Nessuno.</span></li>'}</ul>
+      ${esclusi.length ? `<p class="hint">Tolti (non scioperano): ${esclusi.map(id => `${nome(id)} <button type="button" class="btn ghost sm" data-sc="rimettiPot" data-id="${esc(id)}"${fermo}>↩ Rimetti</button>`).join(' ')}</p>` : ''}
+      <div class="row"><label class="fl" style="flex-direction:row;align-items:center;gap:6px">Aggiungi un docente
+        <select data-sc="nuovoPot"${fermo}><option value="">—</option>${altri.map(id => `<option value="${esc(id)}">${nome(id)}</option>`).join('')}</select></label>
+        <button type="button" class="btn sm" data-sc="aggiungiPot"${fermo}>+ Aggiungi</button>
+        <button type="button" class="btn sm" data-sc="rigenera" data-data="${esc(iso)}"${fermo}>🔄 Rigenera il piano</button></div>
+    </section>`;
+  }
+
+  // Modifiche all'elenco e al piano (solo in simulazione): si salvano e il piano si ridisegna ricalcolato
+  function modifica(iso, cambia) {
+    const ev = eventoDel(iso); if (!ev || ev.confermato) return;
+    cambia(ev); salva(); m().ridisegna();
+  }
+
+  // «✎ Riapri il piano»: annulla le vigilanze registrate e torna alla simulazione (l'elenco e le scelte restano)
+  async function riapri(iso) {
+    const ev = eventoDel(iso); if (!ev || !ev.confermato || inCorso || !permesso()) return;
+    if (!confirm('Riaprire il piano? Le vigilanze già registrate vengono annullate (−1 a chi era a debito); poi potrai modificarlo e confermarlo di nuovo.')) return;
+    const mo = m();
+    inCorso = true; mo.ridisegna();
+    try {
+      for (const s of mo.registroDel(iso).filter(s => s.sciopero === ev.id)) await mo.annulla(s);
+      ev.confermato = false; ev.esito = null; salva();
+      mo.avvisa('✎ Piano riaperto: modificalo e premi di nuovo «✔ Conferma il piano».');
+    } finally { inCorso = false; mo.ridisegna(); }
+  }
+
   function disegnaPiano(box, iso) {
     if (!box) return;
     lega(box); caricaCampanella();
@@ -417,9 +463,7 @@ const Scioperi = (() => {
         ? '✔ Piano confermato: le vigilanze sono registrate.' : '🧪 <b>Simulazione</b>: niente è ancora registrato. Controlla, cambia se serve, poi «✔ Conferma il piano».'}</p>
       <p class="sost-dettagli">${ev.tipo === 'assemblea' ? 'Ore dell\'assemblea: ' + esc(ev.ore.map(oraTesto).join(', ')) + ' · ' : ''}
         ${r.scioperanti.length} potenziali scioperanti su ${ev.potenziali.length}${ev.conteggi ? ` (dal file: ${ev.conteggi.nonInformati} senza presa visione, ${ev.conteggi.negati} negati${ev.conteggi.nonTrovati ? `, ${ev.conteggi.nonTrovati} non trovati` : ''})` : ''}</p>
-      <details><summary>Potenziali scioperanti (togli la spunta a chi sai che sarà presente)</summary>
-        <div class="row">${ev.potenziali.slice().sort((a, b) => mo.nomeDocente(a).localeCompare(mo.nomeDocente(b), 'it')).map(id =>
-          `<label class="sost-casella"><input type="checkbox" data-sc="potenziale" value="${esc(id)}"${nascosti.has(id) ? '' : ' checked'}${ev.confermato ? ' disabled' : ''}> ${nome(id)}</label>`).join('')}</div></details>
+      ${elencoPotenzialiHtml(ev, iso)}
       <label class="fl">Orario di tutta la scuola
         <select data-sc="riduzione"${ev.confermato ? ' disabled' : ''}>
           <option value="auto"${ev.riduzione == null ? ' selected' : ''}>automatico (proposta: ${r.k ? '−' + r.k + (r.k === 1 ? ' ora' : ' ore') : 'normale'})</option>
@@ -437,7 +481,8 @@ const Scioperi = (() => {
       ${r.nonCoperte ? `<p class="sost-attenzione">⚠️ ${r.nonCoperte} ${r.nonCoperte === 1 ? 'ora resta scoperta' : 'ore restano scoperte'} anche riducendo l'orario: scegli a mano chi vigila.</p>` : ''}
       ${r.disposizione.length ? `<p><b>A disposizione</b> (ore recuperate dal fondo e non usate): ${r.disposizione.map(d => nome(d.docente)).join(', ')}.</p>` : ''}
       <div class="row">
-        ${ev.confermato ? '<span class="tag ok">✔ Piano confermato</span>' : `<button type="button" class="btn" data-sc="conferma" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${inCorso ? 'Registro…' : '✔ Conferma il piano'}</button>`}
+        ${ev.confermato ? `<span class="tag ok">✔ Piano confermato</span>
+          <button type="button" class="btn" data-sc="riapri" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>✎ Riapri il piano</button>` : `<button type="button" class="btn" data-sc="conferma" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${inCorso ? 'Registro…' : '✔ Conferma il piano'}</button>`}
         <button type="button" class="btn" data-sc="stampa" data-data="${esc(iso)}">🖨️ Stampa il piano</button>
         <button type="button" class="btn" data-sc="comunicazione" data-data="${esc(iso)}">📄 Scarica la comunicazione alle famiglie</button>
         <button type="button" class="btn danger" data-sc="azzera" data-data="${esc(iso)}"${inCorso ? ' disabled' : ''}>${ev.confermato ? '↺ Togli il piano' : '↺ Azzera la simulazione'}</button>
@@ -453,11 +498,28 @@ const Scioperi = (() => {
     else if (a === 'stampa') stampa(b.dataset.data);
     else if (a === 'comunicazione') scaricaComunicazione(b.dataset.data);
     else if (a === 'azzera') azzera(b.dataset.data);
+    else if (a === 'riapri') riapri(b.dataset.data);
+    else {
+      // elenco dei potenziali scioperanti e «Rigenera»: sul giorno mostrato nella scheda
+      const iso = document.getElementById('sost-data') ? document.getElementById('sost-data').value : scelta.data;
+      const id = b.dataset.id;
+      if (a === 'togliPot') modifica(iso, ev => { ev.esclusi = (ev.esclusi || []).filter(x => x !== id).concat(id); });
+      else if (a === 'rimettiPot') modifica(iso, ev => { ev.esclusi = (ev.esclusi || []).filter(x => x !== id); });
+      else if (a === 'aggiungiPot') {
+        const s = b.closest('.sc-potenziali').querySelector('[data-sc="nuovoPot"]');
+        if (!s || !s.value) { m().avvisa('Scegli prima il docente da aggiungere.'); return; }
+        const nuovo = s.value;
+        modifica(iso, ev => { ev.potenziali = ev.potenziali.concat(nuovo); ev.esclusi = (ev.esclusi || []).filter(x => x !== nuovo); });
+      }
+      // «Rigenera»: si ricalcola da zero, senza le scelte fatte a mano (chi vigila, riduzione dell'orario)
+      else if (a === 'rigenera') { modifica(iso, ev => { ev.forzate = {}; ev.riduzione = null; }); m().avvisa('🔄 Piano rigenerato.'); }
+    }
   }
   function cambio(e) {
     const c = e.target.closest('[data-sc]'); if (!c) return;
     const a = c.dataset.sc, ev = eventoDel(document.getElementById('sost-data') ? document.getElementById('sost-data').value : scelta.data);
     if (a === 'file') { if (c.files && c.files[0]) leggiFile(c.files[0]); return; }
+    if (a === 'nuovoPot') return;   // la tendina «Aggiungi un docente»: si usa con il tasto «+ Aggiungi», niente ridisegno
     if (a === 'tipo') scelta.tipo = c.value;
     else if (a === 'ora') { c.checked ? scelta.ore.add(Number(c.value)) : scelta.ore.delete(Number(c.value)); }
     else if (ev && !ev.confermato) {
