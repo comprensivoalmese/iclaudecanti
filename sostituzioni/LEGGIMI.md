@@ -218,6 +218,28 @@ In `orario-facile/index.html` le righe che la collegano sono poche: il foglio di
 Per provarla sul PC serve un piccolo server (dalla cartella del repo): `py -m http.server 8765`,
 poi aprire http://localhost:8765/orario-facile/#sostituzioni
 
+## Compresente spostato su una sostituzione (discusso il 28/09/2026, non ancora fatto)
+
+Caso: una docente in quell'ora è in compresenza (per esempio potenziamento L2, come da orario) e viene mandata
+a sostituire un collega assente in un'altra classe. Ha solo cambiato impegno, quindi non dovrebbe avere ore in più.
+
+Oggi invece:
+- assegnando la sostituzione il motore scrive **sempre +1** nel foglio del conteggio (`assegna()` → `segnaNelFoglio(s, 1)`);
+  l'unica eccezione sono i docenti «liberati» da un'uscita didattica (`reindirizzato: true`);
+- nella **scheda 9 di Orario Facile** le compresenze del Foglio Compresenze non ci sono (`Dati.normalizza(S)` ha solo le
+  celle «+»): la docente risulta libera e viene proposta normalmente, con +1;
+- in **Sostituzioni smart** con il quadratino «Compresenze» spuntato la docente è «occupata» (`candidati()`) e non viene
+  proposta; senza spunta è come nella scheda 9.
+
+**Come fare per ora:** assegnare la sostituzione nella scheda 9 (così resta nel registro e nella tabella dell'app), poi
+togliere a mano l'ora aggiunta nel foglio del conteggio (l'avviso dice la cella). Attenzione: se poi la sostituzione
+si annulla, il motore toglie 1 un'altra volta e la cella va ricorretta a mano.
+
+**Idea proposta:** un'opzione «🔁 compresente spostato: nessuna ora in più», come per i liberati delle uscite:
+tra le proposte, in cima, i docenti in compresenza in quell'ora (letti dal Foglio Compresenze, sostegno compreso
+solo per chi lo può vedere); assegnati con `reindirizzato` (o un campo nuovo), quindi senza +1 e senza −1
+all'annullamento. Va fatta nel motore (`sostituzioni.js`), che serve sia la scheda 9 sia la pagina smart.
+
 ## Idee per il futuro
 
 - scrivere direttamente il foglio aggiornato invece di copiare le ore a mano;
