@@ -1,6 +1,6 @@
 {
  "meta": {
-  "nome": "Istituto Comprensivo",
+  "nome": "Istituto Comprensivo di Almese",
   "anno": "2026/2027",
   "durata": 60,
   "inizio": "08:00",
@@ -2530,37 +2530,49 @@
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -2570,37 +2582,49 @@
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     null,
     null
@@ -2610,37 +2634,49 @@
      "doc": "t11z6xn",
      "dis": "d6kt80",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "t11z6xn",
      "dis": "d6kt80",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
     },
     {
      "doc": "t159ogf",
      "dis": "d3zien",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
     },
     {
      "doc": "t159ogf",
      "dis": "d257bj",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     null,
     null
@@ -2650,37 +2686,49 @@
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     null,
     null
@@ -2690,37 +2738,49 @@
      "doc": "t159ogf",
      "dis": "d3zien",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t159ogf",
      "dis": "d257bj",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -2954,37 +3014,49 @@
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t1kqsbg",
      "dis": "d5jm6e",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t1kqsbg",
      "dis": "d5jm6e",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t1juhko",
      "dis": "d3zien",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t19gmvt",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -2994,49 +3066,65 @@
      "doc": "t1b66i",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "t1b66i",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
     },
     {
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
     },
     {
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "twx8d9",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "twx8d9",
      "dis": "de8afd",
      "aula": "a14k4d",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     {
      "doc": "t1juhko",
      "dis": "d257bj",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 6
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 7
     }
    ],
    "Mercoledì": [
@@ -3044,49 +3132,65 @@
      "doc": "twx8d9",
      "dis": "d1q4we",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "twx8d9",
      "dis": "d1q4we",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
     },
     {
      "doc": "t1kqsbg",
      "dis": "d5jm6e",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
     },
     {
      "doc": "t14srjp",
      "dis": "de8afd",
      "aula": "a14k4d",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     {
      "doc": "t1kqsbg",
      "dis": "d6kt80",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 6
     },
     {
      "doc": "t1kqsbg",
      "dis": "dfa0qt",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 7
     }
    ],
    "Giovedì": [
@@ -3094,37 +3198,49 @@
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "twx8d9",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
     },
     {
      "doc": "t1kqsbg",
      "dis": "d6kt80",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t1kqsbg",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "twx8d9",
      "dis": "de8afd",
      "aula": "a14k4d",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     {
      "doc": "twx8d9",
@@ -3136,7 +3252,9 @@
        "doc": "t1juhko",
        "att": ""
       }
-     ]
+     ],
+     "_g": "Giovedì",
+     "_s": 6
     },
     {
      "doc": "twx8d9",
@@ -3148,7 +3266,9 @@
        "doc": "t1juhko",
        "att": ""
       }
-     ]
+     ],
+     "_g": "Giovedì",
+     "_s": 7
     }
    ],
    "Venerdì": [
@@ -3156,37 +3276,49 @@
      "doc": "t1juhko",
      "dis": "d257bj",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t1juhko",
      "dis": "d3zien",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "twx8d9",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "twx8d9",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "t19gmvt",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -4056,37 +4188,49 @@
      "doc": "t1rv2xr",
      "dis": "d5jm6e",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t1rv2xr",
      "dis": "d5jm6e",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t19gmvt",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -4096,49 +4240,65 @@
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
     },
     {
      "doc": "t19gmvt",
      "dis": "d8xytj",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
     },
     {
      "doc": "t1rv2xr",
      "dis": "d5jm6e",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "t1rv2xr",
      "dis": "d5jm6e",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "t14srjp",
      "dis": "de8afd",
      "aula": "a14k4d",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     {
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 6
     },
     {
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 7
     }
    ],
    "Mercoledì": [
@@ -4146,49 +4306,65 @@
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t1rv2xr",
      "dis": "d6kt80",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "t1rv2xr",
      "dis": "d6kt80",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
     },
     {
      "doc": "t20cxtv",
      "dis": "d3zien",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
     },
     {
      "doc": "t20cxtv",
      "dis": "de8afd",
      "aula": "a14k4d",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     {
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 6
     },
     {
      "doc": "t14srjp",
      "dis": "dfa0qt",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 7
     }
    ],
    "Giovedì": [
@@ -4196,37 +4372,49 @@
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "t1b66i",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
     },
     {
      "doc": "t1b66i",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t20cxtv",
      "dis": "d257bj",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "t20cxtv",
      "dis": "de8afd",
      "aula": "a14k4d",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     {
      "doc": "t20cxtv",
@@ -4238,7 +4426,9 @@
        "doc": "t1rv2xr",
        "att": ""
       }
-     ]
+     ],
+     "_g": "Giovedì",
+     "_s": 6
     },
     {
      "doc": "t20cxtv",
@@ -4250,7 +4440,9 @@
        "doc": "t1rv2xr",
        "att": ""
       }
-     ]
+     ],
+     "_g": "Giovedì",
+     "_s": 7
     }
    ],
    "Venerdì": [
@@ -4258,37 +4450,49 @@
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "t20cxtv",
      "dis": "d257bj",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "t20cxtv",
      "dis": "d3zien",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -5908,9 +6112,9 @@
   "pesoCarico": 3
  },
  "ui": {
-  "tab": "orario",
+  "tab": "esporta",
   "vista": "classe",
-  "soggetto": "cghovs"
+  "soggetto": "cnpj6b"
  },
  "pubblicato": "2026-09-28"
 }
