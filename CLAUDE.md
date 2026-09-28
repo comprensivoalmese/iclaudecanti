@@ -139,6 +139,9 @@ Le parti del progetto:
   `Sostituzioni.collega(funzioneOrario, { avvisa, ridisegna })` (restituisce le funzioni del motore). Se cambi il motore,
   controlla sia la scheda (`monta`) sia la pagina smart (`collega`); la costante `VERSIONE` in cima a sostituzioni.js
   si vede nella scheda e serve a capire se una pagina aperta è aggiornata.
+  **Compresente spostato su una sostituzione** (discusso il 28/09/2026, non ancora fatto): oggi prende +1 anche se
+  cambia solo impegno; soluzione temporanea e idea proposta in `sostituzioni/LEGGIMI.md`. Se qualcuno lo chiede,
+  ricordalo e proponi quell'idea.
 
 ## Licenza
 © 2026 Istituto Comprensivo di Almese (www.comprensivoalmese.it), realizzato dal Gruppo Wolf: **tutti i diritti
