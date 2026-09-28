@@ -16,10 +16,10 @@
        a. il docente CURRICOLARE di una classe con compresenza (il compresente resta con la sua classe);
        b. un docente «liberato»: la sua classe in quell'ora non c'è (entra dopo / esce prima);
        c. se serve, si ACCORCIA l'orario di tutta la scuola di 1, 2 o 3 ore: chi perde le ultime ore copre le ore
-          scoperte della giornata in cui è libero (tante quante le ore perse), gli altri restano a disposizione;
-       d. un docente libero con ore A DEBITO (saldo negativo): +1 nel conteggio.
+          scoperte della giornata in cui è libero (tante quante le ore perse), gli altri restano a disposizione.
+       MAI ore in più (docenti liberi o «a debito»): durante uno sciopero si usano solo le ore di chi è già in servizio.
   3. Tutto si può cambiare (potenziali, riduzione, chi vigila); poi «✔ Conferma il piano» registra le vigilanze
-     (sostituzioni con sciopero = ID; +1 solo per quelle «a debito»), «📄 Scarica la comunicazione» prepara il
+     (sostituzioni con sciopero = ID, nessun +1 nel conteggio), «📄 Scarica la comunicazione» prepara il
      documento per le famiglie, «🖨️ Stampa» stampa il piano.
 
   PRIVACY: l'adesione a uno sciopero è un dato sindacale (GDPR art. 9). Nel file pubblicato e nell'app NON si dice
@@ -109,7 +109,7 @@ const Scioperi = (() => {
     Calcola il piano di un evento. Restituisce { k (ore tolte alla giornata), limite (ultima ora che si fa),
     classi: Map id -> { nonEntra, entra, esce, fuori: Set(ore), scoperte: [ore] }, coperture: [{ classe, ora, docente,
     tipo, da, alternative }], nonCoperte, disposizione: [{ docente, ore }] }.
-    tipo: 'spostato' (curricolare da una classe in compresenza) | 'liberato' | 'recuperato' | 'debito' | 'libero' | ''.
+    tipo: 'spostato' (curricolare da una classe in compresenza) | 'liberato' | 'recuperato' | '' (nessuno).
   */
   function calcola(ev) {
     const mo = m(), D = mo.orario(); if (!D) return null;
@@ -167,12 +167,8 @@ const Scioperi = (() => {
         tutte.filter(l => l.ora === h && !presente(l.classe, h) && l.ora <= limite && !occupato(l.docente, h)).forEach(l => aggiungi(l.docente, 'liberato'));
         // c. recuperati dalla giornata accorciata
         tagliate.forEach((s, t) => { if ((credito.get(t) || 0) > 0 && !occupato(t, h)) aggiungi(t, 'recuperato'); });
-        // d. liberi a debito (saldo negativo), prima chi ha più debito e chi è già a scuola; poi (solo a mano) gli altri liberi
-        const liberi = D.docente.filter(t => !occupato(t.id, h) && !visti.has(t.id)).map(t => ({ t, saldo: mo.saldoDi(t.id),
-          aScuola: tutte.some(l => l.docente === t.id && presente(l.classe, l.ora)) }))
-          .sort((a, b) => (b.aScuola - a.aScuola) || ((a.saldo ? a.saldo.attuale : Infinity) - (b.saldo ? b.saldo.attuale : Infinity)));
-        liberi.filter(x => x.saldo && x.saldo.attuale < 0).forEach(x => aggiungi(x.t.id, 'debito'));
-        liberi.filter(x => !(x.saldo && x.saldo.attuale < 0)).forEach(x => aggiungi(x.t.id, 'libero'));
+        // NIENTE docenti liberi né «a debito»: durante uno sciopero non si coprono gli scioperanti con ore in più,
+        // si usano solo le ore di chi è già in servizio (se non bastano, si riduce l'orario di tutta la scuola)
         return out;
       }
 
@@ -185,7 +181,7 @@ const Scioperi = (() => {
         let scelto = null;
         if (forzato === '__nessuno') scelto = null;
         else if (forzato && alternative.some(a => a.id === forzato)) scelto = alternative.find(a => a.id === forzato);
-        else scelto = alternative.find(a => a.tipo !== 'libero') || null;
+        else scelto = alternative[0] || null;
         if (scelto) {
           usati.add(h + '|' + scelto.id);
           if (scelto.tipo === 'spostato') presiDa.set(h + '|' + scelto.da, (presiDa.get(h + '|' + scelto.da) || 0) + 1);
@@ -296,8 +292,8 @@ const Scioperi = (() => {
     try {
       for (const c of r.coperture.filter(x => x.docente)) {
         const l = lezioneDaCoprire(ev, c.classe, c.ora); if (!l) continue;
-        // +1 nel conteggio solo per chi copre fuori dal suo orario (a debito o libero); gli altri lavorano nella loro ora
-        await mo.assegna(ev.data, l, c.docente, { reindirizzato: c.tipo !== 'debito' && c.tipo !== 'libero', sciopero: ev.id, silenzioso: true });
+        // chi vigila è sempre nella sua ora di servizio: nessun +1 nel conteggio
+        await mo.assegna(ev.data, l, c.docente, { reindirizzato: true, sciopero: ev.id, silenzioso: true });
         n++;
       }
       ev.esito = esitoDa(r); ev.confermato = true; salva();
@@ -312,7 +308,7 @@ const Scioperi = (() => {
       if (!confirm('Cancellare la simulazione dello sciopero / assemblea di questo giorno?')) return;
     } else {
       if (!permesso()) return;
-      if (!confirm('Togliere il piano già confermato? Vengono annullate anche le vigilanze registrate (−1 a chi era a debito).')) return;
+      if (!confirm('Togliere il piano già confermato? Vengono annullate anche le vigilanze registrate.')) return;
       for (const s of mo.registroDel(iso).filter(s => s.sciopero === ev.id)) await mo.annulla(s);
     }
     eventi = eventi.filter(e => e.id !== ev.id); salva();
@@ -460,7 +456,7 @@ const Scioperi = (() => {
   // «✎ Riapri il piano»: annulla le vigilanze registrate e torna alla simulazione (l'elenco e le scelte restano)
   async function riapri(iso) {
     const ev = eventoDel(iso); if (!ev || !ev.confermato || inCorso || !permesso()) return;
-    if (!confirm('Riaprire il piano? Le vigilanze già registrate vengono annullate (−1 a chi era a debito); poi potrai modificarlo e confermarlo di nuovo.')) return;
+    if (!confirm('Riaprire il piano? Le vigilanze già registrate vengono annullate; poi potrai modificarlo e confermarlo di nuovo.')) return;
     const mo = m();
     inCorso = true; mo.ridisegna();
     try {
@@ -477,7 +473,7 @@ const Scioperi = (() => {
     if (!r) { box.innerHTML = ''; return; }
     const mo = m(), nome = id => esc(mo.nomeDocente(id)), cl = id => esc(mo.nome('classe', id));
     const TIPO = { spostato: 'curricolare spostato da', liberato: 'liberato (la sua classe non c\'è)', recuperato: 'ora recuperata dal fondo',
-      debito: 'a debito: +1 nel conteggio', libero: 'libero: +1 nel conteggio' };
+    };
     const nota = c => c.tipo === 'spostato' ? `${TIPO.spostato} ${cl(c.da)} (resta il compresente)` : TIPO[c.tipo] || '⚠ nessuno disponibile';
     const opz = c => `<option value="">— nessuno —</option>` + c.alternative.map(a =>
       `<option value="${esc(a.id)}"${a.id === c.docente ? ' selected' : ''}>${nome(a.id)} · ${esc(a.tipo === 'spostato' ? 'da ' + mo.nome('classe', a.da) : TIPO[a.tipo])}</option>`).join('');

@@ -80,7 +80,8 @@ adesione). Il file si legge **solo sul computer**: i nomi servono a trovare i co
   **entrata posticipata** (all'orario della campanella: 3ª ora = 10:05, dopo l'intervallo), le ultime **uscita anticipata**,
   quelle in mezzo **vigilanza** (niente lezione). Chi vigila, in quest'ordine: il docente curricolare di una classe con
   compresenza (il compresente resta con la sua classe), un docente la cui classe non c'è, poi, se serve, si accorcia di 1-3 ore
-  l'orario di **tutta la scuola** e chi perde le ultime ore copre le ore scoperte; infine un docente libero **a debito** (+1).
+  l'orario di **tutta la scuola** e chi perde le ultime ore copre le ore scoperte. **Mai ore in più** (docenti liberi o a debito):
+  si usano solo le ore di chi è già in servizio, e nessuno prende +1.
   Chi non viene usato resta **a disposizione**.
 - Si può cambiare tutto: l'elenco dei **potenziali scioperanti** è sempre visibile («✕ Non sciopera», «↩ Rimetti», «+ Aggiungi»: il piano si ricalcola da solo; «🔄 Rigenera il piano» ricalcola senza le scelte fatte a mano), la riduzione dell'orario, chi vigila. Un piano confermato si cambia con «✎ Riapri il piano» (annulla le vigilanze registrate). Poi **✔ Conferma il piano**,
   **🖨️ Stampa il piano**, **📄 Scarica la comunicazione alle famiglie** (documento Word da controllare) o **↺ Azzera**.

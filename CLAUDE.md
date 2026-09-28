@@ -132,7 +132,7 @@ Le parti del progetto:
   ancora maturato una decisione» / vuota. `calcola()` guarda anche le compresenze (`Compresenze.lezioni(D)`, sostegno compreso):
   ore iniziali scoperte = entrata posticipata (orari da `dati/campanella.json`), finali = uscita anticipata, intermedie = vigilanza
   (priorità: curricolare di una classe in compresenza, liberati, orario di tutta la scuola ridotto di 1-3 ore con chi perde le
-  ultime ore, liberi a debito con +1). Conferma = sostituzioni con `sciopero`/`vigilanza` nel registro, NON pubblicate; nel file
+  ultime ore; MAI ore in più: niente liberi né docenti a debito, nessun +1). Conferma = sostituzioni con `sciopero`/`vigilanza` nel registro, NON pubblicate; nel file
   pubblicato solo `scioperi` con gli effetti sulle classi (entra/esce/vigilanza e chi vigila, `da` se spostato). **Mai pubblicare
   chi sciopera** (dato sindacale, GDPR art. 9). L'app legge soltanto: `Supplenze.testoSciopero()` per tabella, In breve e avviso.
   **Sostituzioni smart** (`app/js/smart.js`, menu dell'app): versione semplice della scheda che usa lo stesso motore con
