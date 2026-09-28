@@ -57,7 +57,8 @@ const DatabaseOrario = (() => {
   const ZONE = {
     impostazioni: 'Impostazioni!A2:B30', vincoli: `Vincoli!A2:C${NVINC + 1}`, discipline: `Discipline!A2:H${NDIS + 1}`,
     aule: `Aule!A2:C${NAULE + 1}`, classi: `Classi!A1:N${NCL + 1}`, quadro: `Quadro!A1:AN${NCL + 1}`,
-    docentiTitoli: 'Docenti!A1:L1', docenti: `Docenti!A2:L${ND + 1}`,   // si legge fino a L: le colonne si cercano per titolo cattedre: `Cattedre!A2:E${NK + 1}`, orario: `Orario!A1:BJ${ND + 2}`
+    docentiTitoli: 'Docenti!A1:L1', docenti: `Docenti!A2:L${ND + 1}`,   // si legge fino a L: le colonne si cercano per titolo
+    cattedre: `Cattedre!A2:E${NK + 1}`, orario: `Orario!A1:BJ${ND + 2}`
   };
   async function leggiZone() {
     const q = Object.values(ZONE).map(z => 'ranges=' + encodeURIComponent(z)).join('&');
