@@ -308,6 +308,8 @@ quella finestra: il browser però non può portarla davanti alle altre da solo.
 
 ### Idea: chi vigila durante l'intervallo (discussa il 29/09/2026, non ancora fatta)
 
+Se ne parla nella issue [#8](https://github.com/comprensivoalmese/orario/issues/8).
+
 Regola della scuola: all'inizio dei due intervalli (**9:55–10:05** e **11:50–12:05**) le classi si spostano subito
 nell'aula dell'ora dopo. L'**insegnante uscente** resta nella sua aula e vigila la **classe che entra**, anche se non
 è una sua classe:
