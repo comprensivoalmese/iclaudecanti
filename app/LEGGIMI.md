@@ -306,6 +306,29 @@ Se si cambia l'inizio degli intervalli, va cambiato sia in `js/config.js` sia ne
 In ogni caso, se l'app resta sempre aperta sulla LIM (magari dietro ad altre finestre), la schermata compare comunque in
 quella finestra: il browser però non può portarla davanti alle altre da solo.
 
+### Idea: chi vigila durante l'intervallo (discussa il 29/09/2026, non ancora fatta)
+
+Regola della scuola: all'inizio dei due intervalli (**9:55–10:05** e **11:50–12:05**) le classi si spostano subito
+nell'aula dell'ora dopo. L'**insegnante uscente** resta nella sua aula e vigila la **classe che entra**, anche se non
+è una sua classe:
+- primo intervallo: il docente che nell'aula ha fatto la **2ª ora** vigila la classe che lì avrà la **3ª ora**;
+- secondo intervallo: il docente della **4ª ora** vigila la classe che lì avrà la **5ª ora**.
+
+Un giorno si potrebbe mostrare nell'app, per esempio:
+- nell'orario personale del docente, dopo la 2ª e la 4ª ora, una riga «☕ Vigilanza intervallo 9:55–10:05 · arriva la 3B»;
+- sulle LIM, nella schermata dell'intervallo, «Vi vigila: …» accanto alla classe che arriva
+  (`js/intervallo.js` sa già quale classe arriva in ogni aula).
+
+Da decidere quando se ne parlerà:
+- aula in cui arriva una classe ma nell'ora prima non c'era lezione: chi vigila?
+- aula in cui il docente uscente c'è ma non arriva nessuno: il docente è libero?
+- docente uscente assente: vigila chi lo sostituiva nell'ora prima (`supplenze.js`)?
+- con una compresenza nell'ora prima, vigila il curricolare, il compresente o entrambi?
+
+Nota: l'app calcola gli orari delle ore a blocchi fissi di 60 minuti (`daOrarioFacile` in `js/dati.js`: 3ª alle 10:00,
+5ª alle 12:00), mentre la campanella tiene conto degli intervalli (3ª alle 10:05, 5ª alle 12:05). Per questa idea
+conviene prendere gli orari veri da `dati/campanella.json` o da `CONFIG.intervalliLim`.
+
 ## Schermo all'ingresso (proiezione a rotazione)
 
 Per il televisore o il proiettore all'ingresso, dove nessuno tocca lo schermo: l'app mostra l'orario di oggi
