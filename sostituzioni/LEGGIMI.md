@@ -228,6 +228,8 @@ poi aprire http://localhost:8765/orario-facile/#sostituzioni
 
 ## Compresente spostato su una sostituzione (discusso il 28/09/2026, non ancora fatto)
 
+Se ne parla nella issue [#7](https://github.com/comprensivoalmese/orario/issues/7).
+
 Caso: una docente in quell'ora è in compresenza (per esempio potenziamento L2, come da orario) e viene mandata
 a sostituire un collega assente in un'altra classe. Ha solo cambiato impegno, quindi non dovrebbe avere ore in più.
 
