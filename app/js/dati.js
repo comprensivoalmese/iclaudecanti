@@ -38,8 +38,8 @@ const Dati = (() => {
     const [h, m] = ((S.meta && S.meta.inizio) || '08:00').split(':').map(Number);
     const ore = [];
     for (let i = 0; i < totale; i++) {
-      // Orario Facile mette un'ora di pausa pranzo prima delle ore pomeridiane
-      const inizio = h * 60 + m + i * durata + (i >= oreM ? 60 : 0);
+      // Le ore del pomeriggio seguono subito quelle del mattino, senza pausa (7ª ora alle 14:00, come in dati/campanella.json)
+      const inizio = h * 60 + m + i * durata;
       ore.push({ n: i + 1, inizio: hhmm(inizio), fine: hhmm(inizio + durata) });
     }
     const lezioni = [], compresenze = [];
