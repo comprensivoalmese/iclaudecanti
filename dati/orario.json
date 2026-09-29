@@ -2802,37 +2802,49 @@
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t1rv2xr",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t1rv2xr",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -2842,37 +2854,49 @@
      "doc": "t1rv2xr",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "t1rv2xr",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
     },
     {
      "doc": "t1uqgka",
      "dis": "dcwgvj",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
     },
     {
      "doc": "t1uqgka",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     null,
     null
@@ -2882,37 +2906,49 @@
      "doc": "t1rv2xr",
      "dis": "d6kt80",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
-    },
-    {
-     "doc": "t12mp7v",
-     "dis": "d3zien",
-     "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
     },
     {
      "doc": "t12mp7v",
      "dis": "d257bj",
-     "aula": "afb2rb",
-     "lock": false
+     "aula": "a8oy0u",
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
+    },
+    {
+     "doc": "t12mp7v",
+     "dis": "d3zien",
+     "aula": "a8oy0u",
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     null,
     null
@@ -2922,37 +2958,49 @@
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
     },
     {
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     null,
     null
@@ -2962,37 +3010,49 @@
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t1rv2xr",
      "dis": "d6kt80",
      "aula": "a9ch4s",
-     "lock": false
-    },
-    {
-     "doc": "t12mp7v",
-     "dis": "d3zien",
-     "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "t12mp7v",
      "dis": "d257bj",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
+    },
+    {
+     "doc": "t12mp7v",
+     "dis": "d3zien",
+     "aula": "a8oy0u",
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -3112,7 +3172,7 @@
     },
     {
      "doc": "t1juhko",
-     "dis": "d257bj",
+     "dis": "d3zien",
      "aula": "ajsmj1",
      "lock": false,
      "_g": "Martedì",
@@ -3282,7 +3342,7 @@
     },
     {
      "doc": "t1juhko",
-     "dis": "d3zien",
+     "dis": "d257bj",
      "aula": "ajsmj1",
      "lock": false,
      "_g": "Venerdì",
@@ -3340,37 +3400,49 @@
      "doc": "tyymbm",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "tyymbm",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t1l8u7k",
      "dis": "d6kt80",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t1a31ev",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t1a31ev",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -3552,37 +3624,49 @@
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "tyymbm",
      "dis": "d6kt80",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t21kj2v",
      "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -3764,37 +3848,49 @@
      "doc": "t20cxtv",
      "dis": "d3zien",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t20cxtv",
-     "dis": "d257bj",
+     "dis": "d3zien",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t1xh0vg",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t1xh0vg",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -3804,37 +3900,49 @@
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     null,
     null
@@ -3842,39 +3950,51 @@
    "Mercoledì": [
     {
      "doc": "t20cxtv",
-     "dis": "d3zien",
+     "dis": "d257bj",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "t20cxtv",
      "dis": "d257bj",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     null,
     null
@@ -3884,37 +4004,49 @@
      "doc": "t1xh0vg",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "t1xh0vg",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
     },
     {
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "t13rlph",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     null,
     null
@@ -3924,37 +4056,49 @@
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t1xh0vg",
      "dis": "d6kt80",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "t1xh0vg",
      "dis": "d6kt80",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -3976,37 +4120,49 @@
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t159ogf",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t159ogf",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -4016,37 +4172,49 @@
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
-    },
-    {
-     "doc": "twx8d9",
-     "dis": "d3zien",
-     "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
     },
     {
      "doc": "twx8d9",
      "dis": "d257bj",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
+    },
+    {
+     "doc": "twx8d9",
+     "dis": "d257bj",
+     "aula": "ae8jox",
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "t159ogf",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "t159ogf",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     null,
     null
@@ -4056,37 +4224,49 @@
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "twx8d9",
      "dis": "d3zien",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     null,
     null
@@ -4096,37 +4276,49 @@
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "t159ogf",
      "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
     },
     {
      "doc": "t159ogf",
      "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     null,
     null
@@ -4136,37 +4328,49 @@
      "doc": "t11z6xn",
      "dis": "d6kt80",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t11z6xn",
      "dis": "d6kt80",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "t1uqgka",
      "dis": "dcwgvj",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "t1uqgka",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "twx8d9",
-     "dis": "d257bj",
+     "dis": "d3zien",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -4402,7 +4606,7 @@
     },
     {
      "doc": "t20cxtv",
-     "dis": "d257bj",
+     "dis": "d3zien",
      "aula": "ajsmj1",
      "lock": false,
      "_g": "Giovedì",
@@ -4472,7 +4676,7 @@
     },
     {
      "doc": "t20cxtv",
-     "dis": "d3zien",
+     "dis": "d257bj",
      "aula": "abioos",
      "lock": false,
      "_g": "Venerdì",
@@ -4514,37 +4718,49 @@
      "doc": "t1a31ev",
      "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t1a31ev",
      "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t1l8u7k",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t1l8u7k",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -4726,37 +4942,49 @@
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t1juhko",
      "dis": "d3zien",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t1juhko",
      "dis": "d3zien",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t21kj2v",
      "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t21kj2v",
      "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -4898,13 +5126,17 @@
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t19gmvt",
@@ -4938,37 +5170,49 @@
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t1xh0vg",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t1xh0vg",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t13rlph",
      "dis": "d3zien",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t13rlph",
      "dis": "d3zien",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -4978,37 +5222,49 @@
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
+    },
+    {
+     "doc": "t12mp7v",
+     "dis": "d257bj",
+     "aula": "a8oy0u",
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
-    },
-    {
-     "doc": "t12mp7v",
-     "dis": "d1q4we",
-     "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "t1xh0vg",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "t1xh0vg",
      "dis": "d5jm6e",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     null,
     null
@@ -5018,37 +5274,49 @@
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "t12mp7v",
      "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
     },
     {
      "doc": "t1xh0vg",
      "dis": "d6kt80",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
     },
     {
      "doc": "t1xh0vg",
      "dis": "d6kt80",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     null,
     null
@@ -5058,37 +5326,49 @@
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t12mp7v",
      "dis": "d257bj",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "t12mp7v",
-     "dis": "d257bj",
+     "dis": "d1q4we",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     null,
     null
@@ -5098,37 +5378,49 @@
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t10c0j6",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -5150,37 +5442,49 @@
      "doc": "t159ogf",
      "dis": "d3zien",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t159ogf",
      "dis": "d3zien",
      "aula": "a9ch4s",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -5190,37 +5494,49 @@
      "doc": "t1z7z9s",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "t1z7z9s",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "t1o49gh",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     null,
     null
@@ -5230,37 +5546,49 @@
      "doc": "t1uqgka",
      "dis": "dcwgvj",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "t1uqgka",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "t11z6xn",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
+    },
+    {
+     "doc": "t1z7z9s",
+     "dis": "d257bj",
+     "aula": "ae8jox",
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
     },
     {
      "doc": "t1z7z9s",
      "dis": "d1q4we",
      "aula": "ae8jox",
-     "lock": false
-    },
-    {
-     "doc": "t1z7z9s",
-     "dis": "d1q4we",
-     "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     null,
     null
@@ -5270,37 +5598,49 @@
      "doc": "t1z7z9s",
      "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "t1z7z9s",
      "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     null,
     null
@@ -5310,37 +5650,49 @@
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "t1z7z9s",
      "dis": "d257bj",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "t1z7z9s",
-     "dis": "d257bj",
+     "dis": "d1q4we",
      "aula": "aa7k2r",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t11z6xn",
      "dis": "d6kt80",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "t11z6xn",
      "dis": "d6kt80",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -5360,7 +5712,7 @@
    "Lunedì": [
     {
      "doc": "twx8d9",
-     "dis": "d3zien",
+     "dis": "d257bj",
      "aula": "ajsmj1",
      "lock": false,
      "_g": "Lunedì",
@@ -5568,7 +5920,7 @@
     },
     {
      "doc": "twx8d9",
-     "dis": "d257bj",
+     "dis": "d3zien",
      "aula": "ajsmj1",
      "lock": false,
      "_g": "Giovedì",
@@ -5676,37 +6028,49 @@
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t1kqsbg",
      "dis": "d5jm6e",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t1kqsbg",
      "dis": "d5jm6e",
      "aula": "al8pmm",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -5716,37 +6080,49 @@
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "t1n68kj",
      "dis": "d7z35w",
      "aula": "aci2l2",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
     },
     {
      "doc": "t14srjp",
-     "dis": "d1q4we",
+     "dis": "d257bj",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
     },
     {
      "doc": "t14srjp",
-     "dis": "d1q4we",
+     "dis": "d257bj",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "t1kqsbg",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "t1kqsbg",
      "dis": "d5jm6e",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     null,
     null
@@ -5756,37 +6132,49 @@
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "a8oy0u",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "tzr01h",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "t1c9ajg",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
     },
     {
      "doc": "txjf81",
      "dis": "d8xytj",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     null,
     null
@@ -5796,37 +6184,49 @@
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "t14srjp",
      "dis": "d1q4we",
      "aula": "ajsmj1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "t1z7z9s",
      "dis": "d3zien",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
     },
     {
      "doc": "t1z7z9s",
      "dis": "d3zien",
      "aula": "afb2rb",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t1b66i",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "t1b66i",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     null,
     null
@@ -5836,37 +6236,49 @@
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "t14srjp",
-     "dis": "d257bj",
+     "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "t14srjp",
-     "dis": "d257bj",
+     "dis": "d1q4we",
      "aula": "adpl4r",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t1kqsbg",
      "dis": "d6kt80",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "t1kqsbg",
      "dis": "d6kt80",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -5888,37 +6300,49 @@
      "doc": "t1juhko",
      "dis": "d3zien",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 0
     },
     {
      "doc": "t1juhko",
-     "dis": "d257bj",
+     "dis": "d3zien",
      "aula": "aht1e8",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 1
     },
     {
      "doc": "t20cxtv",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 2
     },
     {
      "doc": "t20cxtv",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 3
     },
     {
      "doc": "t1uqgka",
      "dis": "dcwgvj",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 4
     },
     {
      "doc": "t1uqgka",
      "dis": "dcwgvj",
      "aula": "a2xjvq",
-     "lock": false
+     "lock": false,
+     "_g": "Lunedì",
+     "_s": 5
     },
     null,
     null
@@ -5928,37 +6352,49 @@
      "doc": "t20cxtv",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 0
     },
     {
      "doc": "t20cxtv",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 1
     },
     {
      "doc": "t1tg0ft",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 2
     },
     {
      "doc": "t19gmvt",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 3
     },
     {
      "doc": "t1l8u7k",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 4
     },
     {
      "doc": "t1l8u7k",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Martedì",
+     "_s": 5
     },
     null,
     null
@@ -5968,37 +6404,49 @@
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 0
     },
     {
      "doc": "t1vrul1",
      "dis": "d963b0",
      "aula": "agipu1",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 1
     },
     {
      "doc": "t19gmvt",
      "dis": "d8xytj",
      "aula": "ai910g",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 2
     },
     {
      "doc": "t1hzz67",
      "dis": "ddy9iv",
      "aula": "a57y9w",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 3
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a63x6f",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 4
     },
     {
      "doc": "t1d7dkm",
      "dis": "dab27m",
      "aula": "a7yh69",
-     "lock": false
+     "lock": false,
+     "_g": "Mercoledì",
+     "_s": 5
     },
     null,
     null
@@ -6008,37 +6456,49 @@
      "doc": "t1l8u7k",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 0
     },
     {
      "doc": "t1l8u7k",
      "dis": "d5jm6e",
      "aula": "ae8jox",
-     "lock": false
-    },
-    {
-     "doc": "t1juhko",
-     "dis": "d3zien",
-     "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 1
     },
     {
      "doc": "t1juhko",
      "dis": "d257bj",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 2
+    },
+    {
+     "doc": "t1juhko",
+     "dis": "d257bj",
+     "aula": "abioos",
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 3
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a3szfq",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 4
     },
     {
      "doc": "t1fg8gl",
      "dis": "dbi611",
      "aula": "a4mka1",
-     "lock": false
+     "lock": false,
+     "_g": "Giovedì",
+     "_s": 5
     },
     null,
     null
@@ -6048,37 +6508,49 @@
      "doc": "t1l8u7k",
      "dis": "d6kt80",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 0
     },
     {
      "doc": "t1l8u7k",
      "dis": "d6kt80",
      "aula": "ae8jox",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 1
     },
     {
      "doc": "t1tg0ft",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 2
     },
     {
      "doc": "t1tg0ft",
      "dis": "d7z35w",
      "aula": "ak3u00",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 3
     },
     {
      "doc": "t20cxtv",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 4
     },
     {
      "doc": "t20cxtv",
      "dis": "d1q4we",
      "aula": "abioos",
-     "lock": false
+     "lock": false,
+     "_g": "Venerdì",
+     "_s": 5
     },
     null,
     null
@@ -6114,7 +6586,7 @@
  "ui": {
   "tab": "esporta",
   "vista": "classe",
-  "soggetto": "cnpj6b"
+  "soggetto": "crupfk"
  },
- "pubblicato": "2026-09-28"
+ "pubblicato": "2026-09-29"
 }
