@@ -143,6 +143,10 @@ Le parti del progetto:
   **Compresente spostato su una sostituzione** (discusso il 28/09/2026, non ancora fatto): oggi prende +1 anche se
   cambia solo impegno; soluzione temporanea e idea proposta in `sostituzioni/LEGGIMI.md`. Se qualcuno lo chiede,
   ricordalo e proponi quell'idea.
+- **Vigilanza durante l'intervallo** (idea discussa il 29/09/2026, non ancora fatta): all'inizio dell'intervallo le classi
+  si spostano; l'insegnante uscente resta nella sua aula e vigila la classe che vi entra (2ª ora → classe della 3ª per
+  9:55–10:05, 4ª → 5ª per 11:50–12:05). Proposta e domande aperte in `app/LEGGIMI.md` (sezione LIM). Se qualcuno lo
+  chiede, ricordalo e riparti da lì (`js/intervallo.js` calcola già chi arriva in ogni aula).
 
 ## Licenza
 © 2026 Istituto Comprensivo di Almese (www.comprensivoalmese.it), realizzato dal Gruppo Wolf: **tutti i diritti
