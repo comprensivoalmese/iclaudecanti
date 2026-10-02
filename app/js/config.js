@@ -137,7 +137,7 @@ window.CONFIG = {
   // SOLO DOCENTI: l'app mostra il tasto solo ai docenti, ma la vera protezione è la condivisione su Drive. cartellaImpegni =
   // cartella dove si pubblica impegni-pubblicati.json, da condividere SOLO con i docenti (non con tutto l'Istituto, dove ci
   // sono anche gli studenti). Vuota = cartellaPubblicazione (quella di orario e sostituzioni).
-  // (dal 02/10/2026: cartella creata apposta nel Drive condiviso della scuola, dentro «ORARIO»)
+  // (dal 02/10/2026: cartella creata apposta per gli impegni, da condividere solo con i docenti)
   cartellaImpegni: '1VBeMvnuJG17h26AIqxXEDA7o8HmRt6om',
   fileImpegniPubblicati: '',
 
