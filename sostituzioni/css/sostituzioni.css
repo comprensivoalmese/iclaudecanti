@@ -91,6 +91,10 @@
 .sost-candidato:last-child { border-bottom: 0; }
 .sost-info { min-width: 0; }
 .sost-etichette { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+/* il motivo della proposta e della sua priorità, sotto il nome del docente */
+.sost-motivo { display: block; margin-top: 4px; font-size: .85em; opacity: .85; }
+/* assenza in altri giorni della settimana: un giorno per riga, con le sue ore da spuntare */
+.sost-altro-giorno { display: flex; flex-wrap: wrap; gap: 0 14px; align-items: center; padding: 4px 0; }
 
 /* ---------- Tabelle ---------- */
 .sost .tablewrap { margin-top: 8px; }
