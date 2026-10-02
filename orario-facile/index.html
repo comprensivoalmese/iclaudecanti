@@ -1640,16 +1640,34 @@ function renderCompresenze(){
 /* ---------------- 9. sostituzioni ---------------- */
 // La scheda vive nei file di sostituzioni/: qui le passiamo l'orario attuale di Orario Facile,
 // trasformato con Dati.normalizza (lo stesso usato dall'app Luis@i)
+var orarioSost = null, orarioSostInCorso = false;   // l'orario pubblicato usato dalle sostituzioni (vedi qui sotto)
 function renderSostituzioni(){
   const box = $('#sostituzioniApp');
   if(typeof Sostituzioni === 'undefined' || typeof Dati === 'undefined'){
     box.innerHTML = '<p class="hint">La scheda Sostituzioni non è disponibile: mancano i file della cartella <b>sostituzioni/</b> o <b>app/js/dati.js</b>.</p>';
     return;
   }
+  // Le sostituzioni si fanno sempre sull'orario UFFICIALE pubblicato (Dati.caricaPubblicato: il file su Drive,
+  // oppure l'ultima copia, oppure dati/orario.json), MAI sulla bozza aperta qui: lo si riscarica a ogni apertura
+  if(!orarioSostInCorso){
+    orarioSostInCorso = true;
+    Dati.caricaPubblicato()
+      .then(P => { orarioSost = P; orarioSostInCorso = false; if(S.ui.tab === 'sostituzioni') montaSostituzioni(box); })
+      .catch(e => {
+        orarioSostInCorso = false;
+        if(!orarioSost) box.innerHTML = `<p class="hint">⚠️ Non riesco a leggere l'orario ufficiale pubblicato (${esc(e.message)}): le sostituzioni si fanno solo su quello. Riprova tra poco.</p>`;
+      });
+  }
+  if(orarioSost) montaSostituzioni(box);
+  else if(!box.classList.contains('sost')) box.innerHTML = '<p class="hint">Carico l’orario ufficiale pubblicato…</p>';
+}
+function montaSostituzioni(box){
   // con «👁 Nomi» attivo la scheda riceve i nomi veri (il codice DOC01… resta in .codice):
-  // così abbina da sola i docenti alle righe del foglio del conteggio ore
+  // così abbina da sola i docenti alle righe del foglio del conteggio ore. Ogni volta una copia dei docenti,
+  // così i nomi veri non finiscono nell'orario scaricato
   Sostituzioni.monta(box, () => {
-    const D = Dati.normalizza(S);
+    const docente = orarioSost.docente.map(e => Object.assign({}, e));
+    const D = Object.assign({}, orarioSost, { docente, mappa: Object.assign({}, orarioSost.mappa, { docente: new Map(docente.map(e => [e.id, e])) }) });
     if(NOMI) D.docente.forEach(e => { e.codice = e.nome; e.nome = nomeDoc(e.nome); });
     return D;
   });
