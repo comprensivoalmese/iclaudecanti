@@ -124,7 +124,8 @@ const Uscite = (() => {
           conosce(b, l.classe) - conosce(a, l.classe) || mo.nomeDocente(a).localeCompare(mo.nomeDocente(b), 'it'));
         if (lib.length) { docente = lib[0]; tipo = 'liberato'; }
         else {
-          const altro = mo.candidati(iso, l).find(c => !c.liberato && !usatoNelPiano.has(c.t.id + '|' + l.ora));
+          // (non i docenti «spostabili» da una compresenza: il piano dell'uscita usa solo liberati e liberi)
+          const altro = mo.candidati(iso, l).find(c => !c.liberato && !c.spostato && !usatoNelPiano.has(c.t.id + '|' + l.ora));
           if (altro) { docente = altro.t.id; tipo = 'normale'; }
         }
       }
@@ -137,7 +138,7 @@ const Uscite = (() => {
     // le alternative di ogni ora (per la tendina): i liberati di quell'ora e i primi docenti liberi
     coperture.forEach(c => {
       const lib = liberi(c.l.ora, c.docente).map(id => ({ id, liberato: true }));
-      const altri = mo.candidati(iso, c.l).filter(k => !k.liberato && (!usatoNelPiano.has(k.t.id + '|' + c.l.ora) || k.t.id === c.docente))
+      const altri = mo.candidati(iso, c.l).filter(k => !k.liberato && !k.spostato && (!usatoNelPiano.has(k.t.id + '|' + c.l.ora) || k.t.id === c.docente))
         .slice(0, 5).map(k => ({ id: k.t.id, liberato: false }));
       c.alternative = lib.concat(altri.filter(a => !lib.some(x => x.id === a.id)));
       if (c.docente && !c.alternative.some(a => a.id === c.docente)) c.alternative.unshift({ id: c.docente, liberato: c.tipo === 'liberato' });
