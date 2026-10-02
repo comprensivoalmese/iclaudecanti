@@ -143,9 +143,16 @@ Le parti del progetto:
   `Sostituzioni.collega(funzioneOrario, { avvisa, ridisegna })` (restituisce le funzioni del motore). Se cambi il motore,
   controlla sia la scheda (`monta`) sia la pagina smart (`collega`); la costante `VERSIONE` in cima a sostituzioni.js
   si vede nella scheda e serve a capire se una pagina aperta è aggiornata.
-  **Compresente spostato su una sostituzione** (discusso il 28/09/2026, non ancora fatto): oggi prende +1 anche se
-  cambia solo impegno; soluzione temporanea e idea proposta in `sostituzioni/LEGGIMI.md`. Se qualcuno lo chiede,
-  ricordalo e proponi quell'idea.
+  **Orario delle sostituzioni**: sempre quello UFFICIALE pubblicato (`Dati.caricaPubblicato()`), mai la bozza di Orario
+  Facile (scelta della scuola, 02/10/2026): la scheda 9 lo scarica in `renderSostituzioni()`, la pagina smart se l'app mostra la bozza.
+  **Compresenze nelle sostituzioni** (issue #7, fatto il 02/10/2026): il motore legge le compresenze (`Compresenze.lezioni`,
+  sostegno compreso, solo in memoria); le ore di compresenza non sono mai «da coprire» ma si possono segnare come assenze;
+  `spostamentoDi()`: con il sostegno si sposta il docente di cattedra (il sostegno resta), con potenziamento e altre si sposta
+  il compresente, l'Alternativa è l'ultima possibilità. Chi è spostato non prende +1 (`spostato: { da }` nel registro,
+  `senzaOreInPiu()`; NON `reindirizzato`, che è delle uscite). `candidati()` ordina a gruppi (classe: ora buca → spostabili →
+  liberi; poi gli altri nello stesso ordine; Alternativa ultima) e dà a ogni proposta `motivo` e `opzioni`. Nell'app
+  `Supplenze.lezioni()` (usata da viste.js e brief.js) nasconde il docente spostato nella classe lasciata e mette al suo posto
+  il solo sostegno con la stessa materia (senza docente per chi non vede il sostegno). Dettagli in `sostituzioni/LEGGIMI.md`.
 - **Vigilanza durante l'intervallo** (idea discussa il 29/09/2026, non ancora fatta): all'inizio dell'intervallo le classi
   si spostano; l'insegnante uscente resta nella sua aula e vigila la classe che vi entra (2ª ora → classe della 3ª per
   9:55–10:05, 4ª → 5ª per 11:50–12:05). Proposta e domande aperte in `app/LEGGIMI.md` (sezione LIM). Se qualcuno lo
