@@ -17,7 +17,7 @@ const Sostituzioni = (() => {
   const PROPOSTE_VISIBILI = 4;
   // Versione della scheda, mostrata in cima: serve a capire se la pagina aperta è quella aggiornata
   // (va cambiata a ogni modifica importante del modo in cui la scheda scrive nei fogli)
-  const VERSIONE = '28/09/2026 · 12 (assemblee secondo il CCNL; riquadro degli abbinamenti chiuso)';
+  const VERSIONE = '02/10/2026 · 13 (orario ufficiale pubblicato; compresenze: docenti spostabili senza ore in più, priorità con il motivo)';
   const NOMI_GIORNI = ['Domenica', 'Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato'];
   // Dove si trovano i facsimili del foglio, rispetto alla pagina di Orario Facile
   const CARTELLA_ESEMPI = '../sostituzioni/esempio/';
@@ -123,10 +123,11 @@ const Sostituzioni = (() => {
     return elenco;
   }
 
-  // Gli ALTRI giorni della stessa settimana in cui il docente ha lezione: [{ iso, giorno, ore: [1, 2…] }]
+  // Gli ALTRI giorni della stessa settimana in cui il docente ha lezione o compresenza:
+  // [{ iso, giorno, ore: [1, 2…], lezioni: [i suoi impegni di quel giorno] }]
   function altriGiorniDi(iso, idDocente) {
     return giorniSettimana(iso).filter(g => g.iso !== iso)
-      .map(g => Object.assign(g, { ore: [...new Set(lezioniDi(idDocente, g.giorno).map(l => l.ora))] }))
+      .map(g => { const lezioni = impegniDi(idDocente, g.giorno); return Object.assign(g, { lezioni, ore: [...new Set(lezioni.map(l => l.ora))] }); })
       .filter(g => g.ore.length);
   }
 
@@ -170,9 +171,9 @@ const Sostituzioni = (() => {
   const conSigla = t => !!rigaDi(t.id) && /\.|^DOC\d+$/i.test(sigla(t));
 
   // Sostituzioni fatte da una riga del foglio e non ancora riportate nel foglio
-  // (quelle dei docenti «liberati» da un'uscita didattica non contano: era già una loro ora di lezione)
+  // (quelle dei docenti «liberati» da un'uscita didattica o spostati da una compresenza non contano: era già una loro ora)
   function daRiportarePer(chiave) {
-    return registro.filter(x => !x.riportata && !x.reindirizzato && x.sostituto && (rigaDi(x.sostituto) || {}).chiave === chiave).length;
+    return registro.filter(x => !x.riportata && !senzaOreInPiu(x) && x.sostituto && (rigaDi(x.sostituto) || {}).chiave === chiave).length;
   }
 
   // Saldo di un docente dell'orario: { foglio, extra, attuale } oppure null se non è nel foglio
@@ -194,9 +195,76 @@ const Sostituzioni = (() => {
   // ---------- Assenze e ore da coprire ----------
   const assenzeDel = iso => assenze.filter(a => a.data === iso);
 
+  // Le lezioni CURRICOLARI di un docente in un giorno (le ore di compresenza non sono mai «ore da coprire»:
+  // in classe c'è comunque un altro docente)
   function lezioniDi(idDocente, giorno) {
-    return D.lezioni.filter(l => l.giorno === giorno && l.docente === idDocente).sort((a, b) => a.ora - b.ora);
+    return curricolari().filter(l => l.giorno === giorno && l.docente === idDocente).sort((a, b) => a.ora - b.ora);
   }
+
+  // ---------- Compresenze (app/js/compresenze.js) ----------
+  /*
+    Le ore di compresenza (Foglio Compresenze, sostegno compreso, e celle «+» di Orario Facile) come lezioni con
+    compresenza: true. Servono a sapere chi è già in classe con un altro docente e si può SPOSTARE su una sostituzione
+    senza ore in più (issue #7). Il sostegno resta solo in memoria (dato delicato, mai sul dispositivo).
+    Nell'app D.lezioni può contenere già le compresenze (quadratino «Compresenze»): per questo le curricolari si
+    prendono da D.lezioniCurricolari e le compresenze sempre da Compresenze.lezioni(D).
+  */
+  const conCompresenze = () => typeof Compresenze !== 'undefined';
+  const curricolari = () => (D.lezioniCurricolari || D.lezioni).filter(l => !l.compresenza);
+  let copiaCompresenze = null;    // { D, elenco }: le compresenze dell'orario D (si ricalcolano quando cambia)
+  function compresenze() {
+    if (!copiaCompresenze || copiaCompresenze.D !== D) {
+      copiaCompresenze = { D, elenco: conCompresenze() ? Compresenze.lezioni(D) : D.lezioni.filter(l => l.compresenza) };
+    }
+    return copiaCompresenze.elenco;
+  }
+  // Il tipo di una compresenza, dal nome scritto nel Foglio («Sostegno», «Potenziamento L2», «Alternativa»…)
+  const eSostegno = l => /^sos/i.test(l.materia || '');
+  const eAlternativa = l => /^alternativ/i.test(l.materia || '');
+  // Tutti gli impegni di un docente in un giorno: lezioni curricolari e ore di compresenza
+  function impegniDi(idDocente, giorno) {
+    return curricolari().concat(compresenze()).filter(l => l.giorno === giorno && l.docente === idDocente).sort((a, b) => a.ora - b.ora);
+  }
+  // Chi è in una classe a una certa ora (curricolari e compresenze)
+  const inClasse = (giorno, ora, classe) => curricolari().concat(compresenze()).filter(l => l.giorno === giorno && l.ora === ora && l.classe === classe);
+  // Il docente insegna in quella classe (in qualunque giorno, anche in compresenza)?
+  const insegnaIn = (idDocente, classe) => curricolari().concat(compresenze()).some(l => l.docente === idDocente && l.classe === classe);
+
+  // Rilegge il Foglio Compresenze una volta per apertura della pagina, se il permesso di Google c'è già.
+  // In Orario Facile (solo chi è autorizzato) si legge anche il sostegno, come fa il modulo dello sciopero;
+  // nell'app lo decide app.js (solo docenti e chi modifica).
+  let compresenzeLette = false;
+  function leggiCompresenze() {
+    if (compresenzeLette || !conCompresenze() || !Compresenze.configurato() || typeof NomiDocenti === 'undefined') return;
+    if (!NomiDocenti.gettoneDisponibile([NomiDocenti.PERMESSO_DRIVE])) return;
+    compresenzeLette = true;
+    if (contenitore) Compresenze.impostaSostegno(true);
+    Compresenze.scarica().then(cambiate => { if (cambiate) { copiaCompresenze = null; disegnaTutto(); } }).catch(() => {});
+  }
+
+  /*
+    Il docente, a quell'ora, è in classe con un altro docente e si può SPOSTARE su una sostituzione senza ore in più?
+    Restituisce { da: classe che lascia, tipo, materia } oppure null. Regole della scuola (02/10/2026):
+    - con il SOSTEGNO si sposta il docente di cattedra: il sostegno resta da solo con la classe (il sostegno non si sposta);
+    - con il potenziamento e le altre compresenze si sposta il compresente: resta il docente di cattedra;
+    - l'ALTERNATIVA (in parallelo a Religione) è l'ultima possibilità: si sposta con i suoi studenti, Religione resta.
+    Chi resta in classe deve esserci davvero: non assente e non già spostato altrove in quell'ora.
+  */
+  function spostamentoDi(iso, idDocente, giorno, ora, assenti) {
+    const qui = impegniDi(idDocente, giorno).filter(l => l.ora === ora && !classeFuori(iso, l.classe, ora));
+    if (qui.length !== 1) return null;   // nessun impegno, oppure due impegni nella stessa ora: meglio non spostarlo
+    const l = qui[0];
+    const via = new Set(registro.filter(x => x.data === iso && x.ora === ora && x.spostato).map(x => x.sostituto));
+    const restano = inClasse(giorno, ora, l.classe).filter(k => k.docente !== idDocente && !assenti.has(k.docente) && !via.has(k.docente));
+    if (l.compresenza) {
+      if (eSostegno(l)) return null;
+      if (eAlternativa(l)) return { da: l.classe, tipo: 'alternativa', materia: l.materia };
+      return restano.some(k => !k.compresenza) ? { da: l.classe, tipo: 'compresente', materia: l.materia } : null;
+    }
+    return restano.some(k => k.compresenza && eSostegno(k)) ? { da: l.classe, tipo: 'sostegno', materia: l.materia } : null;
+  }
+  // Una sostituzione che NON dà ore in più: liberato da un'uscita didattica o spostato da una compresenza
+  const senzaOreInPiu = s => !!(s.reindirizzato || s.spostato);
 
   // Uscite didattiche (js/uscite.js): la classe è fuori a quell'ora? E il docente è "liberato" (le sue classi sono fuori)?
   const conUscite = () => typeof Uscite !== 'undefined';
@@ -223,40 +291,58 @@ const Sostituzioni = (() => {
   const assentiAllOra = (iso, ora) => new Set(assenzeDel(iso).filter(a => a.ore.includes(ora)).map(a => a.docente));
 
   /*
-    I docenti che possono coprire una lezione, già in ordine di preferenza:
-    1. prima chi è a scuola quel giorno (ha almeno una lezione);
-    2. poi chi ha più ore a debito (saldo più basso);
-    3. poi chi ha un'ora buca, poi chi ha lezione subito prima o dopo;
-    4. poi chi conosce già la classe.
-    Con un'uscita didattica vengono prima di tutti i docenti «liberati» (la loro classe è fuori): sono già a scuola
-    e l'ora fa parte del loro orario, quindi coprono senza ore in più (vedi js/uscite.js).
+    I docenti che possono coprire una lezione, già in ordine di preferenza, a GRUPPI (regole della scuola, 02/10/2026):
+    0. con un'uscita didattica, prima di tutti i docenti «liberati» (la loro classe è fuori): coprono senza ore in più
+       (vedi js/uscite.js);
+    1. docenti della classe, liberi con un'ora buca;
+    2. docenti della classe «spostabili» (in compresenza in un'altra classe, vedi spostamentoDi): nessuna ora in più;
+    3. altri docenti della classe, liberi;
+    4. altri docenti, liberi con un'ora buca;
+    5. altri docenti spostabili;
+    6. altri docenti liberi;
+    7. ultima possibilità: i docenti di Alternativa, che si spostano con i loro studenti.
+    Dentro un gruppo: prima chi è a scuola quel giorno, poi chi ha più ore a debito, poi l'ora buca / subito prima o dopo.
+    Ogni proposta ha il suo motivo scritto (c.motivo) e le opzioni da passare ad assegna() (c.opzioni).
   */
   function candidati(iso, l) {
     const giorno = l.giorno;
     const assenti = assentiAllOra(iso, l.ora);
-    // occupato = ha lezione in quell'ora con una classe che c'è (non in uscita)
-    const occupati = new Set(D.lezioni.filter(k => k.giorno === giorno && k.ora === l.ora && !classeFuori(iso, k.classe, k.ora)).map(k => k.docente));
+    // occupato = in quell'ora ha lezione o compresenza con una classe che c'è (non in uscita)
+    const occupati = new Set(curricolari().concat(compresenze())
+      .filter(k => k.giorno === giorno && k.ora === l.ora && !classeFuori(iso, k.classe, k.ora)).map(k => k.docente));
     const giaImpegnati = new Set(registro.filter(x => x.data === iso && x.ora === l.ora).map(x => x.sostituto));
 
     return D.docente
-      .filter(t => !assenti.has(t.id) && !occupati.has(t.id) && !giaImpegnati.has(t.id) && !(conUscite() && Uscite.accompagna(iso, t.id, l.ora)))
+      .filter(t => !assenti.has(t.id) && !giaImpegnati.has(t.id) && !(conUscite() && Uscite.accompagna(iso, t.id, l.ora)))
       .map(t => {
-        const oreGiorno = lezioniDi(t.id, giorno).filter(k => !classeFuori(iso, k.classe, k.ora)).map(k => k.ora);
-        const aScuola = oreGiorno.length > 0;
+        // occupato in quell'ora: si propone solo se si può spostare senza lasciare la sua classe da sola
+        const spostato = occupati.has(t.id) ? spostamentoDi(iso, t.id, giorno, l.ora, assenti) : null;
+        if (occupati.has(t.id) && !spostato) return null;
+        const oreGiorno = impegniDi(t.id, giorno).filter(k => !classeFuori(iso, k.classe, k.ora)).map(k => k.ora);
+        const lib = liberato(iso, t.id, l.ora);
+        const aScuola = oreGiorno.length > 0 || lib;
         let posizione = 3;                                  // nessuna lezione quel giorno
         if (oreGiorno.some(o => o < l.ora) && oreGiorno.some(o => o > l.ora)) posizione = 0;   // ora buca
         else if (oreGiorno.includes(l.ora - 1) || oreGiorno.includes(l.ora + 1)) posizione = 1; // subito prima/dopo
-        else if (aScuola) posizione = 2;
-        const stessaClasse = D.lezioni.some(k => k.docente === t.id && k.classe === l.classe);
-        const lib = liberato(iso, t.id, l.ora);
-        return { t, aScuola: aScuola || lib, posizione, stessaClasse, liberato: lib, saldo: saldoDi(t.id) };
+        else if (oreGiorno.length) posizione = 2;
+        const stessaClasse = insegnaIn(t.id, l.classe);
+        let gruppo;
+        if (lib) gruppo = 0;
+        else if (spostato && spostato.tipo === 'alternativa') gruppo = 7;
+        else if (spostato) gruppo = stessaClasse ? 2 : 5;
+        else if (posizione === 0) gruppo = stessaClasse ? 1 : 4;
+        else gruppo = stessaClasse ? 3 : 6;
+        const c = { t, aScuola, posizione, stessaClasse, liberato: lib, spostato, gruppo, saldo: saldoDi(t.id) };
+        c.motivo = motivoDi(c);
+        c.opzioni = lib ? { reindirizzato: true } : spostato ? { spostato: { da: spostato.da } } : undefined;
+        return c;
       })
+      .filter(Boolean)
       .sort((a, b) =>
-        (b.liberato - a.liberato) ||
+        (a.gruppo - b.gruppo) ||
         (b.aScuola - a.aScuola) ||
         ((a.saldo ? a.saldo.attuale : Infinity) - (b.saldo ? b.saldo.attuale : Infinity)) ||
         (a.posizione - b.posizione) ||
-        (b.stessaClasse - a.stessaClasse) ||
         nomeDocente(a.t.id).localeCompare(nomeDocente(b.t.id), 'it'));
   }
 
@@ -266,6 +352,22 @@ const Sostituzioni = (() => {
     'a scuola, ma non in ore vicine',
     'nessuna lezione in questo giorno'
   ];
+
+  // Il motivo di una proposta, da leggere sotto il nome: gruppo di priorità, perché e se costa un'ora in più.
+  // Esempi: «Priorità 1: stessa classe – ora buca: è già a scuola · +1 nel conteggio»,
+  //         «Priorità 2: stessa classe – coperto da sostegno: in 2B resta il docente di sostegno · nessuna ora in più»
+  function motivoDi(c) {
+    if (c.liberato) return 'Prima di tutti: liberato dall\'uscita didattica (la sua classe è fuori) · nessuna ora in più';
+    const classe = c.stessaClasse ? 'stessa classe – ' : '';
+    if (c.spostato) {
+      const da = nome('classe', c.spostato.da);
+      const perche = c.spostato.tipo === 'sostegno' ? `coperto da sostegno: in ${da} resta il docente di sostegno`
+        : c.spostato.tipo === 'alternativa' ? `ultima possibilità: è in Alternativa in ${da}, si sposta con i suoi studenti`
+          : `in compresenza (${c.spostato.materia}) in ${da}: resta il docente di cattedra`;
+      return `Priorità ${c.gruppo}: ${classe}${perche} · nessuna ora in più`;
+    }
+    return `Priorità ${c.gruppo}: ${classe}${TESTI_POSIZIONE[c.posizione]} · +1 nel conteggio`;
+  }
 
   // ---------- Foglio del conteggio su Google Drive (js/drive.js) ----------
   const suDrive = () => typeof FoglioDrive !== 'undefined' && FoglioDrive.configurato();
@@ -564,7 +666,10 @@ const Sostituzioni = (() => {
     Assegna una sostituzione. opzioni (facoltative):
     - reindirizzato: true = il sostituto è «liberato» da un'uscita didattica (la sua classe è fuori): copre in un'ora
       che è già sua, quindi NIENTE +1 nel foglio del conteggio;
-    - uscita: l'ID dell'uscita didattica che l'ha proposta (per toglierla insieme all'uscita).
+    - uscita: l'ID dell'uscita didattica che l'ha proposta (per toglierla insieme all'uscita);
+    - spostato: { da: classe } = il sostituto era in compresenza nella classe «da» e viene spostato (issue #7): copre
+      in un'ora già sua, quindi NIENTE +1 (e niente −1 se si annulla). Si salva solo la classe lasciata: chi resta
+      con la classe (per esempio il sostegno) lo ricava l'app dalle compresenze, mai salvato sul dispositivo.
   */
   async function assegna(iso, l, idSostituto, opzioni) {
     if (!controllaPermesso()) return;
@@ -576,6 +681,7 @@ const Sostituzioni = (() => {
       assente: l.assente, sostituto: idSostituto, riportata: false
     };
     if (op.reindirizzato) s.reindirizzato = true;
+    if (op.spostato && op.spostato.da) s.spostato = { da: op.spostato.da };
     if (op.uscita) s.uscita = op.uscita;
     // sciopero / assemblea (js/scioperi.js): la sostituzione è una VIGILANZA e non si pubblica con l'assente
     // (chi sciopera è un dato sindacale: nell'app si vede solo «Vigilanza» sulla classe)
@@ -584,14 +690,15 @@ const Sostituzioni = (() => {
     salva('registro', registro);
     inCorso.add(s.id);   // finché il +1 non è scritto, questa sostituzione non si può annullare
     const testo = `${testoOra(l.ora)} in ${nome('classe', l.classe)}: sostituisce ${nomeDocente(idSostituto)}` +
-      (s.reindirizzato ? ' (liberato dall\'uscita didattica: nessuna ora in più)' : '') + '.';
+      (s.reindirizzato ? ' (liberato dall\'uscita didattica: nessuna ora in più)' : '') +
+      (s.spostato ? ` (spostato da ${nome('classe', s.spostato.da)}: nessuna ora in più)` : '') + '.';
     if (!op.silenzioso) avvisa(testo);
     disegnaTutto();
     try {
       // foglio del conteggio su Google Drive: +1 nella settimana del docente che sostituisce
-      // (non per chi è liberato da un'uscita didattica: è una sua ora di lezione)
+      // (non per chi è liberato da un'uscita didattica o spostato da una compresenza: è una sua ora)
       const fatto = [];
-      const esito = s.reindirizzato ? { ok: false, motivo: '', nonServe: true } : await segnaNelFoglio(s, 1);
+      const esito = senzaOreInPiu(s) ? { ok: false, motivo: '', nonServe: true } : await segnaNelFoglio(s, 1);
       if (esito.ok) {
         s.riportata = true; s.nelFoglio = true;
         fatto.push(`segnata nel foglio del conteggio (settimana ${s.settimana}${esito.cella ? ', cella ' + esito.cella : ''}: ora ${esito.nuovo})`);
@@ -803,7 +910,7 @@ const Sostituzioni = (() => {
           const r = await segnaNelFoglio(s, -1);
           if (r.ok) { s.nelFoglio = false; esito.tolte++; }
           else esito.aMano.push(`togli 1 ora a ${nomeDocente(s.sostituto)} nella settimana ${s.settimana} (${r.motivo})`);
-        } else if (s.riportata && !s.reindirizzato) {
+        } else if (s.riportata && !senzaOreInPiu(s)) {
           esito.aMano.push(`togli 1 ora a ${nomeDocente(s.sostituto)} nella settimana ${s.settimana} (era già stata riportata a mano)`);
         }
         await togliDalRegistro([s]);
@@ -1121,28 +1228,32 @@ const Sostituzioni = (() => {
     const id = $('docenteAssente').value;
     const giorno = giornoOrario(dataScelta);
     if (!id || !giorno) return;
-    const lezioni = lezioniDi(id, giorno);
+    // lezioni e ore di compresenza: anche un compresente si può segnare assente (le sue ore non sono da coprire)
+    const lezioni = impegniDi(id, giorno);
     if (!lezioni.length) {
       box.append(el('p', { class: 'hint' }, 'Questo docente non ha lezioni in questo giorno: non serve nessuna sostituzione.'));
       return;
     }
+    const testoImpegno = l => `${nome('classe', l.classe)} ${l.compresenza ? '(compresenza: ' + l.materia + ')' : l.materia}`;
     // Se il docente è già segnato assente, partiamo dalle sue ore; altrimenti tutte spuntate
     const gia = new Set((assenzeDel(dataScelta).find(a => a.docente === id) || { ore: [] }).ore);
     box.append(el('fieldset', { class: 'sost-ore' },
       el('legend', {}, 'Ore di assenza'),
       lezioni.map(l => el('label', { class: 'sost-casella' },
         el('input', { type: 'checkbox', name: 'ora', value: l.ora, checked: gia.size ? gia.has(l.ora) : true }),
-        ` ${testoOra(l.ora)} · ${nome('classe', l.classe)} ${l.materia}` + (l.aula ? ` · ${nome('aula', l.aula)}` : '')))));
-    // Assente più giorni: gli altri giorni della settimana in cui ha lezione (tutte le ore)
+        ` ${testoOra(l.ora)} · ${testoImpegno(l)}` + (l.aula ? ` · ${nome('aula', l.aula)}` : '')))));
+    // Assente più giorni: gli altri giorni della settimana in cui ha lezione, spuntando le singole ore
     const altri = altriGiorniDi(dataScelta, id);
     if (altri.length) {
       box.append(el('fieldset', { class: 'sost-ore' },
-        el('legend', {}, 'Assente anche in altri giorni di questa settimana? (tutte le ore di quel giorno)'),
+        el('legend', {}, 'Assente anche in altri giorni di questa settimana? Spunta le ore'),
         altri.map(g => {
-          const gia = assenzeDel(g.iso).some(a => a.docente === id);
-          return el('label', { class: 'sost-casella' },
-            el('input', { type: 'checkbox', name: 'giorno', value: g.iso }),
-            ` ${dataCorta(g.iso)} · ${ore(g.ore.length)}` + (gia ? ' (già segnato assente)' : ''));
+          const giaQuel = new Set((assenzeDel(g.iso).find(a => a.docente === id) || { ore: [] }).ore);
+          return el('div', { class: 'sost-altro-giorno' },
+            el('span', { class: 'mini' }, `${dataCorta(g.iso)}${giaQuel.size ? ' (già segnato assente)' : ''}: `),
+            g.lezioni.map(l => el('label', { class: 'sost-casella' },
+              el('input', { type: 'checkbox', name: 'altraOra', value: g.iso + '|' + l.ora, checked: giaQuel.has(l.ora) }),
+              ` ${l.ora}ª ${testoImpegno(l)}`)));
         })));
     }
   }
@@ -1173,15 +1284,19 @@ const Sostituzioni = (() => {
   /*
     Registra (o aggiorna) l'assenza di un docente: la usano il modulo della scheda e la pagina «Sostituzioni smart».
     - iso, oreScelte: il giorno scelto e le ore spuntate
-    - altriGiorni: altre date della stessa settimana ("2026-09-29"…) in cui il docente è assente TUTTO il giorno
+    - altriGiorni: altri giorni della stessa settimana in cui il docente è assente: una data ("2026-09-29") = TUTTO
+      il giorno, oppure { iso: "2026-09-29", ore: [1, 2] } = solo quelle ore
     Restituisce true se l'ha registrata.
   */
   // extra (facoltativo): { uscita: ID, come: 'accompagna' | 'recupero' } per le assenze create da un'uscita didattica;
   // con extra.silenzioso non compare il messaggio
   function registraAssenzaDi(iso, id, oreScelte, permesso, altriGiorni, extra) {
     if (!controllaPermesso()) return false;
+    const scelte = new Map((altriGiorni || []).map(x => typeof x === 'string' ? [x, null] : [x.iso, x.ore]));
     const giorni = [{ iso, ore: oreScelte }].concat(altriGiorniDi(iso, id)
-      .filter(g => (altriGiorni || []).includes(g.iso)).map(g => ({ iso: g.iso, ore: g.ore })));
+      .filter(g => scelte.has(g.iso))
+      .map(g => ({ iso: g.iso, ore: scelte.get(g.iso) ? g.ore.filter(o => scelte.get(g.iso).includes(o)) : g.ore }))
+      .filter(g => g.ore.length));
     const segnate = giorni.map(g => segnaAssenza(g.iso, id, g.ore, permesso));
     if (extra) segnate.forEach(a => { if (extra.uscita) a.uscita = extra.uscita; if (extra.come) a.come = extra.come; });
     salva('assenze', assenze);
@@ -1205,7 +1320,14 @@ const Sostituzioni = (() => {
     if (!id) { avvisa('Scegli il docente assente.'); $('docenteAssente').focus(); return; }
     const oreScelte = [...document.querySelectorAll('#sost-oreAssenza input[name="ora"]:checked')].map(c => Number(c.value));
     if (!oreScelte.length) { avvisa('Spunta almeno un\'ora di assenza.'); return; }
-    const altriGiorni = [...document.querySelectorAll('#sost-oreAssenza input[name="giorno"]:checked')].map(c => c.value);
+    // altri giorni: le ore spuntate, raggruppate per giorno ({ iso, ore })
+    const perGiorno = new Map();
+    document.querySelectorAll('#sost-oreAssenza input[name="altraOra"]:checked').forEach(c => {
+      const [g, o] = c.value.split('|');
+      if (!perGiorno.has(g)) perGiorno.set(g, []);
+      perGiorno.get(g).push(Number(o));
+    });
+    const altriGiorni = [...perGiorno].map(([g, o]) => ({ iso: g, ore: o }));
     if (!registraAssenzaDi(dataScelta, id, oreScelte, $('permesso').checked, altriGiorni)) return;
     $('docenteAssente').value = '';
     $('permesso').checked = true;   // per la prossima assenza il permesso torna spuntato
@@ -1259,8 +1381,8 @@ const Sostituzioni = (() => {
     const dettagli = el('p', { class: 'sost-dettagli' },
       [l.materia, l.aula ? nome('aula', l.aula) : '', 'assente: ' + nomeDocente(l.assente)].filter(Boolean).join(' · '));
 
-    // Compresenza: in classe c'è già un altro docente presente
-    const altri = D.lezioni.filter(k => k.giorno === l.giorno && k.ora === l.ora && k.classe === l.classe &&
+    // Compresenza: in classe c'è già un altro docente presente (anche dal Foglio Compresenze)
+    const altri = inClasse(l.giorno, l.ora, l.classe).filter(k =>
       k.docente !== l.assente && !assentiAllOra(dataScelta, l.ora).has(k.docente));
     const compresenza = altri.length
       ? el('p', { class: 'hint' }, `ℹ️ In classe c'è anche ${altri.map(k => nomeDocente(k.docente)).join(', ')} (compresenza): forse la sostituzione non serve.`)
@@ -1271,6 +1393,7 @@ const Sostituzioni = (() => {
       return el('article', { class: 'sost-ora coperta' }, titolo, dettagli, compresenza,
         el('p', { class: 'sost-sostituto' }, '✔ Sostituisce ', el('strong', {}, nomeDocente(s.sostituto)), ' ', etichettaSaldo(saldo),
           s.reindirizzato ? el('span', { class: 'tag' }, '🚌 liberato dall\'uscita: nessuna ora in più') : null,
+          s.spostato ? el('span', { class: 'tag' }, `🔁 spostato da ${nome('classe', s.spostato.da)}: nessuna ora in più`) : null,
           s.riportata ? el('span', { class: 'tag' }, 'già riportata nel foglio') : null),
         // mentre il foglio viene aggiornato il pulsante è spento, così non si preme due volte
         el('button', { type: 'button', class: 'btn ghost sm', disabled: inCorso.has(s.id), onclick: () => annulla(s) },
@@ -1289,12 +1412,14 @@ const Sostituzioni = (() => {
         conSigla(c.t) ? el('span', { class: 'mini' }, ` (${sigla(c.t)})`) : null,
         el('span', { class: 'sost-etichette' },
           etichettaSaldo(c.saldo),
-          c.liberato ? el('span', { class: 'tag ok' }, '🚌 libero per l\'uscita: nessuna ora in più') : el('span', { class: 'tag' }, TESTI_POSIZIONE[c.posizione]),
-          c.stessaClasse ? el('span', { class: 'tag' }, 'conosce la classe') : null)),
+          c.liberato ? el('span', { class: 'tag ok' }, '🚌 libero per l\'uscita: nessuna ora in più')
+            : c.spostato ? el('span', { class: 'tag ok' }, '🔁 spostabile: nessuna ora in più') : null),
+        // il motivo della proposta e della sua priorità (motivoDi)
+        el('span', { class: 'sost-motivo' }, c.motivo)),
       el('button', {
         type: 'button', class: 'btn sm',
         'aria-label': `Assegna la ${l.ora}ª ora in ${nome('classe', l.classe)} a ${nomeDocente(c.t.id)}`,
-        onclick: () => assegna(dataScelta, l, c.t.id, c.liberato ? { reindirizzato: true } : undefined)
+        onclick: () => assegna(dataScelta, l, c.t.id, c.opzioni)
       }, 'Assegna'));
 
     const contenuto = [];
@@ -1375,7 +1500,7 @@ const Sostituzioni = (() => {
   // Raggruppa le sostituzioni non ancora riportate per settimana e docente
   function riepilogoDaRiportare() {
     const gruppi = new Map();
-    registro.filter(x => !x.riportata && !x.reindirizzato).forEach(x => {
+    registro.filter(x => !x.riportata && !senzaOreInPiu(x)).forEach(x => {
       const r = rigaDi(x.sostituto);
       const k = x.settimana + '|' + (r ? r.chiave : 'orario:' + x.sostituto);
       if (!gruppi.has(k)) gruppi.set(k, { settimana: x.settimana, riga: r, id: x.sostituto, ore: 0 });
@@ -1574,8 +1699,10 @@ const Sostituzioni = (() => {
 
     <div class="card">
       <h3 id="sost-titoloCoprire">Ore da coprire</h3>
-      <p class="hint">Per ogni ora vengono proposti prima i docenti <b>già a scuola</b> quel giorno e liberi in quell'ora,
-        dal più <b>alto debito di ore</b> in giù. A parità di debito vengono prima chi ha un'ora buca e chi conosce già la classe.</p>
+      <p class="hint">Per ogni ora vengono proposti prima i <b>docenti della classe</b> (con un'ora buca, poi quelli
+        <b>spostabili</b> da una compresenza senza ore in più, poi gli altri liberi), poi gli altri docenti nello stesso ordine;
+        i docenti di Alternativa per ultimi. Nello stesso gruppo prima chi è già a scuola e ha più <b>ore a debito</b>.
+        Sotto ogni nome c'è il motivo della proposta. Si usa sempre l'<b>orario ufficiale pubblicato</b>.</p>
       <nav id="sost-settimana" class="sost-settimana" aria-label="Giorni della settimana"></nav>
       <div id="sost-pianoUscita"></div>
       <div id="sost-pianoSciopero"></div>
@@ -1694,6 +1821,8 @@ const Sostituzioni = (() => {
       return;
     }
     aggiornaAbbinamenti();
+    copiaCompresenze = null;   // le compresenze si ricalcolano (possono essere cambiate)
+    leggiCompresenze();   // compresenze dal Foglio (una volta, se il permesso di Google c'è già)
     disegnaTutto();
     disegnaAbilitazione();
     // Abilitazione: si controlla da sola se il permesso di Google c'è già, altrimenti c'è il pulsante
@@ -1766,7 +1895,7 @@ const Sostituzioni = (() => {
     verifica: verificaAbilitazione,
     caricaDaDrive: () => caricaDaDrive(true),
     orario: () => D,
-    nomeDocente, nome, testoOra, giornoOrario, lezioniDi, assenzeDel, giornoPredefinito,
+    nomeDocente, nome, testoOra, giornoOrario, lezioniDi, impegniDi, assenzeDel, giornoPredefinito,
     giorniSettimana, altriGiorniDi, contaGiorno, dataCorta,
     oreDaCoprire, sostituzioneDi, candidati, saldoDi, TESTI_POSIZIONE,
     inCorso: id => inCorso.has(id),
