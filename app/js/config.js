@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-10-02.4',
+  versioneApp: '2026-10-02.5',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -137,7 +137,8 @@ window.CONFIG = {
   // SOLO DOCENTI: l'app mostra il tasto solo ai docenti, ma la vera protezione è la condivisione su Drive. cartellaImpegni =
   // cartella dove si pubblica impegni-pubblicati.json, da condividere SOLO con i docenti (non con tutto l'Istituto, dove ci
   // sono anche gli studenti). Vuota = cartellaPubblicazione (quella di orario e sostituzioni).
-  cartellaImpegni: '',
+  // (dal 02/10/2026: cartella creata apposta nel Drive condiviso della scuola, dentro «ORARIO»)
+  cartellaImpegni: '1VBeMvnuJG17h26AIqxXEDA7o8HmRt6om',
   fileImpegniPubblicati: '',
 
   // Per quanti giorni l'accesso resta memorizzato se si spunta "Ricordami"
