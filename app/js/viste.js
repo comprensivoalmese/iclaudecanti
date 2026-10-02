@@ -37,7 +37,8 @@ const Viste = (() => {
   // i docenti si vedono uno per uno (colonne "Docenti" o filtro su un docente): altrimenti comparirebbero due volte
   function lezioniFiltrate(D, stato) {
     const perDocente = stato.colonne === 'docente' || !!stato.filtri.docente;
-    const tutte = stato.sostituzioni && perDocente ? D.lezioni.concat(stato.sostituzioni.extra) : D.lezioni;
+    // (Supplenze.lezioni toglie anche i docenti spostati da una compresenza e mette chi resta in classe al loro posto)
+    const tutte = stato.sostituzioni ? Supplenze.lezioni(D, stato.sostituzioni, perDocente) : D.lezioni;
     return tutte.filter(l =>
       (stato.colonne === 'giorno' || l.giorno === stato.giorno) &&
       FILTRI.every(k => !stato.filtri[k] || l[k] === stato.filtri[k]));
@@ -79,6 +80,8 @@ const Viste = (() => {
       .filter(k => k !== stato.colonne && !stato.filtri[k])
       // compatta: niente dati uguali a quelli del titolare (stessa classe, stessa aula)
       .filter(k => !compatta || l[k] !== titolare[k])
+      // lezione senza docente da mostrare (al posto di un docente spostato, per chi non vede il sostegno): solo la materia
+      .filter(k => k !== 'docente' || l.docente)
       .map(k => {
         const nome = Dati.nome(k, l[k]);
         // un'aula segnata sulla piantina (piantine.js) diventa un tasto: toccandolo si vede dov'è
