@@ -150,7 +150,8 @@ const Breve = (() => {
     // Sostituzioni: solo se il giorno mostrato è nella settimana in corso (quella di Supplenze.settimana).
     // Chi sostituisce ha un'ora in più: le "copie" delle lezioni (extra) si aggiungono solo guardando un docente
     sost = c.sostituzioni && c.sostituzioni.date && c.sostituzioni.date.get(giorno) === scelto.iso ? c.sostituzioni : null;
-    const tutte = sost && soggetto.tipo === 'docente' ? D.lezioni.concat(sost.extra) : D.lezioni;
+    // (Supplenze.lezioni toglie anche i docenti spostati da una compresenza e mette chi resta in classe al loro posto)
+    const tutte = sost ? Supplenze.lezioni(D, sost, soggetto.tipo === 'docente') : D.lezioni;
 
     // Lezioni del giorno per questo soggetto, raggruppate per ora
     const perOra = new Map();
