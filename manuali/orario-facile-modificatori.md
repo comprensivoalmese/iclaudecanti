@@ -6,7 +6,7 @@ Guida per chi costruisce l'orario, lo pubblica e gestisce le sostituzioni dei do
 **modificatore**: l'account Google della scuola da solo non basta.
 
 Indirizzo: **https://comprensivoalmese.github.io/orario/orario-facile/**
-Sostituzioni: scheda 9 di Orario Facile
+Sostituzioni: scheda 10 di Orario Facile
 
 ## In breve
 
@@ -115,7 +115,7 @@ file, con l'account della scuola).
 
 ## Sostituzioni docenti
 
-È la scheda 9 di Orario Facile, per organizzare la sostituzione dei docenti assenti usando il foglio del conteggio
+È la scheda 10 di Orario Facile, per organizzare la sostituzione dei docenti assenti usando il foglio del conteggio
 ore (chi è a debito e chi è a credito).
 
 ### Privacy: il foglio non va mai su GitHub
@@ -155,15 +155,23 @@ Si possono stampare le sostituzioni del giorno e scaricare il registro in CSV.
 
 ### Come vengono proposti i docenti
 
-Per ogni ora scoperta, l'ordine dei docenti proposti è:
+Le sostituzioni si fanno sempre sull'**orario ufficiale pubblicato**, mai sulla bozza. Oltre ai docenti liberi, la scheda
+propone anche quelli **spostabili**, già in classe con un altro docente: con il **sostegno** si sposta il docente di
+cattedra (il sostegno resta con la classe), con il **potenziamento** si sposta il compresente, l'**Alternativa** è l'ultima
+possibilità. Chi è spostato **non prende +1** nel conteggio. Per ogni ora scoperta l'ordine è:
 
-1. prima chi è **a scuola quel giorno**;
-2. poi chi ha **più ore a debito** (saldo più basso);
-3. a parità: chi ha un'ora buca, poi chi ha lezione subito prima o dopo;
-4. poi chi conosce già la classe.
+1. docenti della classe con un'ora buca;
+2. docenti della classe spostabili;
+3. altri docenti della classe liberi;
+4. altri docenti con un'ora buca;
+5. altri docenti spostabili;
+6. altri docenti liberi;
+7. docenti di Alternativa.
 
-Il saldo usato è: totale del foglio + sostituzioni già fatte ma non ancora riportate. In caso di compresenza, la
-scheda lo segnala.
+Nello stesso gruppo prima chi è a scuola quel giorno e ha **più ore a debito**. Sotto ogni nome c'è il **motivo** della
+proposta (per esempio «Priorità 2: stessa classe – coperto da sostegno…»). Il saldo usato è: totale del foglio +
+sostituzioni già fatte ma non ancora riportate. In caso di compresenza, la scheda lo segnala.
+Tra le ore di assenza ci sono anche le ore di compresenza; negli altri giorni della settimana si spuntano le singole ore.
 
 ## Lavorare in gruppo sul codice
 
