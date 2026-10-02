@@ -154,15 +154,17 @@ Le parti del progetto:
   `Supplenze.lezioni()` (usata da viste.js e brief.js) nasconde il docente spostato nella classe lasciata e mette al suo posto
   il solo sostegno con la stessa materia (senza docente per chi non vede il sostegno). Dettagli in `sostituzioni/LEGGIMI.md`.
 - **Impegni** (`app/js/calendario.js`, `app/css/calendario.css`, tasto «Impegni» nella barra dell'app): calendario mensile
-  in stile Google Calendar degli impegni collegiali, colori per scuola (istituto, infanzia, primaria, secondaria). I dati sono in
-  `dati/impegni.json` (`CONFIG.urlImpegni`), presi dal foglio «Piano 26-27» del Piano annuale delle attività (non dai fogli
-  «secondaria» o «calendario regionale»). Il file è pubblico: dei GLO solo il plesso, mai le classi; niente nomi di persone.
+  in stile Google Calendar degli impegni collegiali, colori per scuola (istituto, infanzia, primaria, secondaria). I dati vengono
+  dal foglio «Piano …» del Piano annuale delle attività (non dai fogli «secondaria» o «calendario regionale»).
+  **Mai su GitHub e SOLO PER I DOCENTI** (scelte della scuola, 02/10/2026): il tasto si vede con la regola del sostegno
+  (`aggiornaSostegno` in app.js: docente riconosciuto o autorizzato); su Drive il file va in `CONFIG.cartellaImpegni`, cartella
+  condivisa solo con i docenti. Dei GLO solo il plesso, mai le classi; niente nomi di persone.
   **Ogni anno** chi è autorizzato a Orario Facile usa «Importa dal Piano delle attività» nel calendario: il foglio .xlsx/.ods
   (o Foglio Google) sta nella cartella di Drive del Foglio Database (se lo si sceglie dal computer l'app ce lo salva),
   `app/js/piano-attivita.js` lo legge (foglio «Piano …», colonne trovate dalle intestazioni ISTITUTO/INFANZIA/PRIMARIA/
   SECONDARIA e GIORNO/ORARIO, data vuota = giorno sopra), anteprima, poi «Pubblica per tutti» scrive
-  `impegni-pubblicati.json` in `CONFIG.cartellaPubblicazione` (`app/js/impegni-drive.js`, usa chiama/cerca/scriviFile di
-  pubblica-drive.js). Il calendario legge prima Drive, poi la copia sul dispositivo (`orariodada.impegni`), poi GitHub.
+  `impegni-pubblicati.json` in `CONFIG.cartellaImpegni` (vuota = `cartellaPubblicazione`) (`app/js/impegni-drive.js`, usa chiama/cerca/scriviFile di
+  pubblica-drive.js). Il calendario legge Drive, poi la copia sul dispositivo (`orariodada.impegni`); se no resta vuoto.
 - **Vigilanza durante l'intervallo** (idea discussa il 29/09/2026, non ancora fatta): all'inizio dell'intervallo le classi
   si spostano; l'insegnante uscente resta nella sua aula e vigila la classe che vi entra (2ª ora → classe della 3ª per
   9:55–10:05, 4ª → 5ª per 11:50–12:05). Proposta e domande aperte in `app/LEGGIMI.md` (sezione LIM). Se qualcuno lo
@@ -201,7 +203,6 @@ potenziamento/    linee guida per assegnare le ore di potenziamento di italiano 
 strumenti/        script da usare sul PC (Windows + Excel), es. crea-database.ps1 per creare il Foglio database
 dati/orario.json  l'orario letto da app/ (formato dell'app o backup di Orario Facile)
 dati/campanella.json  orari della campanella per il tasto 🔔 dell'app (vedi app/js/campanella.js)
-dati/impegni.json     impegni dell'anno per il tasto «Impegni» dell'app (vedi app/js/calendario.js)
 img/              immagini
 ```
 - Tieni i **dati dell'orario separati dal codice** (file JSON in `dati/`), così si possono aggiornare senza toccare JS/HTML.

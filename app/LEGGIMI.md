@@ -89,15 +89,23 @@ GLO, scrutini, colloqui…) in stile Google Calendar; **Tabella** (o Esc) torna 
   per impegno. Toccando un giorno, sotto compare l'elenco dei suoi impegni (con orario, scuola e note).
 - **Tastiera**: frecce = giorno/settimana, Pagina su/giù = mese.
 - Non si vede sui monitor di classe e sullo schermo all'ingresso.
+- **Solo per i docenti** (scelta della scuola, 02/10/2026): il tasto compare solo a chi è riconosciuto come docente
+  dall'email o è autorizzato a Orario Facile / sostituzioni (stessa regola del sostegno, `aggiornaSostegno` in app.js).
+  È un controllo dell'app: la vera protezione è la condivisione su Drive, quindi `impegni-pubblicati.json` va in una
+  cartella condivisa **solo con i docenti** (`CONFIG.cartellaImpegni`), non con tutto l'Istituto.
 
 ### Da dove vengono gli impegni
 
 Il calendario usa il primo che riesce a leggere:
-1. **`impegni-pubblicati.json` su Google Drive**, nella cartella dei file pubblicati (`CONFIG.cartellaPubblicazione`,
-   la stessa di orario e sostituzioni), letto con il permesso Google di chi ha fatto l'accesso (`js/impegni-drive.js`);
-   `CONFIG.fileImpegniPubblicati` può contenerne l'ID, altrimenti lo si cerca per nome;
-2. l'ultima copia letta da Drive e salvata sul dispositivo (chiave `orariodada.impegni`);
-3. **`dati/impegni.json`** su GitHub (`CONFIG.urlImpegni`), preso dal foglio «Piano 26-27» del 2026/27.
+1. **`impegni-pubblicati.json` su Google Drive**, nella cartella `CONFIG.cartellaImpegni` (se è vuota, in quella dei file
+   pubblicati `CONFIG.cartellaPubblicazione`, la stessa di orario e sostituzioni), letto con il permesso Google di chi ha fatto l'accesso (`js/impegni-drive.js`;
+   se il permesso manca, Google lo chiede quando si tocca «Impegni»). `CONFIG.fileImpegniPubblicati` può contenerne
+   l'ID, altrimenti lo si cerca per nome;
+2. l'ultima copia letta da Drive e salvata sul dispositivo (chiave `orariodada.impegni`).
+
+**Niente copia su GitHub** (scelta della scuola, 02/10/2026): il repository è pubblico, gli impegni li deve vedere solo
+chi accede con l'account @comprensivoalmese.it. Il primo `dati/impegni.json` è stato tolto (resta solo nella cronologia
+di git, che non si riscrive). Se non si legge niente il calendario è vuoto con un messaggio.
 
 ### Ogni anno: «Importa dal Piano delle attività»
 
@@ -113,7 +121,7 @@ Chi è autorizzato a Orario Facile (colonna «Orario Facile» del file Autorizza
 3. compare l'**anteprima** nel calendario (solo per chi importa), con quanti impegni per scuola e le righe non importate;
 4. **Pubblica per tutti** scrive `impegni-pubblicati.json` su Drive: da quel momento tutti vedono il nuovo anno.
 
-Provato con il piano 2026/27, sia .ods sia .xlsx: 219 impegni, gli stessi di `dati/impegni.json`.
+Provato con il piano 2026/27, sia .ods sia .xlsx: 219 impegni.
 Il file deve restare fatto come quello del 2026/27: se la scuola cambia la forma del foglio, va aggiornato `piano-attivita.js`.
 
 ### Formato degli impegni
@@ -125,9 +133,8 @@ Ogni impegno è una riga:
 ```
 
 `scuola` è `istituto`, `infanzia`, `primaria` o `secondaria` (la colonna del foglio); `inizio`/`fine` mancano se il foglio
-non dà un orario; `nota` è facoltativa. Per spostare un impegno basta cambiare la riga, senza toccare il codice.
-**Privacy**: il file è pubblico (repo su GitHub), quindi dei GLO resta solo il plesso, mai l'elenco delle classi;
-niente nomi di persone.
+non dà un orario; `nota` è facoltativa. Per correggere un impegno si corregge il foglio e lo si importa di nuovo.
+**Privacy**: solo docenti, e comunque dei GLO resta solo il plesso, mai l'elenco delle classi; niente nomi di persone.
 
 ## Campanella 🔔
 
@@ -487,7 +494,7 @@ app/
   js/viste.js           disegno della tabella
   js/supplenze.js       assenze e sostituzioni della settimana da evidenziare nella tabella
   js/brief.js           vista "In breve" (la giornata a schede)
-  js/calendario.js      vista "Impegni": calendario degli impegni dell'anno (dati/impegni.json)
+  js/calendario.js      vista "Impegni": calendario degli impegni dell'anno (impegni-pubblicati.json su Drive)
   js/piano-attivita.js  legge il foglio del Piano annuale delle attività (.xlsx/.ods) e ne fa gli impegni
   js/impegni-drive.js   impegni su Drive: cerca il piano nella cartella, lo salva, pubblica e legge impegni-pubblicati.json
   css/calendario.css    stile del calendario e colori delle scuole

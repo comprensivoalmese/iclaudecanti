@@ -175,7 +175,8 @@ Tra le ore di assenza ci sono anche le ore di compresenza; negli altri giorni de
 
 ## Calendario degli impegni: aggiornarlo ogni anno
 
-Gli impegni collegiali (collegi, consigli, GLO, scrutini…) si vedono nell'app Luis@i con il tasto **Impegni**.
+Gli impegni collegiali (collegi, consigli, GLO, scrutini…) si vedono nell'app Luis@i con il tasto **Impegni**, solo dai
+docenti (gli studenti non vedono il tasto).
 A inizio anno, quando il Collegio Docenti ha deliberato il nuovo Piano annuale delle attività:
 
 1. apri Luis@i → **Impegni** → **Importa dal Piano delle attività** (il tasto lo vede solo chi è autorizzato a Orario Facile);
