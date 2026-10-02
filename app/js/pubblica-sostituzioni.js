@@ -41,9 +41,12 @@ const PubblicaSostituzioni = (() => {
       // nelFoglio / nelRegistro: se l'ora è stata segnata nel foglio del conteggio e nel foglio «Sostituzioni»;
       // servono a chi annulla la sostituzione da un altro dispositivo (Sostituzioni.annullaVoce)
       // (le vigilanze di uno sciopero NON si pubblicano come sostituzioni: direbbero chi sciopera, vedi «scioperi» qui sotto)
+      // spostato: il sostituto era in compresenza nella classe «da» (issue #7): si pubblica SOLO la classe lasciata,
+      // mai chi resta con la classe (per esempio il sostegno: dato delicato, il file lo leggono anche gli studenti)
       registro: leggiLocale('sostituzioni.registro', []).filter(s => recente(s) && !s.sciopero)
-        .map(s => ({ id: s.id, data: s.data, ora: s.ora, classe: s.classe, assente: s.assente, sostituto: s.sostituto,
-          nelFoglio: !!s.nelFoglio, nelRegistro: !!s.nelRegistro, riportata: !!s.riportata })),
+        .map(s => Object.assign({ id: s.id, data: s.data, ora: s.ora, classe: s.classe, assente: s.assente, sostituto: s.sostituto,
+          nelFoglio: !!s.nelFoglio, nelRegistro: !!s.nelRegistro, riportata: !!s.riportata },
+          s.spostato && s.spostato.da ? { spostato: { da: s.spostato.da } } : {})),
       // cambi d'aula (sostituzioni/js/cambi-aula.js): senza il motivo, che è testo libero
       cambi: leggiLocale('sostituzioni.cambiAula', []).filter(recente)
         .map(c => ({ id: c.id, data: c.data, ora: c.ora, classe: c.classe, da: c.da, a: c.a, docente: c.docente })),
