@@ -24,6 +24,7 @@
   <link rel="stylesheet" href="css/piantine.css">
   <link rel="stylesheet" href="css/menu.css">
   <link rel="stylesheet" href="css/avviso-per-te.css">
+  <link rel="stylesheet" href="css/calendario.css">
   <!-- Impostazioni e tema prima della pagina, per non vedere un lampo di colore sbagliato -->
   <script src="js/config.js"></script>
   <script src="js/tema.js"></script>
@@ -128,6 +129,11 @@
         <button type="button" id="btnBreve" class="pulsante pulsante-breve" aria-pressed="false" aria-controls="vistaBreve">
           <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path fill="currentColor" d="M2 2h5v5H2zM9 2h5v3H9zM9 7h5v7H9zM2 9h5v5H2z"/></svg>
           <span class="testo-tasto">In breve</span>
+        </button>
+        <!-- «Impegni»: apre il calendario degli impegni collegiali dell'anno (js/calendario.js, dati/impegni.json) -->
+        <button type="button" id="btnCalendario" class="pulsante pulsante-calendario" aria-pressed="false" aria-controls="vistaCalendario" title="Calendario degli impegni">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path fill="currentColor" d="M7 2v2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2h-2V2h-2v2H9V2H7zM5 9h14v11H5V9zm2 2v2h2v-2H7zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2zm-8 4v2h2v-2H7zm4 0v2h2v-2h-2zm4 0v2h2v-2h-2z"/></svg>
+          <span class="testo-tasto">Impegni</span>
         </button>
         <!-- Sui telefoni questi tasti mostrano solo l'icona: la scritta resta per i lettori di schermo (css/barra.css) -->
         <!-- "Il mio orario": tasto come "Oggi"; apre la vista "In breve" con la giornata del docente che ha fatto l'accesso -->
@@ -280,6 +286,9 @@
     <!-- Pagina "Sostituzioni smart": la disegna js/smart.js (stile a schede come "In breve") -->
     <section id="vistaSmart" class="vista-breve vista-smart" tabindex="-1" aria-labelledby="titoloSmart" hidden></section>
 
+    <!-- Vista «Impegni»: il calendario degli impegni dell'anno, lo disegna js/calendario.js -->
+    <section id="vistaCalendario" class="vista-breve vista-calendario" tabindex="-1" aria-labelledby="titoloCalendario" hidden></section>
+
     <!-- Scelta di cosa vedere -->
     <nav class="controlli" aria-label="Scelta della visualizzazione">
       <div class="riga-controlli">
@@ -355,6 +364,7 @@
   <script src="js/viste.js"></script>
   <script src="js/brief.js"></script>
   <script src="js/smart.js"></script>
+  <script src="js/calendario.js"></script>
   <script src="js/ingresso.js"></script>
   <script src="js/intervallo.js"></script>
   <script src="js/modifiche.js"></script>

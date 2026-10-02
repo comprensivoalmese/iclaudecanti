@@ -1,0 +1,128 @@
+/*
+  calendario.css – stile della vista «Impegni» (js/calendario.js), il calendario degli impegni in stile Google Calendar.
+  Riusa la testata a sfumatura di «In breve» (css/brief.css) e aggiunge la griglia del mese e i colori delle scuole.
+  Colori ispirati a quelli del Piano annuale delle attività: Infanzia rosa, Primaria giallo, Secondaria azzurro,
+  Istituto (impegni di tutti) blu-viola. Per ogni scuola: --x-sfondo (riquadro chiaro), --x (striscia e pallino),
+  --x-testo (testo sul riquadro, con contrasto sufficiente).
+*/
+:root {
+  --istituto: #5b4bc4;   --istituto-sfondo: #ebe8fb;   --istituto-testo: #2e2370;
+  --infanzia: #c2407c;   --infanzia-sfondo: #fbe3ee;   --infanzia-testo: #6e1a41;
+  --primaria: #c98a00;   --primaria-sfondo: #fff0c2;   --primaria-testo: #5c3f00;
+  --secondaria: #0b8a99; --secondaria-sfondo: #d5f4f7; --secondaria-testo: #04474f;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-tema="chiaro"]) {
+    --istituto: #a99cff;   --istituto-sfondo: #2a2550;   --istituto-testo: #e1dcff;
+    --infanzia: #f08bba;   --infanzia-sfondo: #4a1f33;   --infanzia-testo: #ffd9ea;
+    --primaria: #f2c14e;   --primaria-sfondo: #45360f;   --primaria-testo: #ffeab3;
+    --secondaria: #4fd3e0; --secondaria-sfondo: #0f3d43; --secondaria-testo: #c9f6fa;
+  }
+}
+:root[data-tema="scuro"] {
+  --istituto: #a99cff;   --istituto-sfondo: #2a2550;   --istituto-testo: #e1dcff;
+  --infanzia: #f08bba;   --infanzia-sfondo: #4a1f33;   --infanzia-testo: #ffd9ea;
+  --primaria: #f2c14e;   --primaria-sfondo: #45360f;   --primaria-testo: #ffeab3;
+  --secondaria: #4fd3e0; --secondaria-sfondo: #0f3d43; --secondaria-testo: #c9f6fa;
+}
+/* Ogni elemento con data-scuola prende i tre colori della sua scuola */
+[data-scuola="istituto"]   { --scuola: var(--istituto);   --scuola-sfondo: var(--istituto-sfondo);   --scuola-testo: var(--istituto-testo); }
+[data-scuola="infanzia"]   { --scuola: var(--infanzia);   --scuola-sfondo: var(--infanzia-sfondo);   --scuola-testo: var(--infanzia-testo); }
+[data-scuola="primaria"]   { --scuola: var(--primaria);   --scuola-sfondo: var(--primaria-sfondo);   --scuola-testo: var(--primaria-testo); }
+[data-scuola="secondaria"] { --scuola: var(--secondaria); --scuola-sfondo: var(--secondaria-sfondo); --scuola-testo: var(--secondaria-testo); }
+
+/* ---------- Tasto «Impegni» nella barra ---------- */
+.pulsante-calendario { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; }
+.pulsante-calendario svg { width: 16px; height: 16px; flex: none; color: var(--istituto); }
+body.modalita-monitor .pulsante-calendario { display: none; }
+
+/* Quando il calendario è aperto, controlli e tabella si nascondono (come con «In breve») */
+body.calendario-aperta .controlli, body.calendario-aperta #contenuto { display: none; }
+
+/* ---------- Testata ---------- */
+.navigazione-calendario { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.mese-calendario { margin: 0; flex: 1; font-size: 1.15rem; font-weight: 700; text-align: center; }
+.tasto-mese { width: 44px; padding: 0; border-radius: 50%; font-size: 1.4rem; line-height: 1; color: var(--testo); }
+.tasto-oggi-cal { border-radius: 999px; color: var(--testo); font-weight: 600; }
+/* Legenda: le scuole sono caselle a pillola; spente = barrate e sbiadite */
+.legenda-calendario { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 0; padding: 0; border: 0; }
+.voce-legenda {
+  display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 4px 12px 4px 8px; cursor: pointer;
+  border-radius: 999px; background: var(--scuola-sfondo); color: var(--scuola-testo); font-size: .85rem; font-weight: 700;
+  border: 1px solid var(--scuola);
+}
+.voce-legenda input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.pallino-scuola { width: 14px; height: 14px; border-radius: 50%; background: var(--scuola); flex: none; }
+.voce-legenda:has(input:not(:checked)) { opacity: .55; text-decoration: line-through; background: var(--superficie); }
+.voce-legenda:has(input:not(:checked)) .pallino-scuola { background: transparent; border: 2px solid var(--scuola); }
+.voce-legenda:has(input:focus-visible) { outline: 3px solid var(--primario); outline-offset: 2px; }
+
+/* ---------- Griglia del mese ---------- */
+.corpo-calendario { display: grid; gap: 14px; padding: 0 12px; margin-top: -18px; }
+.contenitore-griglia-cal { background: var(--superficie); border-radius: 18px; box-shadow: var(--ombra-scheda); padding: 6px; }
+.griglia-calendario { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.griglia-calendario th {
+  padding: 6px 0; font-size: .72rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--testo-tenue);
+}
+.griglia-calendario abbr { text-decoration: none; }
+.griglia-calendario td { padding: 2px; vertical-align: top; border-top: 1px solid var(--bordo); }
+.griglia-calendario td + td { border-left: 1px solid var(--bordo); }
+/* Sabato e domenica un po' più stretti: di solito sono vuoti */
+.griglia-calendario th.fine-settimana { width: 9%; }
+.giorno-cal {
+  width: 100%; min-height: 52px; height: 100%; padding: 4px 3px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  border: 1px solid transparent; border-radius: 12px; background: transparent; color: var(--testo); cursor: pointer; font: inherit;
+}
+.giorno-cal:hover { background: var(--avviso); }
+.giorno-cal:focus-visible { outline: 3px solid var(--primario); outline-offset: 1px; }
+.giorno-cal.fuori-mese { opacity: .4; }
+.giorno-cal.fine-settimana .numero-cal { color: var(--testo-tenue); }
+.giorno-cal[aria-pressed="true"] { border-color: var(--primario); background: var(--avviso); }
+.numero-cal { font-size: .9rem; font-weight: 600; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; }
+/* Oggi: numero nel tondo blu, come in Google Calendar */
+.oggi-cal .numero-cal { background: var(--primario); color: var(--primario-testo); }
+
+/* Telefoni: nella casella solo un pallino colorato per impegno (i titoli si leggono sotto, nell'elenco del giorno) */
+.chip-giorno { display: flex; flex-wrap: wrap; justify-content: center; gap: 3px; max-width: 100%; }
+.chip-cal { width: 7px; height: 7px; border-radius: 50%; background: var(--scuola); overflow: hidden; font-size: 0; }
+.altri-cal { font-size: .65rem; font-weight: 700; color: var(--testo-tenue); line-height: 7px; }
+
+/* ---------- Elenco del giorno scelto ---------- */
+.dettaglio-calendario { background: var(--superficie); border-radius: 18px; box-shadow: var(--ombra); padding: 14px 16px; display: grid; gap: 10px; }
+.titolo-dettaglio-cal { margin: 0; font-size: 1.1rem; }
+.elenco-cal { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.impegno-cal {
+  display: grid; grid-template-columns: auto 1fr; gap: 2px 12px; align-items: baseline;
+  padding: 10px 12px; border-radius: 12px; background: var(--scuola-sfondo); color: var(--scuola-testo);
+  border-left: 6px solid var(--scuola);
+}
+.ora-impegno-cal { font-size: .85rem; font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.titolo-impegno-cal { font-weight: 700; }
+.scuola-impegno-cal, .nota-impegno-cal { grid-column: 2; font-size: .8rem; }
+.scuola-impegno-cal { font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.tasto-prossimo-cal { justify-self: start; border-radius: 999px; color: var(--primario); font-weight: 600; text-align: left; }
+.note-calendario { font-size: .78rem; color: var(--testo-tenue); padding: 0 4px; }
+.note-calendario p { margin: 0 0 6px; }
+.calendario-attesa { padding: 24px 16px; }
+
+/* Tablet e computer: nelle caselle si leggono ora e titolo degli impegni, come in Google Calendar */
+@media (min-width: 700px) {
+  .vista-calendario { max-width: 1100px; }
+  .corpo-calendario { padding: 0 20px; }
+  .griglia-calendario th { text-align: left; padding-left: 8px; }
+  .giorno-cal { min-height: 104px; align-items: stretch; padding: 4px; }
+  .numero-cal { align-self: flex-start; }
+  .chip-giorno { flex-direction: column; flex-wrap: nowrap; justify-content: flex-start; gap: 2px; }
+  .chip-cal {
+    width: auto; height: auto; font-size: .72rem; line-height: 1.25; text-align: left;
+    padding: 2px 5px; border-radius: 6px; white-space: nowrap; text-overflow: ellipsis;
+    background: var(--scuola-sfondo); color: var(--scuola-testo); border-left: 3px solid var(--scuola);
+  }
+  .ora-chip { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .altri-cal { font-size: .72rem; line-height: 1.3; text-align: left; padding-left: 5px; }
+  .griglia-calendario th.fine-settimana { width: 10%; }
+}
+
+@media print {
+  .vista-calendario { display: none !important; }
+}

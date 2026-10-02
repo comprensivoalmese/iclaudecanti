@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-10-02.1',
+  versioneApp: '2026-10-02.2',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -128,6 +128,9 @@ window.CONFIG = {
 
   // Orari della campanella (tasto con la campanella). Se il file manca, si usano gli orari delle ore
   urlCampanella: '../dati/campanella.json',
+
+  // Impegni dell'anno (riunioni, collegi, scrutini…) per il tasto «Impegni»: vedi js/calendario.js
+  urlImpegni: '../dati/impegni.json',
 
   // Per quanti giorni l'accesso resta memorizzato se si spunta "Ricordami"
   giorniRicordami: 30,

@@ -30,6 +30,7 @@
   let timerInattivita = null;
   let breveAperta = false;  // true quando si vede la vista "In breve" al posto della tabella
   let breveMio = false;     // true se la vista è stata aperta con «Il mio orario» (giornata del docente)
+  let calendarioAperta = false;  // true quando si vede il calendario «Impegni» al posto della tabella (js/calendario.js)
   let smartAperta = false;  // true quando si vede la pagina «Sostituzioni smart» al posto della tabella
   let dataBreve = '';       // data scelta nella tendina "Giorno" di "In breve" ('' = oggi o il prossimo giorno di scuola)
   // pagina: solo per lo schermo all'ingresso, quali colonne mostrare (null = tutte)
@@ -73,6 +74,7 @@
   function schermataIniziale() {
     apriBreve(false);
     apriSmart(false);
+    apriCalendario(false);
     const gi = giornoIniziale();
     stato.giorno = gi.giorno;
     avvisoGiorno = gi.testo ? gi : null;
@@ -548,7 +550,7 @@
   // modo: 'sostituzioni' (Sostituzioni smart) oppure 'cambi' (pagina «Cambi d'aula», stessa vista)
   // annulla (facoltativo): la sostituzione da annullare, scelta con «✕ Annulla» nella tabella
   function apriSmart(apri, modo, annulla) {
-    if (apri) apriBreve(false);
+    if (apri) { apriBreve(false); apriCalendario(false); }
     smartAperta = !!apri && !aulaMonitor && !secondiIngresso;
     document.body.classList.toggle('smart-aperta', smartAperta);
     $('#vistaSmart').hidden = !smartAperta;
@@ -613,7 +615,8 @@
   }
 
   function apriBreve(apri, mio) {
-    if (apri && smartAperta) apriSmart(false);   // le due viste non stanno aperte insieme
+    if (apri && smartAperta) apriSmart(false);   // le viste non stanno aperte insieme
+    if (apri && calendarioAperta) apriCalendario(false);
     if (!breveAperta) dataBreve = '';   // ogni volta che si apre la vista si riparte da oggi
     breveAperta = apri && !aulaMonitor;
     breveMio = breveAperta && !!mio && !!mioDocente;
@@ -624,12 +627,27 @@
     if (breveAperta) { disegnaBreve(); window.scrollTo(0, 0); $('#vistaBreve').focus({ preventScroll: true }); }
   }
 
+  /* ---------- vista «Impegni»: il calendario degli impegni dell'anno (js/calendario.js) ---------- */
+  // Apre (true) o chiude (false) il calendario; sui monitor e sullo schermo all'ingresso non si apre.
+  function apriCalendario(apri) {
+    if (apri) { apriBreve(false); apriSmart(false); }
+    calendarioAperta = !!apri && !aulaMonitor && !secondiIngresso;
+    document.body.classList.toggle('calendario-aperta', calendarioAperta);
+    $('#vistaCalendario').hidden = !calendarioAperta;
+    $('#btnCalendario').setAttribute('aria-pressed', String(calendarioAperta));
+    aggiornaMioOrario();
+    if (!calendarioAperta) return;
+    window.scrollTo(0, 0);
+    $('#vistaCalendario').focus({ preventScroll: true });
+    Calendario.apri($('#vistaCalendario'), { chiudi: () => { apriCalendario(false); $('#btnCalendario').focus(); } });
+  }
+
   // Tasti della barra accesi (vedi css/barra.css):
   // - "Il mio orario" quando è aperta la vista "In breve" con la giornata del docente
   // - "Oggi" quando la tabella mostra il giorno di oggi (o il prossimo giorno di scuola)
   function aggiornaMioOrario() {
     $('#btnMioOrario').setAttribute('aria-pressed', String(breveAperta && breveMio));
-    const oggi = !breveAperta && !smartAperta && stato.colonne !== 'giorno' && !!D && stato.giorno === giornoIniziale().giorno;
+    const oggi = !breveAperta && !smartAperta && !calendarioAperta && stato.colonne !== 'giorno' && !!D && stato.giorno === giornoIniziale().giorno;
     $('#btnOggi').setAttribute('aria-pressed', String(oggi));
   }
 
@@ -715,7 +733,9 @@
     $('#btnSostSmart').addEventListener('click', () => { chiudiMenu(); apriSmart(true, 'sostituzioni'); });
     // «Cambi d'aula» nel menu: stessa pagina, solo il modulo dei cambi d'aula
     $('#btnCambiAula').addEventListener('click', () => { chiudiMenu(); apriSmart(true, 'cambi'); });
-    $('#btnOggi').addEventListener('click', () => { apriBreve(false); apriSmart(false); const gi = giornoIniziale(); stato.giorno = gi.giorno; if (stato.colonne === 'giorno') stato.colonne = 'classe'; aggiorna(); mostraOraCorrente(); });
+    // «Impegni»: il tasto apre e chiude il calendario
+    $('#btnCalendario').addEventListener('click', () => apriCalendario(!calendarioAperta));
+    $('#btnOggi').addEventListener('click', () => { apriBreve(false); apriSmart(false); apriCalendario(false); const gi = giornoIniziale(); stato.giorno = gi.giorno; if (stato.colonne === 'giorno') stato.colonne = 'classe'; aggiorna(); mostraOraCorrente(); });
     // «Il mio orario»: apre la vista a schede di "In breve" con la giornata del docente (di nuovo: chiude)
     $('#btnMioOrario').addEventListener('click', () => apriBreve(!(breveAperta && breveMio), true));
     $('#btnHome').addEventListener('click', schermataIniziale);
