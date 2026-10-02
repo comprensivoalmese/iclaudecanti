@@ -1,6 +1,7 @@
 /*
   piano-attivita.js – trasforma il foglio del Piano annuale delle attività (Excel .xlsx, LibreOffice .ods o Foglio
-  Google) negli impegni del calendario (js/calendario.js), nello stesso formato di dati/impegni.json.
+  Google) negli impegni del calendario (js/calendario.js), nel formato di impegni-pubblicati.json
+  (vedi app/LEGGIMI.md, «Formato degli impegni»).
 
   Il foglio deve essere fatto come quello del 2026/27 (foglio «Piano 26-27»):
   - si usa il foglio il cui nome inizia con «Piano» (non «secondaria» né «calendario regionale»);

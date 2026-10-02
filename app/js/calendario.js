@@ -3,9 +3,12 @@
 
   Si apre con il tasto «Impegni» nella barra in alto (app.js, apriCalendario).
   - Da dove vengono gli impegni (il primo che si riesce a leggere):
-    1. «impegni-pubblicati.json» su Google Drive, pubblicato con «Importa dal Piano delle attività» (impegni-drive.js);
-    2. l'ultima copia salvata su questo dispositivo (chiave orariodada.impegni), se Drive adesso non risponde;
-    3. dati/impegni.json su GitHub (config.js, campo urlImpegni), preso dal foglio «Piano 26-27» del 2026/27.
+    1. «impegni-pubblicati.json» su Google Drive, pubblicato con «Importa dal Piano delle attività» (impegni-drive.js),
+       letto con il permesso Google di chi ha fatto l'accesso (account della scuola);
+    2. l'ultima copia salvata su questo dispositivo (chiave orariodada.impegni), se Drive adesso non risponde.
+    NON c'è una copia su GitHub (dal 02/10/2026, scelta della scuola): il repository è pubblico e gli impegni
+    li deve vedere solo chi accede con l'account della scuola. Se non si legge niente, il calendario resta vuoto
+    con un messaggio (e, per chi è autorizzato, il tasto per importarli).
   - IMPORTARE (ogni anno, solo chi è autorizzato a Orario Facile): il tasto «Importa dal Piano delle attività»
     cerca il foglio nella cartella di Drive dei fogli di Orario Facile (o lo si sceglie dal computer, e allora
     viene salvato in quella cartella), lo legge con piano-attivita.js, mostra un'ANTEPRIMA nel calendario e,
@@ -24,13 +27,14 @@ const Calendario = (() => {
   const GIORNI_CORTI = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
   const GIORNI_LUNGHI = ['lunedì', 'martedì', 'mercoledì', 'giovedì', 'venerdì', 'sabato', 'domenica'];
 
-  let dati = null;          // contenuto di impegni.json
+  let dati = null;          // gli impegni mostrati (file pubblicato su Drive, oppure anteprima dell'importazione)
   let perGiorno = new Map(); // "2026-10-05" → elenco degli impegni di quel giorno (in ordine di ora)
   let nascoste = new Set();  // scuole nascoste dalla legenda
   let mese = null;           // primo giorno del mese mostrato (Date)
   let scelto = '';           // giorno toccato ("2026-10-05")
   let vista = null, opzioni = {};
-  let fonte = '';            // da dove vengono gli impegni: 'drive', 'copia' o 'github'
+  let fonte = '';            // da dove vengono gli impegni: 'drive' o 'copia' ('' = nessun impegno letto)
+  let problema = '';         // perché non ci sono impegni da mostrare (messaggio sopra la griglia)
   let pubblicati = null;     // gli impegni ufficiali, per tornarci se si annulla l'anteprima
   // Importazione in corso dal Piano delle attività (null = pannello chiuso):
   // { fase: 'cerco' | 'scelta' | 'leggo' | 'anteprima' | 'pubblico' | 'fatto' | 'errore', piani, messaggio, letto }
@@ -53,7 +57,7 @@ const Calendario = (() => {
     try { localStorage.setItem(CHIAVE_SCUOLE, JSON.stringify([...nascoste])); } catch (e) { /* pazienza: vale fino alla chiusura */ }
   }
 
-  // Prepara l'elenco per giorno degli impegni j (contenuto di impegni.json o del file pubblicato)
+  // Prepara l'elenco per giorno degli impegni j (file pubblicato, copia sul dispositivo o anteprima)
   function usa(j) {
     dati = j;
     perGiorno = new Map();
@@ -69,20 +73,26 @@ const Calendario = (() => {
   const leggiCopia = () => { try { return JSON.parse(localStorage.getItem(CHIAVE_COPIA) || 'null'); } catch (e) { return null; } };
   const salvaCopia = j => { try { localStorage.setItem(CHIAVE_COPIA, JSON.stringify(j)); } catch (e) { /* spazio pieno: pazienza */ } };
 
-  // Legge gli impegni: Drive → copia sul dispositivo → GitHub (vedi in cima)
+  // Legge gli impegni: Drive → copia sul dispositivo (vedi in cima). Non lancia errori: se non c'è niente il
+  // calendario resta vuoto e «problema» dice perché.
+  // La lettura da Drive parte SUBITO (siamo nel tocco del tasto «Impegni»): se il permesso di Google manca,
+  // Google può chiederlo con la sua finestra.
   async function carica() {
+    problema = '';
     try {
-      const j = await ImpegniDrive.leggiPubblicati();
+      const j = await ImpegniDrive.leggiPubblicati(opzioni.email);
       salvaCopia(j);
       fonte = 'drive';
       return usa(pubblicati = j);
-    } catch (e) { /* Drive non raggiungibile o impegni non ancora pubblicati */ }
+    } catch (e) {
+      problema = e.nonPubblicati ? 'Gli impegni di quest\'anno non sono ancora stati pubblicati.'
+        : 'Non riesco a leggere gli impegni da Google Drive (' + e.message + ').';
+    }
     const copia = leggiCopia();
     if (copia && copia.impegni) { fonte = 'copia'; return usa(pubblicati = copia); }
-    const r = await fetch(CONFIG.urlImpegni || '../dati/impegni.json', { cache: 'no-cache' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    fonte = 'github';
-    usa(pubblicati = await r.json());
+    fonte = '';
+    pubblicati = null;
+    usa({ impegni: [] });
   }
 
   // Impegni visibili di un giorno (senza le scuole nascoste)
@@ -106,14 +116,7 @@ const Calendario = (() => {
     nascoste = leggiNascoste();
     if (!vista.dataset.collegato) collega();
     vista.innerHTML = '<p class="vuoto-breve calendario-attesa">Carico gli impegni…</p>';
-    carica().then(() => { mesePartenza(); disegna(); }).catch(() => {
-      vista.innerHTML = `<div class="testata-breve testata-calendario"><div class="riga-testata">
-          <span class="marchio-breve">Impegni</span>
-          <button type="button" class="pulsante pulsante-tabella" data-cal="chiudi">Tabella</button></div>
-          <h2 id="titoloCalendario">Impegni non disponibili</h2>
-          <p class="data-breve">Non riesco a leggere il calendario degli impegni: controlla la connessione e riprova.</p>
-        </div>`;
-    });
+    carica().then(() => { mesePartenza(); disegna(); });
   }
 
   // Si parte da oggi; fuori dall'anno scolastico, dal mese con impegni più vicino
@@ -231,6 +234,8 @@ const Calendario = (() => {
       </div>
       <div class="corpo-calendario">
         ${importa ? htmlImporta() : ''}
+        ${!importa && !fonte ? `<p class="messaggio-importa" role="status">${esc(problema)} ${opzioni.puoImportare
+          ? 'Puoi importarli con «Importa dal Piano delle attività».' : 'Riprova più tardi.'}</p>` : ''}
         <div class="contenitore-griglia-cal">${htmlGriglia()}</div>
         <section id="dettaglioCalendario" class="dettaglio-calendario" aria-live="polite">${htmlDettaglio()}</section>
         ${htmlNote()}
@@ -287,7 +292,7 @@ const Calendario = (() => {
 
   // In fondo: da dove vengono i dati, l'avviso del Dirigente e le sigle dei plessi
   function htmlNote() {
-    if (!dati) return '';
+    if (!dati || !dati.impegni || !dati.impegni.length) return '';
     const sigle = Object.entries(dati.sigle || {}).map(([s, v]) => `<b>${esc(s)}</b> ${esc(v)}`).join(' · ');
     const quando = dati.aggiornato ? new Date(dati.aggiornato).toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' }) : '';
     const daDove = importa && importa.fase === 'anteprima' ? 'Anteprima: non ancora pubblicata.'
@@ -396,7 +401,7 @@ const Calendario = (() => {
   function chiudiImportazione() {
     const fase = importa && importa.fase;
     importa = null;
-    if (fase !== 'fatto' && pubblicati) { usa(pubblicati); mesePartenza(); }
+    if (fase !== 'fatto') { usa(pubblicati || { impegni: [] }); mesePartenza(); }
     disegna();
     const b = vista.querySelector('[data-cal="importa"]');
     if (b) b.focus();

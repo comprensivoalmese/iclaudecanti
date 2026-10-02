@@ -6,9 +6,10 @@
        del Foglio «Database» (CONFIG.fileDatabaseOrario; se non si trova, CONFIG.cartellaPubblicazione);
      - cercaPiani() elenca i fogli di quella cartella con «Piano» nel nome (Excel, LibreOffice o Fogli Google);
      - scarica() li porta nel browser; salvaNellaCartella() ci mette il file scelto dal computer (senza convertirlo).
-  2. PUBBLICARE: pubblica() scrive gli impegni letti in «impegni-pubblicati.json» nella cartella dei file pubblicati
-     (CONFIG.cartellaPubblicazione, la stessa di orario e sostituzioni), che è condivisa con l'Istituto.
-  3. LEGGERE: leggiPubblicati() lo legge con il permesso Google di chi ha fatto l'accesso (senza aprire finestre).
+  2. PUBBLICARE: pubblica() scrive gli impegni letti in «impegni-pubblicati.json» nella cartella CONFIG.cartellaImpegni
+     (da condividere SOLO con i docenti); se è vuota, nella cartella dei file pubblicati (CONFIG.cartellaPubblicazione).
+  3. LEGGERE: leggiPubblicati() lo legge con il permesso Google di chi ha fatto l'accesso (account della scuola).
+     Non esiste una copia pubblica su GitHub: gli impegni li vede solo chi accede con l'account della scuola.
 
   Usa le funzioni di app/js/pubblica-drive.js (chiama, cerca, scriviFile) e i permessi di app/js/nomi.js.
 */
@@ -24,6 +25,8 @@ const ImpegniDrive = (() => {
 
   const pronto = () => typeof PubblicaDrive !== 'undefined' && typeof NomiDocenti !== 'undefined' &&
     typeof CONFIG !== 'undefined' && !!CONFIG.googleClientId && !!CONFIG.cartellaPubblicazione;
+  // Dove si pubblica impegni-pubblicati.json: la cartella dei soli docenti, se c'è, altrimenti quella dei file pubblicati
+  const cartellaImpegni = () => CONFIG.cartellaImpegni || CONFIG.cartellaPubblicazione;
   const tra = s => "'" + String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
 
   // Una richiesta con il permesso di scrivere su Drive che restituisce dati binari (il file del piano)
@@ -105,27 +108,28 @@ const ImpegniDrive = (() => {
       });
       return { id };
     }
-    return PubblicaDrive.scriviFile(NOME_PUBBLICATO, CONFIG.cartellaPubblicazione, testo, email);
+    return PubblicaDrive.scriviFile(NOME_PUBBLICATO, cartellaImpegni(), testo, email);
   }
 
   /*
-    Legge gli impegni pubblicati su Drive SENZA aprire finestre di Google: serve il permesso di lettura già dato
-    (lo chiedono i nomi dei docenti, vedi nomi.js). Lancia un errore se non si può: allora il calendario usa
-    l'ultima copia salvata o dati/impegni.json da GitHub.
+    Legge gli impegni pubblicati su Drive con il permesso di lettura di chi ha fatto l'accesso (account della scuola).
+    Se il permesso non c'è ancora lo chiede a Google SUBITO (prima di qualsiasi attesa): va chiamata nel tocco del tasto
+    «Impegni», perché i browser aprono la finestra di Google solo in risposta a un tocco.
+    Lancia un errore se non si può (e.nonPubblicati = il file non c'è ancora): il calendario usa l'ultima copia salvata.
   */
   let idTrovato = '';
-  async function leggiPubblicati() {
-    if (!pronto()) throw new Error('Drive non configurato');
-    const t = NomiDocenti.gettoneDisponibile([NomiDocenti.PERMESSO_DRIVE]) || NomiDocenti.gettoneDisponibile([PubblicaDrive.PERMESSO]);
-    if (!t) throw new Error('manca il permesso di Google');
+  async function leggiPubblicati(email) {
+    if (!pronto()) throw new Error('Google Drive non è configurato');
+    const t = NomiDocenti.gettoneDisponibile([NomiDocenti.PERMESSO_DRIVE]) || NomiDocenti.gettoneDisponibile([PubblicaDrive.PERMESSO]) ||
+      await NomiDocenti.gettone([NomiDocenti.PERMESSO_DRIVE], email);
     const intestazioni = { headers: { Authorization: 'Bearer ' + t }, cache: 'no-cache' };
     let id = CONFIG.fileImpegniPubblicati || idTrovato;
     if (!id) {
-      const q = `name = ${tra(NOME_PUBBLICATO)} and ${tra(CONFIG.cartellaPubblicazione)} in parents and trashed = false`;
+      const q = `name = ${tra(NOME_PUBBLICATO)} and ${tra(cartellaImpegni())} in parents and trashed = false`;
       const r = await fetch(API + '?fields=files(id)&supportsAllDrives=true&includeItemsFromAllDrives=true&q=' + encodeURIComponent(q), intestazioni);
       if (!r.ok) throw new Error('errore ' + r.status);
       const j = await r.json();
-      if (!j.files || !j.files[0]) throw new Error('impegni non ancora pubblicati su Drive');
+      if (!j.files || !j.files[0]) { const e = new Error('impegni non ancora pubblicati su Drive'); e.nonPubblicati = true; throw e; }
       id = idTrovato = j.files[0].id;
     }
     const r = await fetch(API + '/' + encodeURIComponent(id) + '?alt=media&supportsAllDrives=true', intestazioni);

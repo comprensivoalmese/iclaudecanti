@@ -608,6 +608,10 @@
 
   function aggiornaSostegno() {
     const vede = !!utente && !aulaMonitor && !secondiIngresso && (puoModificareOrario || !!mioDocente);
+    // Il calendario «Impegni» è SOLO PER I DOCENTI (scelta della scuola, 02/10/2026): stessa regola del sostegno
+    // (docente riconosciuto dall'email oppure autorizzato a Orario Facile / sostituzioni); gli studenti non vedono il tasto
+    $('#btnCalendario').hidden = !vede;
+    if (!vede && calendarioAperta) apriCalendario(false);
     if (Compresenze.vedeSostegno() === vede) return;
     Compresenze.impostaSostegno(vede);
     const ridisegna = () => { Compresenze.applica(D); aggiorna(); };
@@ -631,7 +635,7 @@
   // Apre (true) o chiude (false) il calendario; sui monitor e sullo schermo all'ingresso non si apre.
   function apriCalendario(apri) {
     if (apri) { apriBreve(false); apriSmart(false); }
-    calendarioAperta = !!apri && !aulaMonitor && !secondiIngresso;
+    calendarioAperta = !!apri && !aulaMonitor && !secondiIngresso && !$('#btnCalendario').hidden;   // solo docenti
     document.body.classList.toggle('calendario-aperta', calendarioAperta);
     $('#vistaCalendario').hidden = !calendarioAperta;
     $('#btnCalendario').setAttribute('aria-pressed', String(calendarioAperta));
