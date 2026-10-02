@@ -153,6 +153,10 @@ Le parti del progetto:
   liberi; poi gli altri nello stesso ordine; Alternativa ultima) e dà a ogni proposta `motivo` e `opzioni`. Nell'app
   `Supplenze.lezioni()` (usata da viste.js e brief.js) nasconde il docente spostato nella classe lasciata e mette al suo posto
   il solo sostegno con la stessa materia (senza docente per chi non vede il sostegno). Dettagli in `sostituzioni/LEGGIMI.md`.
+- **Impegni** (`app/js/calendario.js`, `app/css/calendario.css`, tasto «Impegni» nella barra dell'app): calendario mensile
+  in stile Google Calendar degli impegni collegiali, colori per scuola (istituto, infanzia, primaria, secondaria). I dati sono in
+  `dati/impegni.json` (`CONFIG.urlImpegni`), presi dal foglio «Piano 26-27» del Piano annuale delle attività (non dai fogli
+  «secondaria» o «calendario regionale»). Il file è pubblico: dei GLO solo il plesso, mai le classi; niente nomi di persone.
 - **Vigilanza durante l'intervallo** (idea discussa il 29/09/2026, non ancora fatta): all'inizio dell'intervallo le classi
   si spostano; l'insegnante uscente resta nella sua aula e vigila la classe che vi entra (2ª ora → classe della 3ª per
   9:55–10:05, 4ª → 5ª per 11:50–12:05). Proposta e domande aperte in `app/LEGGIMI.md` (sezione LIM). Se qualcuno lo
@@ -191,6 +195,7 @@ potenziamento/    linee guida per assegnare le ore di potenziamento di italiano 
 strumenti/        script da usare sul PC (Windows + Excel), es. crea-database.ps1 per creare il Foglio database
 dati/orario.json  l'orario letto da app/ (formato dell'app o backup di Orario Facile)
 dati/campanella.json  orari della campanella per il tasto 🔔 dell'app (vedi app/js/campanella.js)
+dati/impegni.json     impegni dell'anno per il tasto «Impegni» dell'app (vedi app/js/calendario.js)
 img/              immagini
 ```
 - Tieni i **dati dell'orario separati dal codice** (file JSON in `dati/`), così si possono aggiornare senza toccare JS/HTML.

@@ -76,6 +76,32 @@ I dati sono gli stessi (memoria del browser, chiavi `sostituzioni.`): quello che
 - Abbinamenti, saldi ed esportazioni restano nella scheda completa di Orario Facile: se un docente non è abbinato, il messaggio lo dice.
 - I file del motore si caricano solo quando si apre la pagina (`js/smart.js`, stile in `css/smart.css`).
 
+## Impegni 📅
+
+Il tasto **Impegni** nella barra in alto apre il calendario degli impegni collegiali dell'anno (collegi, consigli,
+GLO, scrutini, colloqui…) in stile Google Calendar; **Tabella** (o Esc) torna all'orario.
+
+- **Colori per scuola**: Istituto (blu-viola), Infanzia (rosa), Primaria (giallo), Secondaria (azzurro), come nel
+  Piano annuale delle attività. I colori sono in `css/calendario.css` (tema chiaro e scuro).
+- **Legenda = filtro**: toccando una scuola la si nasconde o la si mostra; la scelta si ricorda sul dispositivo
+  (chiave `orariodada.calendario.scuole`).
+- **Mese a griglia**: su tablet e computer nelle caselle si leggono ora e titolo; sul telefono solo un pallino colorato
+  per impegno. Toccando un giorno, sotto compare l'elenco dei suoi impegni (con orario, scuola e note).
+- **Tastiera**: frecce = giorno/settimana, Pagina su/giù = mese.
+- Non si vede sui monitor di classe e sullo schermo all'ingresso.
+
+I dati stanno in **`dati/impegni.json`** (`CONFIG.urlImpegni`), presi dal foglio «Piano 26-27» del Piano annuale delle
+attività deliberato dal Collegio Docenti il 10/09/2026. Ogni impegno è una riga:
+
+```json
+{"data": "2026-10-05", "scuola": "secondaria", "titolo": "CdC classi 1A-2A-3A-1B-2B-3B", "inizio": "15:00", "fine": "18:00"}
+```
+
+`scuola` è `istituto`, `infanzia`, `primaria` o `secondaria` (la colonna del foglio); `inizio`/`fine` mancano se il foglio
+non dà un orario; `nota` è facoltativa. Per spostare un impegno basta cambiare la riga, senza toccare il codice.
+**Privacy**: il file è pubblico (repo su GitHub), quindi dei GLO resta solo il plesso, mai l'elenco delle classi;
+niente nomi di persone.
+
 ## Campanella 🔔
 
 Il tasto con la **campanella** nella barra in alto fa suonare il dispositivo agli orari della campanella. Quando è attiva il tasto è **acceso** (giallo, con un alone) e mentre suona oscilla.
@@ -434,6 +460,8 @@ app/
   js/viste.js           disegno della tabella
   js/supplenze.js       assenze e sostituzioni della settimana da evidenziare nella tabella
   js/brief.js           vista "In breve" (la giornata a schede)
+  js/calendario.js      vista "Impegni": calendario degli impegni dell'anno (dati/impegni.json)
+  css/calendario.css    stile del calendario e colori delle scuole
   js/campanella.js      tasto campanella: suoni agli orari di dati/campanella.json
   css/campanella.css    stile del tasto e del pannello della campanella
   js/ingresso.js        schermo all'ingresso: viste a rotazione
