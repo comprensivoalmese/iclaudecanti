@@ -93,8 +93,15 @@ adesione). Il file si legge **solo sul computer**: i nomi servono a trovare i co
   adattamenti di orario di chi è in servizio. Nelle ore coperte **si fa lezione** (sostituzione, non solo vigilanza) e, con
   l'opzione «usa anche i docenti con ore da recuperare», si possono chiamare i docenti a recupero (saldo negativo: +1).
 - **Privacy**: l'adesione a uno sciopero è un dato sindacale. Nel file pubblicato e nell'app **non c'è mai chi sciopera**:
-  solo, per classe, «Entrata posticipata», «Uscita anticipata», «Vigilanza» (classe cerchiata) e chi vigila.
+  solo, per classe, entrata posticipata, uscita anticipata, «Vigilanza» (classe cerchiata) e chi vigila.
   Dati: chiave `sostituzioni.scioperi`, solo codici; codice: `js/scioperi.js`.
+- **Nell'app la parola «sciopero» non si vede mai** (dal 02/10/2026): le ore in cui la classe non c'è (non entra, entra
+  dopo, esce prima) sono solo **grigie**, con materia e docente in grigio chiaro e senza etichetta, come ore senza lezione
+  («Nessuna lezione» in «In breve», «non si fa» nel riquadro «per te»). La vigilanza resta visibile.
+- Il piano pubblicato contiene anche il **nome della classe** (`nomeClasse`, `nomeDa`) e il **codice DOC…** di chi vigila
+  (`codice`): se l'orario di Orario Facile è stato caricato a parte e ha ID diversi da quelli dell'app, l'app riconosce
+  classi e docenti da questi. Un piano confermato prima del 02/10/2026 non li ha: «✎ Riapri il piano», «✔ Conferma il
+  piano» e di nuovo «📤 Pubblica sostituzioni».
 
 ## Uscita didattica (i casi: assenza semplice oppure uscita)
 

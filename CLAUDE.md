@@ -136,6 +136,9 @@ Le parti del progetto:
   ultime ore; MAI ore in più: niente liberi né docenti a debito, nessun +1). Conferma = sostituzioni con `sciopero`/`vigilanza` nel registro, NON pubblicate; nel file
   pubblicato solo `scioperi` con gli effetti sulle classi (entra/esce/vigilanza e chi vigila, `da` se spostato). **Mai pubblicare
   chi sciopera** (dato sindacale, GDPR art. 9). L'app legge soltanto: `Supplenze.testoSciopero()` per tabella, In breve e avviso.
+  Nell'app la parola «sciopero» non si vede MAI (scelta della scuola, 02/10/2026): ore in cui la classe non c'è = `.lezione-spenta`
+  (grigia, senza etichetta, materia e docente in grigio). Il piano pubblicato ha anche `nomeClasse`/`nomeDa` e il `codice` DOC…
+  di chi vigila: `Supplenze.settimana()` li usa se gli ID dell'orario dell'app sono diversi (orario caricato a parte in Orario Facile).
   **Sostituzioni smart** (`app/js/smart.js`, menu dell'app): versione semplice della scheda che usa lo stesso motore con
   `Sostituzioni.collega(funzioneOrario, { avvisa, ridisegna })` (restituisce le funzioni del motore). Se cambi il motore,
   controlla sia la scheda (`monta`) sia la pagina smart (`collega`); la costante `VERSIONE` in cima a sostituzioni.js
