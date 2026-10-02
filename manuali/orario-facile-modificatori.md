@@ -173,6 +173,21 @@ proposta (per esempio «Priorità 2: stessa classe – coperto da sostegno…»)
 sostituzioni già fatte ma non ancora riportate. In caso di compresenza, la scheda lo segnala.
 Tra le ore di assenza ci sono anche le ore di compresenza; negli altri giorni della settimana si spuntano le singole ore.
 
+## Calendario degli impegni: aggiornarlo ogni anno
+
+Gli impegni collegiali (collegi, consigli, GLO, scrutini…) si vedono nell'app Luis@i con il tasto **Impegni**.
+A inizio anno, quando il Collegio Docenti ha deliberato il nuovo Piano annuale delle attività:
+
+1. apri Luis@i → **Impegni** → **Importa dal Piano delle attività** (il tasto lo vede solo chi è autorizzato a Orario Facile);
+2. scegli il foglio dell'anno tra quelli della cartella di Drive dei fogli di Orario Facile, oppure **scegli il file dal
+   computer** (.xlsx o .ods): l'app lo salva anche in quella cartella;
+3. controlla l'**anteprima** nel calendario (e le eventuali «righe non importate»);
+4. premi **Pubblica per tutti**.
+
+Il foglio deve essere fatto come quello del 2026/27: un foglio che si chiama «Piano …» (per esempio «Piano 27-28») con le
+colonne GIORNO, ORARIO, ISTITUTO, INFANZIA, PRIMARIA e SECONDARIA. Ogni colonna ha il suo colore nel calendario. Dei GLO
+si pubblica solo il plesso, mai le classi.
+
 ## Lavorare in gruppo sul codice
 
 Il gruppo lavora tutti insieme direttamente su `main`:

@@ -90,8 +90,35 @@ GLO, scrutini, colloqui…) in stile Google Calendar; **Tabella** (o Esc) torna 
 - **Tastiera**: frecce = giorno/settimana, Pagina su/giù = mese.
 - Non si vede sui monitor di classe e sullo schermo all'ingresso.
 
-I dati stanno in **`dati/impegni.json`** (`CONFIG.urlImpegni`), presi dal foglio «Piano 26-27» del Piano annuale delle
-attività deliberato dal Collegio Docenti il 10/09/2026. Ogni impegno è una riga:
+### Da dove vengono gli impegni
+
+Il calendario usa il primo che riesce a leggere:
+1. **`impegni-pubblicati.json` su Google Drive**, nella cartella dei file pubblicati (`CONFIG.cartellaPubblicazione`,
+   la stessa di orario e sostituzioni), letto con il permesso Google di chi ha fatto l'accesso (`js/impegni-drive.js`);
+   `CONFIG.fileImpegniPubblicati` può contenerne l'ID, altrimenti lo si cerca per nome;
+2. l'ultima copia letta da Drive e salvata sul dispositivo (chiave `orariodada.impegni`);
+3. **`dati/impegni.json`** su GitHub (`CONFIG.urlImpegni`), preso dal foglio «Piano 26-27» del 2026/27.
+
+### Ogni anno: «Importa dal Piano delle attività»
+
+Chi è autorizzato a Orario Facile (colonna «Orario Facile» del file Autorizzazioni) trova nel calendario il tasto
+**Importa dal Piano delle attività**:
+1. l'app cerca i fogli con «Piano» nel nome (Excel, LibreOffice o Fogli Google) nella **cartella di Drive dei fogli di
+   Orario Facile**, cioè la cartella del Foglio Database (`CONFIG.fileDatabaseOrario`); si sceglie quello dell'anno.
+   Oppure si sceglie il file dal computer: se si legge bene, l'app lo **salva in quella cartella** (così l'anno dopo c'è già);
+2. `js/piano-attivita.js` legge il foglio «Piano …» (per esempio «Piano 27-28»; non «secondaria» né «calendario
+   regionale»): la riga con ISTITUTO / INFANZIA / PRIMARIA / SECONDARIA dice le colonne, quella con GIORNO e ORARIO la data
+   e l'ora; data vuota = stesso giorno della riga sopra; ci si ferma alla firma del Dirigente. Toglie le classi dai GLO,
+   unisce i doppioni (Collegio in «Istituto» e in «Secondaria») e mette da parte le righe che non capisce;
+3. compare l'**anteprima** nel calendario (solo per chi importa), con quanti impegni per scuola e le righe non importate;
+4. **Pubblica per tutti** scrive `impegni-pubblicati.json` su Drive: da quel momento tutti vedono il nuovo anno.
+
+Provato con il piano 2026/27, sia .ods sia .xlsx: 219 impegni, gli stessi di `dati/impegni.json`.
+Il file deve restare fatto come quello del 2026/27: se la scuola cambia la forma del foglio, va aggiornato `piano-attivita.js`.
+
+### Formato degli impegni
+
+Ogni impegno è una riga:
 
 ```json
 {"data": "2026-10-05", "scuola": "secondaria", "titolo": "CdC classi 1A-2A-3A-1B-2B-3B", "inizio": "15:00", "fine": "18:00"}
@@ -461,6 +488,8 @@ app/
   js/supplenze.js       assenze e sostituzioni della settimana da evidenziare nella tabella
   js/brief.js           vista "In breve" (la giornata a schede)
   js/calendario.js      vista "Impegni": calendario degli impegni dell'anno (dati/impegni.json)
+  js/piano-attivita.js  legge il foglio del Piano annuale delle attività (.xlsx/.ods) e ne fa gli impegni
+  js/impegni-drive.js   impegni su Drive: cerca il piano nella cartella, lo salva, pubblica e legge impegni-pubblicati.json
   css/calendario.css    stile del calendario e colori delle scuole
   js/campanella.js      tasto campanella: suoni agli orari di dati/campanella.json
   css/campanella.css    stile del tasto e del pannello della campanella

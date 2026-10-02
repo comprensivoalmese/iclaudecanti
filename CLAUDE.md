@@ -157,6 +157,12 @@ Le parti del progetto:
   in stile Google Calendar degli impegni collegiali, colori per scuola (istituto, infanzia, primaria, secondaria). I dati sono in
   `dati/impegni.json` (`CONFIG.urlImpegni`), presi dal foglio «Piano 26-27» del Piano annuale delle attività (non dai fogli
   «secondaria» o «calendario regionale»). Il file è pubblico: dei GLO solo il plesso, mai le classi; niente nomi di persone.
+  **Ogni anno** chi è autorizzato a Orario Facile usa «Importa dal Piano delle attività» nel calendario: il foglio .xlsx/.ods
+  (o Foglio Google) sta nella cartella di Drive del Foglio Database (se lo si sceglie dal computer l'app ce lo salva),
+  `app/js/piano-attivita.js` lo legge (foglio «Piano …», colonne trovate dalle intestazioni ISTITUTO/INFANZIA/PRIMARIA/
+  SECONDARIA e GIORNO/ORARIO, data vuota = giorno sopra), anteprima, poi «Pubblica per tutti» scrive
+  `impegni-pubblicati.json` in `CONFIG.cartellaPubblicazione` (`app/js/impegni-drive.js`, usa chiama/cerca/scriviFile di
+  pubblica-drive.js). Il calendario legge prima Drive, poi la copia sul dispositivo (`orariodada.impegni`), poi GitHub.
 - **Vigilanza durante l'intervallo** (idea discussa il 29/09/2026, non ancora fatta): all'inizio dell'intervallo le classi
   si spostano; l'insegnante uscente resta nella sua aula e vigila la classe che vi entra (2ª ora → classe della 3ª per
   9:55–10:05, 4ª → 5ª per 11:50–12:05). Proposta e domande aperte in `app/LEGGIMI.md` (sezione LIM). Se qualcuno lo
