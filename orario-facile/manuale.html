@@ -182,7 +182,7 @@
     <p class="lede">Guida per chi costruisce l'orario, lo pubblica e gestisce le sostituzioni dei docenti assenti. Serve il ruolo di <b>modificatore</b>: l'account Google della scuola non basta da solo.</p>
     <div class="meta">
       <span>Indirizzo: <a href="https://comprensivoalmese.github.io/orario/orario-facile/" target="_blank" rel="noopener">.../orario/orario-facile</a></span>
-      <span>Sostituzioni: scheda 9 di Orario Facile</span>
+      <span>Sostituzioni: scheda 10 di Orario Facile</span>
     </div>
   </div>
 
@@ -302,7 +302,7 @@
 
   <section id="sostituzioni">
     <h2>Sostituzioni docenti</h2>
-    <p>È la scheda 9 di Orario Facile, per organizzare la sostituzione dei docenti assenti usando il foglio del conteggio ore (chi è a debito e chi è a credito).</p>
+    <p>È la scheda 10 di Orario Facile, per organizzare la sostituzione dei docenti assenti usando il foglio del conteggio ore (chi è a debito e chi è a credito).</p>
 
     <h3>Privacy: il foglio non va mai su GitHub</h3>
     <p>Il foglio del conteggio ore ha i nomi completi dei docenti. Due modi per usarlo, entrambi senza pubblicarlo:</p>
@@ -337,14 +337,17 @@
     <p>Si possono anche stampare le sostituzioni del giorno e scaricare il registro in CSV.</p>
 
     <h3>Come vengono proposti i docenti</h3>
-    <p>Per ogni ora scoperta, la scheda cerca i docenti senza lezione in quell'ora, non assenti e non già impegnati altrove, e li ordina così:</p>
+    <p>Le sostituzioni si fanno sempre sull'<b>orario ufficiale pubblicato</b>, mai sulla bozza. Per ogni ora scoperta la scheda cerca i docenti non assenti e non già impegnati altrove: quelli liberi e quelli <b>spostabili</b>, già in classe con un altro docente (con il <b>sostegno</b> si sposta il docente di cattedra e il sostegno resta con la classe; con il <b>potenziamento</b> si sposta il compresente; l'<b>Alternativa</b> è l'ultima possibilità). Chi è spostato <b>non prende +1</b> nel conteggio. L'ordine è:</p>
     <ol>
-      <li>prima chi è <b>a scuola quel giorno</b> (ha almeno una lezione);</li>
-      <li>poi chi ha <b>più ore a debito</b> (saldo più basso);</li>
-      <li>a parità: chi ha un'ora buca, poi chi ha lezione subito prima o dopo;</li>
-      <li>poi chi conosce già la classe.</li>
+      <li>docenti della classe con un'ora buca;</li>
+      <li>docenti della classe spostabili;</li>
+      <li>altri docenti della classe liberi;</li>
+      <li>altri docenti con un'ora buca;</li>
+      <li>altri docenti spostabili;</li>
+      <li>altri docenti liberi;</li>
+      <li>docenti di Alternativa.</li>
     </ol>
-    <p>Il saldo usato è: totale del foglio + sostituzioni già fatte ma non ancora riportate. Se in classe c'è già un altro docente (compresenza), la scheda lo segnala.</p>
+    <p>Nello stesso gruppo prima chi è a scuola quel giorno e ha <b>più ore a debito</b>. Sotto ogni nome c'è il <b>motivo</b> della proposta (per esempio «Priorità 2: stessa classe – coperto da sostegno…»). Il saldo usato è: totale del foglio + sostituzioni già fatte ma non ancora riportate. Se in classe c'è già un altro docente (compresenza), la scheda lo segnala. Tra le ore di assenza ci sono anche le ore di compresenza; negli altri giorni della settimana si spuntano le singole ore.</p>
   </section>
 
   <section id="collaborazione">
