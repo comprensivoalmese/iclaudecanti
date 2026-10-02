@@ -1108,8 +1108,9 @@ const Sostituzioni = (() => {
 
   // ---------- Disegno della sezione 1: dati ----------
   function disegnaDati() {
-    $('statoOrario').textContent = `Orario usato: quello di Orario Facile (${D.docente.length} docenti, ${D.lezioni.length} lezioni). ` +
-      'Se modifichi l\'orario, le proposte si aggiornano da sole. Versione della scheda: ' + VERSIONE + '.';
+    // (le sostituzioni si fanno sempre sull'orario ufficiale pubblicato, mai sulla bozza: vedi renderSostituzioni in Orario Facile)
+    $('statoOrario').textContent = `Orario usato: quello ufficiale pubblicato (${D.docente.length} docenti, ${D.lezioni.length} lezioni), ` +
+      'non la bozza. Versione della scheda: ' + VERSIONE + '.';
 
     const stato = $('statoFoglio');
     stato.replaceChildren();
