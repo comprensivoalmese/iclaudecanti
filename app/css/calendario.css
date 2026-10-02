@@ -105,6 +105,36 @@ body.calendario-aperta .controlli, body.calendario-aperta #contenuto { display: 
 .note-calendario p { margin: 0 0 6px; }
 .calendario-attesa { padding: 24px 16px; }
 
+/* ---------- Importazione dal Piano delle attività (solo chi è autorizzato a Orario Facile) ---------- */
+.tasto-importa { justify-self: start; margin-top: 10px; border-radius: 999px; color: var(--testo); font-weight: 600; }
+.pannello-importa {
+  display: grid; gap: 10px; padding: 14px 16px; border-radius: 18px; outline: none;
+  background: var(--superficie); box-shadow: var(--ombra-scheda); border: 2px solid var(--primario);
+}
+.pannello-importa p { margin: 0; }
+.riga-importa { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.riga-importa h3 { margin: 0; font-size: 1.1rem; }
+.chiudi-importa { width: 44px; padding: 0; border-radius: 50%; }
+.piani-importa { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.piano-importa { width: 100%; display: grid; gap: 2px; text-align: left; border-radius: 12px; color: var(--testo); }
+.nome-piano { font-weight: 700; overflow-wrap: anywhere; }
+.data-piano { font-size: .8rem; color: var(--testo-tenue); }
+.file-importa { display: grid; gap: 6px; font-size: .9rem; }
+.file-importa input { min-height: 44px; max-width: 100%; }
+.aiuto-importa { font-size: .8rem; color: var(--testo-tenue); }
+.messaggio-importa { padding: 8px 12px; border-radius: 10px; background: var(--avviso); font-size: .9rem; }
+.errore-importa { color: var(--errore); font-weight: 600; }
+.conte-importa { display: flex; flex-wrap: wrap; gap: 6px; }
+.conta-importa {
+  padding: 3px 10px; border-radius: 999px; font-size: .8rem; font-weight: 700;
+  background: var(--scuola-sfondo); color: var(--scuola-testo); border: 1px solid var(--scuola);
+}
+.scartate-importa { font-size: .85rem; }
+.scartate-importa summary { cursor: pointer; font-weight: 600; min-height: 32px; }
+.scartate-importa ul { margin: 6px 0 0; padding-left: 20px; color: var(--testo-tenue); }
+.tasti-importa { display: flex; flex-wrap: wrap; gap: 8px; }
+.tasti-importa .pulsante { border-radius: 999px; font-weight: 700; }
+
 /* Tablet e computer: nelle caselle si leggono ora e titolo degli impegni, come in Google Calendar */
 @media (min-width: 700px) {
   .vista-calendario { max-width: 1100px; }

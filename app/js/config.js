@@ -8,7 +8,7 @@ window.CONFIG = {
 
   // Versione dell'app, scritta in fondo alla pagina. Quando si pubblicano modifiche importanti conviene
   // cambiarla qui E nel nome CACHE di sw.js: così tutti i dispositivi scaricano l'app da capo.
-  versioneApp: '2026-10-02.2',
+  versioneApp: '2026-10-02.3',
 
   // Solo gli account di questo dominio possono entrare
   dominio: 'comprensivoalmese.it',
@@ -129,7 +129,12 @@ window.CONFIG = {
   // Orari della campanella (tasto con la campanella). Se il file manca, si usano gli orari delle ore
   urlCampanella: '../dati/campanella.json',
 
-  // Impegni dell'anno (riunioni, collegi, scrutini…) per il tasto «Impegni»: vedi js/calendario.js
+  // Impegni dell'anno (riunioni, collegi, scrutini…) per il tasto «Impegni»: vedi js/calendario.js.
+  // Ogni anno si importano dal Piano annuale delle attività (tasto «Importa dal Piano delle attività» del calendario,
+  // per chi è autorizzato a Orario Facile): il foglio sta nella cartella del Foglio Database, gli impegni letti vanno in
+  // «impegni-pubblicati.json» nella cartellaPubblicazione. fileImpegniPubblicati: ID di quel file (facoltativo: se è
+  // vuoto lo si cerca per nome). urlImpegni: la copia su GitHub, usata finché su Drive non c'è niente.
+  fileImpegniPubblicati: '',
   urlImpegni: '../dati/impegni.json',
 
   // Per quanti giorni l'accesso resta memorizzato se si spunta "Ricordami"

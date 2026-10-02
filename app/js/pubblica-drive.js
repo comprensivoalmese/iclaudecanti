@@ -157,5 +157,6 @@ const PubblicaDrive = (() => {
     return pubblica(NOMI.sostituzioni, cartella(), testo, CONFIG.fileSostituzioniPubblicate, email);
   }
 
-  return { configurato, pubblicaOrario, pubblicaSostituzioni, NOMI };
+  // chiama, cerca e scriviFile servono anche al calendario degli impegni (js/impegni-drive.js)
+  return { configurato, pubblicaOrario, pubblicaSostituzioni, NOMI, chiama, cerca, scriviFile, PERMESSO };
 })();

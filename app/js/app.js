@@ -639,7 +639,9 @@
     if (!calendarioAperta) return;
     window.scrollTo(0, 0);
     $('#vistaCalendario').focus({ preventScroll: true });
-    Calendario.apri($('#vistaCalendario'), { chiudi: () => { apriCalendario(false); $('#btnCalendario').focus(); } });
+    // chi è autorizzato a Orario Facile vede anche «Importa dal Piano delle attività» (aggiornamento di ogni anno)
+    Calendario.apri($('#vistaCalendario'), { chiudi: () => { apriCalendario(false); $('#btnCalendario').focus(); },
+      puoImportare: !!(autorizz && autorizz.orarioFacile), email: utente.email });
   }
 
   // Tasti della barra accesi (vedi css/barra.css):
