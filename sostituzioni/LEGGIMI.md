@@ -142,8 +142,10 @@ sul dispositivo). Dati: chiave `sostituzioni.uscite`; codice: `js/uscite.js`.
    del conteggio su Drive la scheda legge la cella della settimana e **toglie 1 per ogni ora** (cella vuota → −1).
    Se si cambiano le ore o si toglie la spunta, corregge solo la differenza; togliendo l'assenza restituisce le ore.
    Se il foglio non è su Drive o il docente non è abbinato, un avviso dice quante ore togliere a mano.
+   Tra le ore ci sono anche le **ore di compresenza** (potenziamento, sostegno…): un compresente si può segnare assente,
+   ma le sue ore non diventano «ore da coprire» (in classe c'è comunque il docente di cattedra).
    **Assente più giorni?** Sotto le ore compaiono gli altri giorni della **stessa settimana** in cui il docente ha
-   lezione: spuntandoli, l'assenza viene registrata anche in quei giorni, per tutte le sue ore (una sola volta).
+   lezione, con le loro ore: si spuntano le **singole ore** di ogni giorno (una sola volta).
    Le correzioni del foglio del conteggio si fanno una alla volta, in fila, così la stessa cella non viene sbagliata.
 4. In **"Ore da coprire"**, per ogni ora compare l'elenco dei docenti liberi: premi **Assegna**.
    In cima ci sono i **pulsanti dei giorni della settimana** con quante ore restano da coprire: servono per
@@ -175,16 +177,42 @@ Si possono anche stampare le sostituzioni del giorno e scaricare il registro in 
 
 ## Come vengono scelti i docenti proposti
 
-Per ogni ora scoperta la scheda cerca i docenti **senza lezione in quell'ora**, **non assenti** e **non già
-impegnati** in un'altra sostituzione alla stessa ora, e li mette in quest'ordine:
+Per ogni ora scoperta la scheda cerca i docenti **non assenti** e **non già impegnati** in un'altra sostituzione alla
+stessa ora: quelli **liberi** in quell'ora e quelli **spostabili**, cioè già in classe con un altro docente
+(compresenza, dal Foglio Compresenze, sostegno compreso). Regole della scuola (02/10/2026, issue #7):
 
-1. prima chi è **a scuola quel giorno** (ha almeno una lezione); gli altri si vedono con "Mostra tutti";
-2. poi chi ha **più ore a debito** (saldo più basso);
-3. a parità: chi ha un'**ora buca** (è già a scuola), poi chi ha lezione **subito prima o dopo**;
-4. poi chi **conosce già la classe**.
+- con il **sostegno** si sposta il **docente di cattedra**: il sostegno resta da solo con la classe (il sostegno non si sposta);
+- con il **potenziamento** e le altre compresenze si sposta il **compresente**: resta il docente di cattedra;
+- l'**Alternativa** (in parallelo a Religione) è l'ultima possibilità: il docente si sposta con i suoi studenti, Religione resta;
+- chi resta in classe deve esserci davvero (non assente, non già spostato altrove in quell'ora).
+
+Chi è **spostato non prende +1** nel foglio del conteggio (era già una sua ora) e, se si annulla, non perde niente
+(campo `spostato: { da: classe lasciata }` nel registro). I docenti proposti sono in **gruppi di priorità**:
+
+| Priorità | Chi |
+|---|---|
+| prima di tutti | i «liberati» di un'uscita didattica |
+| 1 | docenti della classe, liberi con un'ora buca |
+| 2 | docenti della classe spostabili |
+| 3 | altri docenti della classe, liberi |
+| 4 | altri docenti, liberi con un'ora buca |
+| 5 | altri docenti spostabili |
+| 6 | altri docenti liberi |
+| 7 | docenti di Alternativa (ultima possibilità) |
+
+«Docente della classe» = insegna in quella classe in qualunque giorno, anche in compresenza. Nello stesso gruppo:
+prima chi è **a scuola quel giorno** (gli altri si vedono con "Mostra tutti"), poi chi ha **più ore a debito**, poi chi
+ha lezione subito prima o dopo. **Sotto ogni nome c'è il motivo** (es. «Priorità 1: stessa classe – ora buca: è già a
+scuola · +1 nel conteggio», «Priorità 2: stessa classe – coperto da sostegno: in 2B resta il docente di sostegno ·
+nessuna ora in più»). Il piano delle uscite didattiche non usa gli spostabili.
 
 Il saldo usato è: **TOTALE del foglio + sostituzioni fatte e non ancora riportate nel foglio**.
 Se in classe c'è già un altro docente (compresenza), la scheda lo segnala.
+
+**Nell'app** (`app/js/supplenze.js`, `Supplenze.lezioni`): nella classe dove va il docente spostato si vede la
+sostituzione; nella classe lasciata, se resta il sostegno, l'ora appare come lezione della stessa materia tenuta dal
+solo docente di sostegno (chi non vede il sostegno, per esempio gli studenti, vede la materia senza docente); se si è
+spostato un compresente, la sua riga sparisce. Nel file pubblicato c'è solo la classe lasciata, mai chi resta.
 
 ## Il foglio: che forma deve avere
 
@@ -201,9 +229,10 @@ Come il foglio "Prospetto" della scuola:
 
 ## L'orario
 
-La scheda usa **l'orario aperto in Orario Facile**, quindi se lo modifichi le proposte si aggiornano appena torni
-sulla scheda. L'orario viene trasformato con `Dati.normalizza()` di `app/js/dati.js`, lo stesso usato dall'app
-Luis@i.
+Le sostituzioni si fanno sempre sull'**orario ufficiale pubblicato**, mai sulla bozza aperta in Orario Facile
+(scelta della scuola, 02/10/2026): la scheda lo scarica con `Dati.caricaPubblicato()` di `app/js/dati.js` (il file su
+Drive se in `config.js` c'è `fileOrarioPubblicato`, altrimenti `dati/orario.json`) a ogni apertura. Anche la pagina
+«Sostituzioni smart» dell'app, se l'app sta mostrando la bozza, scarica a parte l'orario pubblicato.
 
 ## File
 
@@ -233,29 +262,14 @@ In `orario-facile/index.html` le righe che la collegano sono poche: il foglio di
 Per provarla sul PC serve un piccolo server (dalla cartella del repo): `py -m http.server 8765`,
 poi aprire http://localhost:8765/orario-facile/#sostituzioni
 
-## Compresente spostato su una sostituzione (discusso il 28/09/2026, non ancora fatto)
+## Compresente spostato su una sostituzione (fatto il 02/10/2026)
 
-Se ne parla nella issue [#7](https://github.com/comprensivoalmese/orario/issues/7).
-
-Caso: una docente in quell'ora è in compresenza (per esempio potenziamento L2, come da orario) e viene mandata
-a sostituire un collega assente in un'altra classe. Ha solo cambiato impegno, quindi non dovrebbe avere ore in più.
-
-Oggi invece:
-- assegnando la sostituzione il motore scrive **sempre +1** nel foglio del conteggio (`assegna()` → `segnaNelFoglio(s, 1)`);
-  l'unica eccezione sono i docenti «liberati» da un'uscita didattica (`reindirizzato: true`);
-- nella **scheda 9 di Orario Facile** le compresenze del Foglio Compresenze non ci sono (`Dati.normalizza(S)` ha solo le
-  celle «+»): la docente risulta libera e viene proposta normalmente, con +1;
-- in **Sostituzioni smart** con il quadratino «Compresenze» spuntato la docente è «occupata» (`candidati()`) e non viene
-  proposta; senza spunta è come nella scheda 9.
-
-**Come fare per ora:** assegnare la sostituzione nella scheda 9 (così resta nel registro e nella tabella dell'app), poi
-togliere a mano l'ora aggiunta nel foglio del conteggio (l'avviso dice la cella). Attenzione: se poi la sostituzione
-si annulla, il motore toglie 1 un'altra volta e la cella va ricorretta a mano.
-
-**Idea proposta:** un'opzione «🔁 compresente spostato: nessuna ora in più», come per i liberati delle uscite:
-tra le proposte, in cima, i docenti in compresenza in quell'ora (letti dal Foglio Compresenze, sostegno compreso
-solo per chi lo può vedere); assegnati con `reindirizzato` (o un campo nuovo), quindi senza +1 e senza −1
-all'annullamento. Va fatta nel motore (`sostituzioni.js`), che serve sia la scheda 9 sia la pagina smart.
+Issue [#7](https://github.com/comprensivoalmese/orario/issues/7). Caso: un docente in quell'ora è in compresenza e viene
+mandato a sostituire un collega assente in un'altra classe: ha solo cambiato impegno, quindi **nessuna ora in più**.
+Prima prendeva sempre +1 e andava corretto a mano. Ora il motore propone i docenti «spostabili» con le regole e le
+priorità descritte in *Come vengono scelti i docenti proposti*, li assegna con `spostato` (niente +1, niente −1
+all'annullamento) e l'app mostra la classe lasciata come se ci fosse solo chi resta. Si usa un campo nuovo e non
+`reindirizzato`, che è delle uscite didattiche («Cancella tutte le uscite» lo usa per riconoscerle).
 
 ## Idee per il futuro
 
