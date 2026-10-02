@@ -1,6 +1,6 @@
 # Sostituzioni docenti
 
-Scheda **«Sostituzioni»** (la n. 9) di **Orario Facile**, per organizzare la **sostituzione dei docenti assenti**
+Scheda **«Sostituzioni»** (la n. 10) di **Orario Facile**, per organizzare la **sostituzione dei docenti assenti**
 usando il foglio del conteggio ore (chi è a **debito** e chi è a **credito** di ore).
 
 Indirizzo diretto: **https://comprensivoalmese.github.io/orario/orario-facile/#sostituzioni**
