@@ -119,7 +119,9 @@ Chi è autorizzato a Orario Facile (colonna «Orario Facile» del file Autorizza
    e l'ora; data vuota = stesso giorno della riga sopra; ci si ferma alla firma del Dirigente. Toglie le classi dai GLO,
    unisce i doppioni (Collegio in «Istituto» e in «Secondaria») e mette da parte le righe che non capisce;
 3. compare l'**anteprima** nel calendario (solo per chi importa), con quanti impegni per scuola e le righe non importate;
-4. **Pubblica per tutti** scrive `impegni-pubblicati.json` su Drive: da quel momento tutti vedono il nuovo anno.
+4. **Pubblica per tutti** scrive `impegni-pubblicati.json` su Drive: da quel momento i docenti vedono il nuovo anno.
+   Se nella cartella dei file pubblicati (`cartellaPubblicazione`) è rimasta una copia vecchia (pubblicata prima che ci
+   fosse `cartellaImpegni`), l'app la sposta nel cestino di Drive (`togliCopiaVecchia` in impegni-drive.js).
 
 Provato con il piano 2026/27, sia .ods sia .xlsx: 219 impegni.
 Il file deve restare fatto come quello del 2026/27: se la scuola cambia la forma del foglio, va aggiornato `piano-attivita.js`.
