@@ -41,12 +41,15 @@ Il tasto **In breve** nella barra in alto apre la giornata a schede, comoda sul 
 Nel menu (tondo con le iniziali), sezione Gestione, c'è **"Sostituzioni smart"** (icona con le persone): la scheda Sostituzioni
 di Orario Facile in versione **semplice e rapida**, dentro l'app, con lo stile a schede di «In breve». Contiene solo:
 
-- **Assenze del giorno**: tendina *Giorno*, scelta del docente assente, ore da toccare (tutte spuntate), casella **Recupero** (spuntata; prima si chiamava «Permesso») e *Registra l'assenza*; sotto, gli assenti già registrati con *Togli*.
-  Se il docente manca **più giorni**, si toccano anche gli altri giorni della stessa settimana (*Assente anche in altri giorni?*):
-  in quei giorni è assente per tutte le sue ore.
+- **Assenze del giorno**: tendina *Giorno*, scelta del docente assente, ore da toccare (tutte spuntate, comprese le ore di
+  compresenza, che non diventano ore da coprire), casella **Recupero** (spuntata; prima si chiamava «Permesso») e *Registra l'assenza*; sotto, gli assenti già registrati con *Togli*.
+  Se il docente manca **più giorni**, si toccano anche le singole ore degli altri giorni della stessa settimana
+  (*Assente anche in altri giorni? Spunta le ore*).
 - **Giorni della settimana**: sotto la tendina, un pulsante per ogni giorno con quante ore restano **da coprire**
   (bordo rosso se ne manca qualcuna): si tocca per passare a quel giorno.
-- **Ore da coprire**: una scheda per ogni ora con i primi 3 docenti proposti (prima chi ha più ore a debito); si tocca il nome per assegnare, *Mostra tutti* per gli altri, *Annulla la sostituzione* per toglierla.
+- **Ore da coprire**: una scheda per ogni ora con i primi 3 docenti proposti, in ordine di priorità (prima i docenti della
+  classe, anche quelli spostabili da una compresenza senza ore in più) e con il **motivo** sotto ogni nome, come nella scheda 10
+  di Orario Facile (vedi `sostituzioni/LEGGIMI.md`); si tocca il nome per assegnare, *Mostra tutti* per gli altri, *Annulla la sostituzione* per toglierla.
 - **✕ Annulla nella tabella**: chi è autorizzato alle sostituzioni vede il tasto *✕ Annulla* su ogni sostituzione della
   tabella dell'orario (anche se l'ha registrata un collega su un altro dispositivo). Toccandolo si apre questa pagina sul giorno
   giusto, si conferma e la sostituzione si annulla: al docente che sostituiva si toglie 1 ora nel **foglio del conteggio**
