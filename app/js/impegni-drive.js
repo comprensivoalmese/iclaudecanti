@@ -99,16 +99,40 @@ const ImpegniDrive = (() => {
   }
 
   // Pubblica gli impegni per tutti (impegni-pubblicati.json nella cartella dei file pubblicati)
+  // Restituisce { id, cestinato }: cestinato = true se è stata tolta una copia rimasta nella cartella vecchia (vedi sotto)
   async function pubblica(dati, email) {
     const testo = JSON.stringify(dati);
-    const id = CONFIG.fileImpegniPubblicati;
-    if (id) {
-      await PubblicaDrive.chiama(CARICA + '/' + encodeURIComponent(id) + '?uploadType=media&supportsAllDrives=true', {
+    let f;
+    if (CONFIG.fileImpegniPubblicati) {
+      f = { id: CONFIG.fileImpegniPubblicati };
+      await PubblicaDrive.chiama(CARICA + '/' + encodeURIComponent(f.id) + '?uploadType=media&supportsAllDrives=true', {
         metodo: 'PATCH', tipo: 'application/json; charset=UTF-8', corpo: testo, email
       });
-      return { id };
+    } else {
+      f = await PubblicaDrive.scriviFile(NOME_PUBBLICATO, cartellaImpegni(), testo, email);
     }
-    return PubblicaDrive.scriviFile(NOME_PUBBLICATO, cartellaImpegni(), testo, email);
+    f.cestinato = await togliCopiaVecchia(f.id, email);
+    return f;
+  }
+
+  /*
+    PULIZIA: prima che ci fosse la cartella dei soli docenti (CONFIG.cartellaImpegni, 02/10/2026) gli impegni si
+    pubblicavano nella cartella dei file pubblicati (CONFIG.cartellaPubblicazione), che può essere aperta da più persone.
+    Dopo ogni pubblicazione nella cartella giusta, l'eventuale copia rimasta in quella vecchia va nel CESTINO di Drive
+    (si può ancora recuperare da lì, se serve). Non blocca mai la pubblicazione: se non ci riesce restituisce false.
+  */
+  async function togliCopiaVecchia(idNuovo, email) {
+    if (!CONFIG.cartellaImpegni || CONFIG.cartellaImpegni === CONFIG.cartellaPubblicazione) return false;
+    try {
+      const vecchio = await PubblicaDrive.cerca(NOME_PUBBLICATO, CONFIG.cartellaPubblicazione, '', email);
+      if (!vecchio || vecchio === idNuovo) return false;
+      await PubblicaDrive.chiama(API + '/' + encodeURIComponent(vecchio) + '?supportsAllDrives=true&fields=id', {
+        metodo: 'PATCH', tipo: 'application/json', corpo: JSON.stringify({ trashed: true }), email
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   /*

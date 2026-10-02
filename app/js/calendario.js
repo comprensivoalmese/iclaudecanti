@@ -388,7 +388,8 @@ const Calendario = (() => {
     const j = { anno: l.anno, fonte: l.fonte, avviso: l.avviso, sigle: l.sigle, scuole: l.scuole, aggiornato: new Date().toISOString(), impegni: l.impegni };
     const invio = ImpegniDrive.pubblica(j, opzioni.email);
     mostraImporta('pubblico');
-    invio.then(() => {
+    invio.then(r => {
+      importa.cestinato = !!(r && r.cestinato);
       salvaCopia(j);
       pubblicati = j;
       fonte = 'drive';
@@ -420,7 +421,8 @@ const Calendario = (() => {
         <div class="tasti-importa"><button type="button" class="pulsante" data-cal="importa">Riprova</button></div>`);
     }
     if (i.fase === 'fatto') {
-      return pannello(`<p>✔ <b>Pubblicato.</b> Da ora tutti vedono gli impegni del ${esc(dati.anno || '')} (${dati.impegni.length}).</p>
+      return pannello(`<p>✔ <b>Pubblicato.</b> Da ora i docenti vedono gli impegni del ${esc(dati.anno || '')} (${dati.impegni.length}).</p>
+        ${i.cestinato ? '<p class="messaggio-importa">La copia pubblicata prima nella cartella dei file pubblicati (aperta anche ad altri) è stata spostata nel cestino di Drive.</p>' : ''}
         <div class="tasti-importa"><button type="button" class="pulsante primario" data-cal="chiudi-importa">Chiudi</button></div>`);
     }
     if (i.fase === 'scelta') {
