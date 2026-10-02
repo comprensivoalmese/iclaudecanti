@@ -61,9 +61,13 @@ const Smart = (() => {
     return caricamento;
   }
 
-  // Copia dell'orario dell'app: il motore ci mette i nomi veri dei docenti e non deve toccare quello della tabella
+  // L'orario UFFICIALE pubblicato: le sostituzioni si fanno sempre su quello, mai sulla bozza di Orario Facile.
+  // Se l'app sta mostrando la bozza (solo sul dispositivo di chi lavora in Orario Facile) lo si scarica a parte.
+  let pubblicato = null;
+  // Copia dell'orario: il motore ci mette i nomi veri dei docenti e non deve toccare quello della tabella
   function copiaOrario() {
-    const D = contesto.orario();
+    const A = contesto.orario();
+    const D = A.fonte === 'bozza' && pubblicato ? pubblicato : A;
     const docente = D.docente.map(t => Object.assign({}, t));
     const mappa = Object.assign({}, D.mappa, { docente: new Map(docente.map(t => [t.id, t])) });
     return Object.assign({}, D, { docente, mappa });
@@ -174,12 +178,13 @@ const Smart = (() => {
 
     let oreHtml = '';
     if (docenteScelto && giorno) {
-      const lezioni = motore.lezioniDi(docenteScelto, giorno);
+      // lezioni e ore di compresenza (anche un compresente si può segnare assente)
+      const lezioni = motore.impegniDi(docenteScelto, giorno);
       const gia = new Set((assenti.find(a => a.docente === docenteScelto) || { ore: [] }).ore);
       oreHtml = lezioni.length
         ? `<fieldset class="ore-smart"><legend>Ore di assenza</legend>` + lezioni.map(l =>
           `<label class="ora-smart"><input type="checkbox" data-ora="${l.ora}"${gia.size ? (gia.has(l.ora) ? ' checked' : '') : ' checked'}>
-            <span><b>${l.ora}ª</b> ${esc(motore.nome('classe', l.classe))}</span></label>`).join('') + '</fieldset>' +
+            <span><b>${l.ora}ª</b> ${esc(motore.nome('classe', l.classe))}${l.compresenza ? ' · compresenza' : ''}</span></label>`).join('') + '</fieldset>' +
           altriGiorniHtml() +
           `<label class="permesso-smart"><input type="checkbox" id="smartPermesso"${permesso ? ' checked' : ''}>
             <span><b>Recupero</b> · le ore sono a debito del docente</span></label>
@@ -203,15 +208,16 @@ const Smart = (() => {
     </article>`;
   }
 
-  // Assente più giorni: gli altri giorni della settimana in cui il docente ha lezione (vale tutto il giorno)
+  // Assente più giorni: gli altri giorni della settimana in cui il docente ha lezione, spuntando le singole ore
   function altriGiorniHtml() {
     const altri = motore.altriGiorniDi(iso, docenteScelto);
     if (!altri.length) return '';
-    return `<fieldset class="ore-smart"><legend>Assente anche in altri giorni della settimana? (tutte le ore)</legend>` +
+    return `<fieldset class="ore-smart"><legend>Assente anche in altri giorni della settimana? Spunta le ore</legend>` +
       altri.map(g => {
-        const gia = motore.assenzeDel(g.iso).some(a => a.docente === docenteScelto);
-        return `<label class="ora-smart"><input type="checkbox" data-giorno="${g.iso}">
-          <span><b>${esc(motore.dataCorta(g.iso))}</b> · ${ore(g.ore.length)}${gia ? ' · già assente' : ''}</span></label>`;
+        const gia = new Set((motore.assenzeDel(g.iso).find(a => a.docente === docenteScelto) || { ore: [] }).ore);
+        return `<p class="dettagli-breve"><b>${esc(motore.dataCorta(g.iso))}</b>${gia.size ? ' · già assente' : ''}</p>` +
+          g.lezioni.map(l => `<label class="ora-smart"><input type="checkbox" data-altra="${g.iso}|${l.ora}"${gia.has(l.ora) ? ' checked' : ''}>
+            <span><b>${l.ora}ª</b> ${esc(motore.nome('classe', l.classe))}${l.compresenza ? ' · compresenza' : ''}</span></label>`).join('');
       }).join('') + '</fieldset>';
   }
 
@@ -230,7 +236,8 @@ const Smart = (() => {
       if (s) {
         const occupato = motore.inCorso(s.id);
         return `<li class="scheda-breve scheda-ora coperta-smart">${testa}
-          <p class="sostituto-smart">Sostituisce <b>${esc(motore.nomeDocente(s.sostituto))}</b> ${etichetta(motore.saldoDi(s.sostituto))}</p>
+          <p class="sostituto-smart">Sostituisce <b>${esc(motore.nomeDocente(s.sostituto))}</b> ${etichetta(motore.saldoDi(s.sostituto))}${s.spostato
+            ? `<span class="motivo-smart">🔁 spostato da ${esc(motore.nome('classe', s.spostato.da))}: nessuna ora in più</span>` : ''}</p>
           <button type="button" class="pulsante" data-azione="annulla" data-chiave="${esc(chiave)}"${occupato ? ' disabled' : ''}>
             ${occupato ? 'Aggiorno il foglio…' : 'Annulla la sostituzione'}</button></li>`;
       }
@@ -238,10 +245,10 @@ const Smart = (() => {
       const visibili = aperte.has(chiave) ? tutti : tutti.slice(0, PROPOSTE);
       const proposte = visibili.length
         ? '<ul class="proposte-smart">' + visibili.map(c => `<li><button type="button" class="proposta-smart" data-azione="assegna"
-              data-chiave="${esc(chiave)}" data-docente="${esc(c.t.id)}"${c.liberato ? ' data-liberato="1"' : ''}
+              data-chiave="${esc(chiave)}" data-docente="${esc(c.t.id)}"
               aria-label="Assegna la ${l.ora}ª ora in ${esc(motore.nome('classe', l.classe))} a ${esc(motore.nomeDocente(c.t.id))}">
             <b>${esc(motore.nomeDocente(c.t.id))}</b>${etichetta(c.saldo)}
-            <span class="motivo-smart">${c.liberato ? '🚌 libero per l\'uscita didattica: nessuna ora in più' : esc(motore.TESTI_POSIZIONE[c.posizione])}${c.stessaClasse ? ' · conosce la classe' : ''}</span>
+            <span class="motivo-smart">${esc(c.motivo)}</span>
           </button></li>`).join('') + '</ul>'
         : '<p class="vuoto-breve">Nessun docente libero e già a scuola in quest\'ora.</p>';
       const altri = tutti.length > PROPOSTE && !aperte.has(chiave)
@@ -329,7 +336,14 @@ const Smart = (() => {
       const oreScelte = [...box.querySelectorAll('input[data-ora]:checked')].map(c => Number(c.dataset.ora));
       if (!oreScelte.length) { avvisa('Spunta almeno un\'ora di assenza.'); return; }
       const cb = box.querySelector('#smartPermesso');
-      const altriGiorni = [...box.querySelectorAll('input[data-giorno]:checked')].map(c => c.dataset.giorno);
+      // altri giorni: le ore spuntate, raggruppate per giorno ({ iso, ore })
+      const perGiorno = new Map();
+      box.querySelectorAll('input[data-altra]:checked').forEach(c => {
+        const [g, o] = c.dataset.altra.split('|');
+        if (!perGiorno.has(g)) perGiorno.set(g, []);
+        perGiorno.get(g).push(Number(o));
+      });
+      const altriGiorni = [...perGiorno].map(([g, o]) => ({ iso: g, ore: o }));
       if (motore.registraAssenza(iso, docenteScelto, oreScelte, cb ? cb.checked : true, altriGiorni)) { docenteScelto = ''; permesso = true; disegna(); }
       return;
     }
@@ -341,8 +355,10 @@ const Smart = (() => {
     }
     if (azione === 'assegna') {
       const l = lezioneDi(b.dataset.chiave);
-      // un docente «liberato» da un'uscita didattica copre senza ore in più (vedi sostituzioni/js/uscite.js)
-      if (l) { b.disabled = true; motore.assegna(iso, l, b.dataset.docente, b.dataset.liberato ? { reindirizzato: true } : undefined); }
+      // le opzioni le decide il motore (c.opzioni): un docente «liberato» da un'uscita didattica o spostato da una
+      // compresenza copre senza ore in più
+      const c = l && motore.candidati(iso, l).find(x => x.t.id === b.dataset.docente);
+      if (l) { b.disabled = true; motore.assegna(iso, l, b.dataset.docente, c ? c.opzioni : undefined); }
       return;
     }
     if (azione === 'annulla') {
@@ -420,6 +436,16 @@ const Smart = (() => {
       return;
     }
     await permessoGoogle;
+    // l'app mostra la bozza di Orario Facile: per le sostituzioni serve l'orario ufficiale pubblicato
+    pubblicato = null;
+    if (ctx.orario().fonte === 'bozza') {
+      try { pubblicato = await Dati.caricaPubblicato(); }
+      catch (errore) {
+        box.querySelector('#smartContenuto').innerHTML = `<div class="testata-breve"><h2 id="titoloSmart">${titolo}</h2>
+          <p class="data-breve">⚠️ Non riesco a leggere l'orario ufficiale pubblicato (${esc(errore.message)}): le sostituzioni si fanno solo su quello.</p></div>`;
+        return;
+      }
+    }
     if (!motore) motore = Sostituzioni.collega(copiaOrario, { avvisa, ridisegna: disegna });
     else motore.aggiorna();
     // Con il permesso di Google già dato, il motore controlla da solo l'autorizzazione e legge il foglio del conteggio
