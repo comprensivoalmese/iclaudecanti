@@ -87,7 +87,7 @@ Le parti del progetto:
   lista vuota = tutti modificatori). Orario Facile è protetto da `orario-facile/porta.js`/`porta.css`, che riusano
   `app/js/accesso.js` (stessa sessione `orariodada.sessione`). È un controllo lato browser: la vera protezione
   dell'orario pubblicato sono i permessi del repo GitHub.
-- **Sostituzioni docenti**: è la scheda 9 di Orario Facile (`#p-sostituzioni`, `renderSostituzioni()`), ma il suo codice
+- **Sostituzioni docenti**: è la scheda 10 di Orario Facile (`#p-sostituzioni`, `renderSostituzioni()`), ma il suo codice
   sta in file separati in `sostituzioni/` (css/, js/) per non gonfiare `orario-facile/index.html` e ridurre i conflitti.
   Orario Facile li carica con `<script src="../sostituzioni/js/...">` insieme a `../app/js/dati.js` e chiama
   `Sostituzioni.monta(contenitore, () => Dati.normalizza(S))`: se cambi il formato di `S` o l'interfaccia di `Dati`,
@@ -144,7 +144,7 @@ Le parti del progetto:
   controlla sia la scheda (`monta`) sia la pagina smart (`collega`); la costante `VERSIONE` in cima a sostituzioni.js
   si vede nella scheda e serve a capire se una pagina aperta è aggiornata.
   **Orario delle sostituzioni**: sempre quello UFFICIALE pubblicato (`Dati.caricaPubblicato()`), mai la bozza di Orario
-  Facile (scelta della scuola, 02/10/2026): la scheda 9 lo scarica in `renderSostituzioni()`, la pagina smart se l'app mostra la bozza.
+  Facile (scelta della scuola, 02/10/2026): la scheda 10 lo scarica in `renderSostituzioni()`, la pagina smart se l'app mostra la bozza.
   **Compresenze nelle sostituzioni** (issue #7, fatto il 02/10/2026): il motore legge le compresenze (`Compresenze.lezioni`,
   sostegno compreso, solo in memoria); le ore di compresenza non sono mai «da coprire» ma si possono segnare come assenze;
   `spostamentoDi()`: con il sostegno si sposta il docente di cattedra (il sostegno resta), con potenziamento e altre si sposta
