@@ -253,14 +253,19 @@ const Scioperi = (() => {
 
   // Quello che si pubblica e si comunica, per ogni classe (niente nomi di chi sciopera)
   function esitoDa(r) {
-    const classi = [];
+    const mo = m(), classi = [];
+    // insieme agli ID anche il nome della classe («2B») e il codice del docente («DOC07»): l'app li usa se il suo orario
+    // ha ID diversi (orario caricato a parte in Orario Facile). Solo codici DOC…: mai un nome vero nel file pubblicato.
+    const nomeClasse = id => mo.nome('classe', id) || '';
+    const codice = id => { const d = mo.orario().docente.find(x => x.id === id); const c = d ? String(d.codice || d.nome || '') : ''; return /^DOC\d+$/i.test(c) ? c : ''; };
     r.classi.forEach(i => {
       // da = la classe da cui viene il docente spostato (lì resta il compresente): l'app lo scrive anche su quella lezione
-      const vig = r.coperture.filter(c => c.classe === i.id && c.docente).map(c => Object.assign({ ora: c.ora, docente: c.docente }, c.tipo === 'spostato' ? { da: c.da } : {}));
+      const vig = r.coperture.filter(c => c.classe === i.id && c.docente).map(c => Object.assign({ ora: c.ora, docente: c.docente, codice: codice(c.docente) },
+        c.tipo === 'spostato' ? { da: c.da, nomeDa: nomeClasse(c.da) } : {}));
       const scop = r.coperture.filter(c => c.classe === i.id && !c.docente).map(c => c.ora);
       const primo = i.ore[0], ultimo = i.ore[i.ore.length - 1];
       if (i.nonEntra || i.entra > primo || i.esce < ultimo || vig.length || scop.length) {
-        classi.push({ classe: i.id, nonEntra: i.nonEntra, entra: i.nonEntra ? null : (i.entra > primo ? i.entra : null),
+        classi.push({ classe: i.id, nomeClasse: nomeClasse(i.id), nonEntra: i.nonEntra, entra: i.nonEntra ? null : (i.entra > primo ? i.entra : null),
           esce: i.nonEntra ? null : (i.esce < ultimo ? i.esce : null), vigilanza: vig, scoperte: scop });
       }
     });

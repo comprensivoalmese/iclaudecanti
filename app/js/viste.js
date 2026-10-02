@@ -94,10 +94,11 @@ const Viste = (() => {
     let classeSost = '', etichettaSost = '', rigaSost = '';
     const sc = Supplenze.testoSciopero && Supplenze.testoSciopero(sost, id => Dati.nome('docente', id));
     if (sc) {
-      // sciopero / assemblea (sostituzioni/js/scioperi.js): entrata posticipata, uscita anticipata o vigilanza (classe cerchiata)
+      // sciopero / assemblea (sostituzioni/js/scioperi.js): vigilanza (classe cerchiata) oppure ora in cui la classe
+      // non c'è, solo spenta in grigio: niente etichetta, il testo resta per i lettori di schermo
       classeSost = ' ' + sc.classe;
-      etichettaSost = `<span class="etichetta-sost">${esc(sc.etichetta)}</span>`;
-      rigaSost = `<span class="dato-sost">${esc(sc.riga)}</span>`;
+      etichettaSost = sc.etichetta ? `<span class="etichetta-sost">${esc(sc.etichetta)}</span>` : '';
+      rigaSost = sc.riga ? `<span class="dato-sost">${esc(sc.riga)}</span>` : `<span class="solo-lettori">${esc(sc.nota)}</span>`;
     } else if (sost && sost.uscita) {
       // la classe è fuori per un'uscita didattica (sostituzioni/js/uscite.js): la lezione non si fa
       classeSost = ' lezione-uscita';

@@ -427,7 +427,10 @@ body.modalita-monitor .modifiche, body.modalita-ingresso .modifiche { font-size:
 .lezione-uscita { outline: 1px dotted var(--testo-tenue, #888); outline-offset: -1px; opacity: .75; }
 .lezione-uscita .etichetta-sost { background: #4b5563; color: #fff; }
 /* Sciopero / assemblea (sostituzioni/js/scioperi.js, solo quello che pubblica Orario Facile):
-   entrata posticipata / uscita anticipata = lezione che non si fa (spenta); vigilanza = classe «cerchiata» */
+   ora in cui la classe non c'è (non entra, entra dopo, esce prima) = «spenta» in grigio, senza etichetta, come un'ora
+   senza lezione (materia e docente restano scritti in grigio); vigilanza = classe «cerchiata» */
+.lezione-spenta { background: hsl(0 0% 50% / .12); border-left-color: hsl(0 0% 50% / .45); }
+.lezione-spenta, .lezione-spenta .materia, .lezione-spenta .dato { color: var(--testo-tenue, #888); }
 .lezione-sciopero-fuori { outline: 1px dashed var(--testo-tenue, #888); outline-offset: -1px; opacity: .7; }
 .lezione-sciopero-fuori .etichetta-sost { background: #6b7280; color: #fff; }
 .lezione-vigilanza { outline: 2px solid #b45309; outline-offset: -2px; border-radius: 999px / 40%; }

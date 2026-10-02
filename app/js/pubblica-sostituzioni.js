@@ -57,8 +57,10 @@ const PubblicaSostituzioni = (() => {
       // scioperi e assemblee confermati (sostituzioni/js/scioperi.js): SOLO gli effetti sulle classi (entrata posticipata,
       // uscita anticipata, vigilanza e chi vigila). Mai chi sciopera: è un dato sindacale.
       scioperi: leggiLocale('sostituzioni.scioperi', []).filter(e => recente(e) && e.confermato && e.esito)
-        .map(e => ({ id: e.id, data: e.data, tipo: e.tipo, riduzione: e.esito.riduzione, classi: e.esito.classi.map(c => ({ classe: c.classe,
-          nonEntra: !!c.nonEntra, entra: c.entra, esce: c.esce, vigilanza: (c.vigilanza || []).map(v => Object.assign({ ora: v.ora, docente: v.docente }, v.da ? { da: v.da } : {})) })) })),
+        // (con nome della classe e codice DOC… di chi vigila: l'app li usa se il suo orario ha ID diversi, vedi supplenze.js)
+        .map(e => ({ id: e.id, data: e.data, tipo: e.tipo, riduzione: e.esito.riduzione, classi: e.esito.classi.map(c => ({ classe: c.classe, nomeClasse: c.nomeClasse || '',
+          nonEntra: !!c.nonEntra, entra: c.entra, esce: c.esce, vigilanza: (c.vigilanza || []).map(v => Object.assign({ ora: v.ora, docente: v.docente, codice: v.codice || '' },
+            v.da ? { da: v.da, nomeDa: v.nomeDa || '' } : {})) })) })),
       uscite: leggiLocale('sostituzioni.uscite', []).filter(u => recente(u) && u.confermata !== false)
         .map(u => ({ id: u.id, data: u.data, classi: u.classi, ore: u.ore }))
     };

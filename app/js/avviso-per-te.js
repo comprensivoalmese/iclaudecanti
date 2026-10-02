@@ -37,7 +37,7 @@ const AvvisoPerTe = (() => {
         // vigilanza per uno sciopero (sostituzioni/js/scioperi.js): niente «al posto di» (non si dice chi sciopera)
         testo: l.vigilanzaSciopero
           ? `<b>${l.assemblea ? 'Sostituisci' : 'Vigilanza'}</b> in <b>${esc(nome('classe', l.classe))}</b> · ${esc(q.testo)}` + (l.aula ? ` · aula <b>${esc(nome('aula', l.aula))}</b>` : '') +
-            ` <span class="per-te-mini">(${l.assemblea ? 'assemblea sindacale: lezione normale' : 'sciopero: solo vigilanza, niente lezione'})</span>`
+            ` <span class="per-te-mini">(${l.assemblea ? 'assemblea sindacale: lezione normale' : 'solo vigilanza, niente lezione'})</span>`
           : `<b>Sostituisci</b> in <b>${esc(nome('classe', l.classe))}</b> · ${esc(q.testo)}` +
           (l.aula ? ` · aula <b>${esc(nome('aula', l.aula))}</b>` : '') + (l.materia ? ` · ${esc(l.materia)}` : '') +
           ` <span class="per-te-mini">(al posto di ${esc(nome('docente', l.assente))})</span>` });
@@ -49,7 +49,8 @@ const AvvisoPerTe = (() => {
       out.push({ chiave: ['A', q.iso, l.ora, l.classe, s.sostituto || '-'].join('|'), iso: q.iso, ora: l.ora, tipo: 'sostituito',
         testo: `La tua lezione in <b>${esc(nome('classe', l.classe))}</b> · ${esc(q.testo)} ` +
           // classe fuori per un'uscita didattica (sostituzioni/js/uscite.js): la lezione non si fa
-          (s.sciopero ? `<b>${esc(Supplenze.testoSciopero(s, id => nome('docente', id)).riga)}</b>` :
+          // sciopero / assemblea: la riga della tabella, oppure «non si fa» se in quell'ora la classe non c'è
+          (s.sciopero ? `<b>${esc(Supplenze.testoSciopero(s, id => nome('docente', id)).riga || 'non si fa')}</b>` :
             s.uscita ? '<b>non si fa: la classe è in uscita didattica</b>' :
             s.sostituto ? `è coperta da <b>${esc(nome('docente', s.sostituto))}</b>` : '<b>è ancora da coprire</b>') });
     });

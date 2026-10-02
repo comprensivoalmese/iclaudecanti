@@ -90,7 +90,8 @@ const Breve = (() => {
     const nome = id => esc(Dati.nome('docente', id));
     let nota = '';
     const sc = s && Supplenze.testoSciopero && Supplenze.testoSciopero(s, id => Dati.nome('docente', id));
-    if (sc) nota = `${esc(sc.etichetta)}: ${esc(sc.riga)}`;
+    // sciopero / assemblea: con la classe che non c'è solo «Nessuna lezione» (la parola «sciopero» non si vede)
+    if (sc) nota = sc.etichetta ? `${esc(sc.etichetta)}: ${esc(sc.riga)}` : 'Nessuna lezione';
     else if (s && s.uscita) nota = '🚌 Uscita didattica: la classe è fuori, lezione non svolta';
     else if (s && s.copia) nota = `🔄 Sostituisci ${nome(s.assente)}`;
     else if (s && s.sostituto) nota = `🔄 ${nome(s.assente)} assente → sostituisce <b>${nome(s.sostituto)}</b>`;

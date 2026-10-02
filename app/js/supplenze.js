@@ -166,11 +166,20 @@ const Supplenze = (() => {
 
     // 4. scioperi e assemblee sindacali (sostituzioni/js/scioperi.js): per ogni classe entrata posticipata, uscita
     //    anticipata e vigilanza (con chi vigila, che la vede anche nel suo orario). Mai chi sciopera.
+    //    Se il piano è stato fatto su un Orario Facile con un orario caricato a parte, i codici interni (ID) di classi e
+    //    docenti possono essere diversi da quelli dell'app: allora si riconoscono dal nome della classe («2B») e dal
+    //    codice del docente («DOC07»), che il piano pubblica insieme agli ID (nomeClasse, nomeDa, codice).
+    const perNomeClasse = new Map(D.classe.map(c => [semplice(c.nome), c.id]));
+    const perCodice = new Map(D.docente.map(d => [semplice(d.codice || d.nome), d.id]));
+    const idClasse = (id, nome) => (id && D.mappa.classe.has(id)) ? id : (nome && perNomeClasse.get(semplice(nome))) || id;
+    const idDocente = (id, codice) => (id && D.mappa.docente.has(id)) ? id : (codice && perCodice.get(semplice(codice))) || id;
     fonte.scioperi.forEach(e => {
       const giorno = giornoDi.get(e.data);
       if (!giorno || !Array.isArray(e.classi)) return;
       const assemblea = e.tipo === 'assemblea';   // assemblea sindacale: chi copre fa lezione (sostituzione), non vigilanza
-      e.classi.forEach(c => {
+      e.classi.map(c => Object.assign({}, c, { classe: idClasse(c.classe, c.nomeClasse),
+        vigilanza: (c.vigilanza || []).map(v => Object.assign({}, v, { docente: idDocente(v.docente, v.codice), da: v.da ? idClasse(v.da, v.nomeDa) : v.da })) }))
+      .forEach(c => {
         const lezC = D.lezioni.filter(l => l.giorno === giorno && l.classe === c.classe);
         lezC.forEach(l => {
           const k = chiave(giorno, l.ora, l.classe, l.docente);
@@ -208,15 +217,17 @@ const Supplenze = (() => {
 
   /*
     I testi di una lezione toccata da uno sciopero / assemblea (s = quello che restituisce di(), con s.sciopero):
-    { etichetta, riga, classe } per la tabella, «In breve» e il riquadro «per te». Mai chi sciopera.
+    { etichetta, riga, classe, nota } per la tabella, «In breve» e il riquadro «per te». Mai chi sciopera.
+    La parola «sciopero» non si vede mai (scelta della scuola, 02/10/2026): le ore in cui la classe non c'è
+    (non entra, entra dopo, esce prima) sono solo «spente» in grigio, senza etichetta, come ore senza lezione;
+    nota = il testo breve per «In breve», il riquadro «per te» e i lettori di schermo.
   */
   function testoSciopero(s, nomeDocente) {
     if (!s || !s.sciopero) return null;
-    if (s.sciopero === 'nonEntra') return { etichetta: s.assemblea ? '✊ Assemblea sindacale' : '✊ Sciopero', riga: 'servizio non garantito: la classe non entra', classe: 'lezione-sciopero-fuori' };
+    if (s.sciopero === 'nonEntra' || s.sciopero === 'entrata' || s.sciopero === 'uscita')
+      return { etichetta: '', riga: '', classe: 'lezione-spenta', nota: 'nessuna lezione' };
     // assemblea: nelle ore coperte si fa lezione normalmente (sostituzione), non solo vigilanza
     if (s.sciopero === 'vigilanza' && s.assemblea) return { etichetta: '🔄 Sostituzione', riga: 'assemblea sindacale' + (s.vigila ? ': lezione con ' + nomeDocente(s.vigila) : ''), classe: 'lezione-supplenza' };
-    if (s.sciopero === 'entrata') return { etichetta: '⏰ Entrata posticipata', riga: `la classe entra alla ${s.entra}ª ora`, classe: 'lezione-sciopero-fuori' };
-    if (s.sciopero === 'uscita') return { etichetta: '⏰ Uscita anticipata', riga: `la classe esce dopo la ${s.esce}ª ora`, classe: 'lezione-sciopero-fuori' };
     if (s.sciopero === 'spostato') return { etichetta: '👁 In vigilanza altrove', riga: `va in vigilanza in ${typeof Dati !== 'undefined' ? Dati.nome('classe', s.verso) : s.verso}; qui resta il compresente`, classe: 'lezione-sciopero-fuori' };
     return { etichetta: '👁 Vigilanza', riga: 'solo vigilanza, niente lezione' + (s.vigila ? ': ' + nomeDocente(s.vigila) : ''), classe: 'lezione-vigilanza' };
   }
