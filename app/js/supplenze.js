@@ -157,6 +157,25 @@ const Supplenze = (() => {
       extra.push(Object.assign({}, l, { docente: s.sostituto, sostituzione: true, assente: s.assente, voce: s }));
     });
 
+    // 2b. il sostituto SPOSTATO da una classe in compresenza (campo spostato: { da }, issue #7): nella classe lasciata
+    //     la sua lezione sparisce (nascoste) e, se se n'è andato il docente di cattedra, al suo posto c'è un'ora della
+    //     stessa materia tenuta dal solo docente di sostegno (alPosto), come una lezione normale. Il sostegno si vede
+    //     solo da chi lo può vedere (Compresenze.lezioni: docenti e chi modifica); gli altri vedono la materia senza docente.
+    const nascoste = new Set(), alPosto = [];
+    const conComp = typeof Compresenze !== 'undefined' ? Compresenze.lezioni(D) : [];
+    const curr = (D.lezioniCurricolari || D.lezioni).filter(l => !l.compresenza);
+    fonte.registro.forEach(s => {
+      const giorno = giornoDi.get(s.data);
+      if (s.sciopero || !giorno || !s.spostato || !s.spostato.da) return;
+      const da = s.spostato.da;
+      nascoste.add(chiave(giorno, s.ora, da, s.sostituto));
+      const sua = curr.find(x => x.giorno === giorno && x.ora === s.ora && x.classe === da && x.docente === s.sostituto);
+      if (!sua) return;   // era un compresente (potenziamento, Alternativa…): in classe resta il docente di cattedra
+      const sostegno = conComp.filter(x => x.giorno === giorno && x.ora === s.ora && x.classe === da && /^sos/i.test(x.materia || ''));
+      sostegno.forEach(x => nascoste.add(chiave(giorno, s.ora, da, x.docente)));
+      (sostegno.length ? sostegno : [{ docente: '' }]).forEach(x => alPosto.push(Object.assign({}, sua, { docente: x.docente })));
+    });
+
     // 3. i cambi d'aula: Map "giorno|ora|classe" -> { da, a } (aule, per ID)
     const cambi = new Map();
     fonte.cambi.forEach(c => {
@@ -199,7 +218,18 @@ const Supplenze = (() => {
       });
     });
 
-    return { segnate, extra, date, cambi };
+    return { segnate, extra, date, cambi, nascoste, alPosto };
+  }
+
+  /*
+    Le lezioni da mostrare (tabella e «In breve»): quelle dell'orario senza le «nascoste» (docenti spostati da una
+    compresenza, vedi 2b), più quelle «al posto» e, guardando un docente (perDocente), le ore di sostituzione (extra).
+  */
+  function lezioni(D, sost, perDocente) {
+    if (!sost) return D.lezioni;
+    const via = sost.nascoste || new Set();
+    return D.lezioni.filter(l => !via.has(chiave(l.giorno, l.ora, l.classe, l.docente)))
+      .concat(sost.alPosto || [], perDocente ? sost.extra : []);
   }
 
   // Il cambio d'aula di una lezione della tabella ({ da, a }) oppure null
@@ -232,5 +262,5 @@ const Supplenze = (() => {
     return { etichetta: '👁 Vigilanza', riga: 'solo vigilanza, niente lezione' + (s.vigila ? ': ' + nomeDocente(s.vigila) : ''), classe: 'lezione-vigilanza' };
   }
 
-  return { settimana, di, cambioAula, scarica, testoSciopero, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula', 'sostituzioni.annullate', 'sostituzioni.uscite', 'sostituzioni.scioperi', 'sostituzioni.assenzeAnnullate'] };
+  return { settimana, lezioni, di, cambioAula, scarica, testoSciopero, CHIAVI: ['sostituzioni.assenze', 'sostituzioni.registro', 'sostituzioni.cambiAula', 'sostituzioni.annullate', 'sostituzioni.uscite', 'sostituzioni.scioperi', 'sostituzioni.assenzeAnnullate'] };
 })();
