@@ -260,5 +260,7 @@ const Dati = (() => {
 
   const nome = (tipo, id) => { const e = D && D.mappa[tipo].get(id); return e ? e.nome : id; };
 
-  return { carica, get: () => D, docentePerEmail, nome, emailDaNome, normalizza, fonte, impostaFonte, urlDrive, leggiDrive, driveLeggibile, CHIAVE_BOZZA };
+  // caricaPubblicato serve anche alle sostituzioni (scheda 9 di Orario Facile e pagina smart): si fanno sempre
+  // sull'orario ufficiale pubblicato, mai sulla bozza
+  return { carica, caricaPubblicato, get: () => D, docentePerEmail, nome, emailDaNome, normalizza, fonte, impostaFonte, urlDrive, leggiDrive, driveLeggibile, CHIAVE_BOZZA };
 })();
